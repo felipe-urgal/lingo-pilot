@@ -5,7 +5,7 @@
     "strategy": "disabled",
     "provider": "none",
     "branch": "main",
-    "documentation": "docs/PRODUCTION_DEPLOYMENT.md",
+    "documentation": "docs/PRODUCTION_STATUS.md",
     "reasonCode": "production-readiness-gate",
     "commands": {
       "status": "prod:status",
