@@ -83,7 +83,7 @@ test("runtime wrapper propagates repository-root .env.local values to its child 
     );
 
     const probe =
-      'process.stdout.write(`${process.env.NEXT_PUBLIC_APP_URL}|${process.env.APP_TIMEZONE}`);';
+      "process.stdout.write(`${process.env.NEXT_PUBLIC_APP_URL}|${process.env.APP_TIMEZONE}`);";
     const result = spawnSync(
       process.execPath,
       [wrapperPath, process.execPath, "-e", probe],
@@ -95,10 +95,7 @@ test("runtime wrapper propagates repository-root .env.local values to its child 
     );
 
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(
-      result.stdout,
-      "http://127.0.0.1:5400|America/Sao_Paulo",
-    );
+    assert.equal(result.stdout, "http://127.0.0.1:5400|America/Sao_Paulo");
   } finally {
     await rm(directory, { force: true, recursive: true });
   }
