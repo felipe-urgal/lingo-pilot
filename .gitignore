@@ -9,6 +9,9 @@ dist/
 .turbo/
 coverage/
 
+# framework-generated
+apps/web/next-env.d.ts
+
 # environment
 .env
 .env.*

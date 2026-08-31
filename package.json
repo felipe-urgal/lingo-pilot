@@ -14,7 +14,7 @@
     "env:init": "node scripts/init-local-env.mjs",
     "env:check": "node scripts/check-local-env.mjs",
     "lint": "eslint scripts tests packages/config/runtime --max-warnings 0 && turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "node scripts/run-with-runtime-env.mjs turbo run typecheck",
     "test": "node --test tests/*.test.mjs && pnpm check:workspace",
     "content:validate": "pnpm --filter @lingo-pilot/content validate",
     "check:workspace": "node scripts/verify-workspace.mjs",

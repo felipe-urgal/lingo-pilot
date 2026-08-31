@@ -88,3 +88,12 @@ jobs:
 
       - name: Production build
         run: pnpm build
+
+      - name: Tracked working tree remains clean
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
+            git status --short --untracked-files=no
+            git diff --exit-code
+            exit 1
+          fi
