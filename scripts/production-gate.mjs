@@ -1,12 +1,20 @@
 #!/usr/bin/env node
 
-const blockers = [
-  "vercel-project-not-configured",
-  "neon-production-not-validated",
-  "backup-dr-not-validated",
-  "migration-flow-not-validated",
-  "production-health-not-configured",
-];
+import { readFile } from "node:fs/promises";
+
+const manifestUrl = new URL(
+  "../.dev-dashboard/production.json",
+  import.meta.url,
+);
+const manifest = JSON.parse(await readFile(manifestUrl, "utf8"));
+const blockers = manifest.production?.blockedBy;
+
+if (!Array.isArray(blockers) || blockers.length === 0) {
+  console.error(
+    "Contrato de produção inválido: production.blockedBy precisa declarar os bloqueadores atuais.",
+  );
+  process.exit(2);
+}
 
 const mode = process.argv[2] ?? "check";
 
