@@ -45,6 +45,19 @@ chore: configure CI typecheck
 
 Commits devem ser semanticamente úteis. Evite sequências de commits como `fix`, `fix2`, `try again` em PR pronto para revisão.
 
+## Ambiente local e configuração
+
+Na primeira execução, prepare a configuração com:
+
+```bash
+pnpm env:init
+pnpm env:check
+```
+
+`env:init` nunca sobrescreve `.env.local` existente. Configuração deve ser consumida pelos módulos centrais definidos em `docs/RUNTIME_CONFIGURATION.md`; não espalhe `process.env` pela aplicação.
+
+Variáveis públicas devem ser explicitamente `NEXT_PUBLIC_*`. Secrets e configuração server-only não podem ser importados por módulos destinados ao browser.
+
 ## Checks locais
 
 Antes de abrir ou atualizar um PR, execute:
@@ -57,6 +70,7 @@ O gate agregado inclui:
 
 ```text
 format:check
+env:check
 lint
 typecheck
 test
@@ -86,7 +100,7 @@ CI / quality
 CI / build
 ```
 
-O primeiro valida instalação frozen, formatação, lint, tipos, testes e conteúdo. O segundo valida o build de produção após o gate de qualidade ficar verde.
+O primeiro valida instalação frozen, formatação, configuração de ambiente, lint, tipos, testes e conteúdo. O segundo valida o build de produção após o gate de qualidade ficar verde.
 
 Mudanças nos nomes desses checks são breaking changes de governança porque podem bloquear a ruleset da `main`.
 
@@ -113,7 +127,7 @@ Em repositório com um único maintainer, CI verde não substitui auto code revi
 
 O método padrão é squash merge. A `main` deve receber um commit semântico por PR e branches remotas devem ser removidas após o merge.
 
-A proteção desejada da `main` exige PR, checks verdes e resolução de conversas, mas zero approvals enquanto existir apenas um maintainer. Veja `docs/REPOSITORY_GOVERNANCE.md` para o contrato e a configuração manual do GitHub.
+A proteção da `main` exige PR, checks verdes e resolução de conversas, mas zero approvals enquanto existir apenas um maintainer. Veja `docs/REPOSITORY_GOVERNANCE.md` para o contrato do GitHub.
 
 ## Arquitetura
 

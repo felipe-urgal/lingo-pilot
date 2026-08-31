@@ -1,8 +1,11 @@
 import { createServer } from "node:net";
+import {
+  E2E_PORT,
+  WEB_HOST,
+  WEB_PORT,
+} from "@lingo-pilot/config/runtime/environment";
 
-export const WEB_HOST = "127.0.0.1";
-export const WEB_PORT = 5400;
-export const E2E_PORT = 5401;
+export { E2E_PORT, WEB_HOST, WEB_PORT };
 
 export function resolveWebPort(profile) {
   if (profile === "dev") return WEB_PORT;

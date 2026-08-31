@@ -18,6 +18,9 @@ concurrency:
 
 env:
   CI: true
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:5400
+  APP_TIMEZONE: UTC
+  LINGO_TEST_MODE: "false"
 
 jobs:
   quality:
@@ -44,6 +47,9 @@ jobs:
 
       - name: Format check
         run: pnpm format:check
+
+      - name: Environment config
+        run: pnpm env:check
 
       - name: Lint
         run: pnpm lint

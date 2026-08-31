@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createWebProfileEnvironment } from "@lingo-pilot/config/runtime/environment";
 import {
   assertPortAvailable,
   resolveWebPort,
@@ -7,6 +8,7 @@ import {
 
 const profile = process.argv[2] ?? "dev";
 const port = resolveWebPort(profile);
+const profileEnvironment = createWebProfileEnvironment(profile);
 
 try {
   await assertPortAvailable(port);
@@ -20,7 +22,10 @@ const child = spawn(
   executable,
   ["dev", "--hostname", WEB_HOST, "--port", String(port)],
   {
-    env: process.env,
+    env: {
+      ...process.env,
+      ...profileEnvironment,
+    },
     stdio: "inherit",
   },
 );
