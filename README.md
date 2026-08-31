@@ -50,18 +50,18 @@ O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocu
 
 ## Comandos
 
-| Comando | Função |
-| --- | --- |
-| `pnpm dev` | inicia o web shell em `127.0.0.1:5400` |
-| `pnpm dev:e2e` | inicia o web shell isolado em `127.0.0.1:5401` |
-| `pnpm build` | executa o build de produção via Turborepo |
-| `pnpm lint` | valida scripts, testes, app e packages |
-| `pnpm typecheck` | executa TypeScript strict nos packages aplicáveis |
-| `pnpm test` | executa os testes de bootstrap e valida boundaries |
+| Comando                | Função                                                       |
+| ---------------------- | ------------------------------------------------------------ |
+| `pnpm dev`             | inicia o web shell em `127.0.0.1:5400`                       |
+| `pnpm dev:e2e`         | inicia o web shell isolado em `127.0.0.1:5401`               |
+| `pnpm build`           | executa o build de produção via Turborepo                    |
+| `pnpm lint`            | valida scripts, testes, app e packages                       |
+| `pnpm typecheck`       | executa TypeScript strict nos packages aplicáveis            |
+| `pnpm test`            | executa os testes de bootstrap e valida boundaries           |
 | `pnpm check:workspace` | verifica packages esperados e restrições estruturais básicas |
-| `pnpm format` | normaliza formatação com Prettier |
-| `pnpm format:check` | verifica formatação sem alterar arquivos |
-| `pnpm check` | gate local agregado: format, lint, typecheck, test e build |
+| `pnpm format`          | normaliza formatação com Prettier                            |
+| `pnpm format:check`    | verifica formatação sem alterar arquivos                     |
+| `pnpm check`           | gate local agregado: format, lint, typecheck, test e build   |
 
 ## Estrutura do monorepo
 
