@@ -13,7 +13,21 @@ Casos de uso iniciais:
 - geração de microprática;
 - reformulação de exemplo dentro do vocabulário permitido.
 
-## 2. Contexto pedagógico
+## 2. Regra de dependência
+
+Nenhum fluxo de IA voltado ao aluno é considerado implementável antes de existir a foundation compartilhada mínima:
+
+1. provider abstraction;
+2. structured output/schema validation quando aplicável;
+3. prompt registry/versioning;
+4. timeout/retry/fallback;
+5. guardrails de privacidade e nível;
+6. provider fake para testes;
+7. eval harness/dataset versionado da feature.
+
+Writing/speaking podem implementar captura, persistência, self-check e UX antes disso, mas **avaliação por IA** só entra depois dessa foundation. Tutor e prática adaptativa reutilizam a mesma infraestrutura; não criam integração direta paralela com provider.
+
+## 3. Contexto pedagógico
 
 Toda chamada relevante deve receber um `LearnerContext` construído pelo sistema, não por texto arbitrário concatenado.
 
@@ -37,7 +51,7 @@ type LearnerContext = {
 
 O context builder deve aplicar limite de tamanho e escolher somente informação relevante.
 
-## 3. Vocabulary/grammar ceiling
+## 4. Vocabulary/grammar ceiling
 
 O tutor deve privilegiar palavras e construções já introduzidas.
 
@@ -48,7 +62,9 @@ Pode usar palavra nova quando necessária para comunicação, mas deve:
 - não assumir domínio;
 - não alterar progressão curricular automaticamente.
 
-## 4. Provider abstraction
+O teto deve ser calculado a partir de conteúdo realmente introduzido/elegível e de evidências reais. Um ponto de entrada manual A1/A2 não transforma automaticamente todo o conteúdo anterior em “mastered”.
+
+## 5. Provider abstraction
 
 ```ts
 interface LanguageModelProvider {
@@ -59,7 +75,7 @@ interface LanguageModelProvider {
 
 Use cases dependem de serviços de alto nível, não de SDK de provider.
 
-## 5. Structured outputs
+## 6. Structured outputs
 
 Correções e avaliações devem usar schema validado.
 
@@ -80,7 +96,7 @@ type WritingEvaluation = {
 
 Se o output falhar na validação, o sistema não deve inventar campos faltantes. Deve retry controlado ou fallback.
 
-## 6. Prompt registry
+## 7. Prompt registry
 
 Prompts relevantes precisam de identificador e versão:
 
@@ -88,6 +104,8 @@ Prompts relevantes precisam de identificador e versão:
 writing-evaluator:v1
 speaking-feedback:v1
 tutor-conversation:a0-v1
+tutor-conversation:a1-v1
+tutor-conversation:a2-v1
 micropractice-generator:v1
 ```
 
@@ -102,7 +120,7 @@ Metadata armazenada em avaliações importantes:
 - status;
 - token/cost metadata quando disponível e permitido.
 
-## 7. Guardrails pedagógicos
+## 8. Guardrails pedagógicos
 
 O tutor deve evitar:
 
@@ -115,15 +133,16 @@ O tutor deve evitar:
 
 Feedback para iniciante deve priorizar 1–3 pontos de maior impacto.
 
-## 8. Guardrails de produto
+## 9. Guardrails de produto
 
 - IA não desbloqueia lesson diretamente.
 - IA não altera `MasteryState` sem produzir evidência validável por regra definida.
-- IA não cria ReviewEvent falso.
+- IA não cria `ReviewEvent` falso.
+- IA não transforma placement/entry point em mastery.
 - IA não escreve diretamente no banco fora de use cases controlados.
 - IA não executa ferramenta externa em nome do usuário na V1.
 
-## 9. Falhas
+## 10. Falhas
 
 Categorias:
 
@@ -138,7 +157,7 @@ Categorias:
 
 UX deve distinguir somente o necessário para recuperação. Internamente, logs precisam preservar categoria sem gravar conteúdo sensível por padrão.
 
-## 10. Retry
+## 11. Retry
 
 - retry apenas em erros potencialmente transitórios;
 - backoff limitado;
@@ -146,31 +165,47 @@ UX deve distinguir somente o necessário para recuperação. Internamente, logs 
 - operação precisa ser idempotente;
 - uma avaliação duplicada não pode duplicar progresso.
 
-## 11. Evals
+## 12. Evals
 
 Antes de liberar um fluxo de IA, criar dataset de avaliação com casos reais/sintéticos.
 
-### Tutor A0/A1
+### Tutor A0/A1/A2
 
-Avaliar:
+Os três níveis fazem parte do escopo V1 e precisam de cobertura explícita.
+
+Avaliar em A0, A1 e A2:
 
 - usa vocabulário permitido;
 - tamanho da resposta;
 - clareza;
 - não pula nível;
 - corrige sem sobrecarregar;
-- mantém objetivo da conversa.
+- mantém objetivo da conversa;
+- não considera conteúdo apenas dispensado por placement como dominado.
+
+Cobertura mínima por nível deve incluir:
+
+- aluno no início do nível;
+- aluno com parte do nível desbloqueada;
+- weak concepts;
+- resposta correta com variante aceitável;
+- erro típico de brasileiro;
+- pedido do aluno que induz o tutor a usar estrutura acima do nível;
+- tentativa de prompt injection/conteúdo não confiável compatível com o fluxo.
+
+Não é aceitável liberar A2 usando apenas fixtures A0/A1 e assumir que os mesmos thresholds generalizam.
 
 ### Writing
 
-Avaliar:
+Avaliar, com casos representativos A0/A1/A2 quando a feature estiver disponível:
 
 - identifica erro real;
 - não inventa erro;
 - aceita variantes válidas;
 - correção preserva intenção;
 - feedback em português é compreensível;
-- `relatedConceptIds` são válidos.
+- `relatedConceptIds` são válidos;
+- feedback respeita o nível e o objetivo da atividade.
 
 ### Speaking
 
@@ -183,7 +218,9 @@ Separar avaliação de:
 
 Não inferir pronúncia precisa apenas de transcript textual.
 
-## 12. AI-generated practice
+Casos A0/A1/A2 devem verificar também se grammar/vocabulary feedback não ultrapassa o teto do aluno.
+
+## 13. AI-generated practice
 
 Microprática gerada deve passar por:
 
@@ -194,7 +231,7 @@ Microprática gerada deve passar por:
 5. filtro de duplicação quando necessário;
 6. fallback para conteúdo editorial.
 
-## 13. Segurança de prompt
+## 14. Segurança de prompt
 
 Conteúdo do aluno é dado não confiável.
 
@@ -204,7 +241,7 @@ Conteúdo do aluno é dado não confiável.
 - não expor secrets/context interno;
 - tratar prompt injection como possibilidade mesmo em app educacional.
 
-## 14. Privacidade
+## 15. Privacidade
 
 Não enviar ao provider informação de perfil que não seja necessária.
 
@@ -212,9 +249,9 @@ Preferir IDs internos e contexto pedagógico mínimo a nome/email.
 
 Transcript e writing podem conter PII inserida pelo usuário; política de retenção e logging deve refletir isso.
 
-## 15. Cost controls
+## 16. Cost controls
 
-Mesmo produto pessoal precisa de limites:
+Mesmo produto pessoal precisa de limites e deve respeitar o objetivo de operar dentro de free tiers sempre que possível:
 
 - model selection por tarefa;
 - max tokens;
@@ -222,9 +259,10 @@ Mesmo produto pessoal precisa de limites:
 - cache somente onde semântica permitir;
 - rate limit;
 - métricas de custo por feature;
-- evitar chamada de IA para avaliação determinística simples.
+- evitar chamada de IA para avaliação determinística simples;
+- nenhuma feature deve exigir gasto recorrente sem decisão explícita de produto/operação.
 
-## 16. Observabilidade
+## 17. Observabilidade
 
 Métricas:
 
@@ -234,10 +272,10 @@ Métricas:
 - latency p50/p95;
 - retries;
 - estimated cost;
-- level-violation eval rate;
+- level-violation eval rate por A0/A1/A2;
 - fallback rate.
 
-## 17. Critério de pronto
+## 18. Critério de pronto
 
 Um fluxo de IA só está pronto quando:
 
@@ -245,7 +283,9 @@ Um fluxo de IA só está pronto quando:
 - schema validado;
 - timeout/fallback implementados;
 - testes com provider fake;
-- eval set inicial;
+- eval set inicial cobrindo os níveis suportados pela feature;
 - observabilidade;
 - política de dados revisada;
 - docs atualizadas.
+
+Para o tutor V1, “níveis suportados” significa **A0, A1 e A2**.
