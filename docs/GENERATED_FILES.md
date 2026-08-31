@@ -27,7 +27,17 @@ Por isso, no LingoPilot:
 - o arquivo pode aparecer fisicamente após `pnpm dev`, `pnpm typecheck` ou `pnpm build`, mas deve permanecer ignorado pelo Git;
 - nunca editar `next-env.d.ts` manualmente.
 
-Esse comportamento segue a recomendação oficial do Next.js de adicionar `next-env.d.ts` ao `.gitignore` e gerá-lo via `next typegen` quando necessário antes do typecheck.
+## Drizzle migrations
+
+Arquivos sob `packages/db/drizzle/` também são gerados, mas **devem ser versionados** porque constituem o histórico executável de evolução do schema PostgreSQL.
+
+Regras:
+
+- SQL e metadata são produzidos por `drizzle-kit generate` a partir do schema revisado;
+- snapshots em `packages/db/drizzle/meta/` ficam fora do Prettier para preservar a saída da ferramenta;
+- uma migration deve ser revisada como código antes do merge;
+- `pnpm db:check` valida a consistência do histórico;
+- migrations não são geradas nem aplicadas pelo build da aplicação.
 
 ## Gate de working tree
 
