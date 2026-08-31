@@ -1,9 +1,7 @@
 export type RuntimeProfile = "development" | "e2e" | "test" | "production";
 export type WebProfile = "dev" | "e2e";
 
-export type EnvironmentSource = Readonly<
-  Record<string, string | undefined>
->;
+export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 
 export interface PublicRuntimeConfig {
   readonly appUrl: string;
