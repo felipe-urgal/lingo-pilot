@@ -182,6 +182,19 @@ test("integration database must be explicitly test-only and isolated", () => {
       error.key === "TEST_DATABASE_URL",
   );
 
+  assert.throws(
+    () =>
+      parseTestDatabaseEnvironment({
+        DATABASE_URL: localDatabaseUrl,
+        LINGO_PROFILE: "development",
+        TEST_DATABASE_URL:
+          "postgresql://lingo_pilot:local@127.0.0.1:5433/another_project_test",
+      }),
+    (error) =>
+      error instanceof EnvironmentValidationError &&
+      error.key === "TEST_DATABASE_URL",
+  );
+
   assert.throws(() =>
     parseTestDatabaseEnvironment({
       LINGO_PROFILE: "test",
