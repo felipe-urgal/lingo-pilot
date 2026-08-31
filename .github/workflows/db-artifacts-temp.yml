@@ -1,6 +1,9 @@
 name: Temporary DB artifacts
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feature/postgres-drizzle-foundation
