@@ -15,7 +15,9 @@ Princípios:
 5. perfis de desenvolvimento e E2E não podem escolher portas dinamicamente;
 6. `.env.example` contém apenas valores fictícios ou públicos seguros;
 7. secrets nunca são commitados, logados ou expostos por `NEXT_PUBLIC_*`;
-8. CI básico não depende de credenciais reais.
+8. CI básico não depende de credenciais reais;
+9. o `.env.local` canônico fica na raiz do monorepo e não é duplicado por workspace;
+10. variáveis já presentes no processo sempre têm precedência sobre `.env.local`.
 
 ## 2. Fonte central
 
@@ -35,6 +37,14 @@ Ele é responsável por:
 - normalizar flags booleanas;
 - impor invariantes de dev/E2E;
 - expor as constantes canônicas de host/porta usadas pelos scripts locais.
+
+O carregamento do arquivo local fica separado do parser de domínio de configuração. O helper:
+
+```text
+scripts/runtime-env.mjs
+```
+
+resolve o ambiente efetivo combinando `.env.local` da raiz com o ambiente do processo. Essa separação mantém o parser testável e permite reutilizar o mesmo mecanismo em build, start e futuros comandos de banco/migration.
 
 ## 3. Separação browser/server
 
@@ -158,7 +168,7 @@ Produção usa `NODE_ENV=production` e deve fornecer uma URL pública real no am
 
 Quando Vercel/Neon forem efetivamente provisionados, as variáveis adicionais entram no contrato de produção na mesma mudança que implementar a capacidade correspondente.
 
-## 6. Bootstrap local
+## 6. Bootstrap local e precedência
 
 Primeira execução:
 
@@ -169,25 +179,77 @@ pnpm env:check
 
 `pnpm env:init`:
 
-- copia `.env.example` para `.env.local` somente se `.env.local` não existir;
+- copia `.env.example` para `.env.local` na raiz somente se `.env.local` não existir;
 - nunca sobrescreve configuração local existente;
-- não busca secrets em serviços externos.
+- não busca secrets em serviços externos;
+- não cria cópia em `apps/web` ou em packages.
 
 `pnpm env:check`:
 
-- carrega `.env.local` quando presente;
+- resolve `.env.local` quando presente;
 - preserva variáveis já fornecidas pelo processo;
 - valida o contrato central;
 - imprime somente valores não sensíveis necessários ao diagnóstico;
 - termina com código diferente de zero quando a configuração é inválida.
 
-## 7. Startup/build validation
+A precedência é deliberada:
+
+```text
+shell / CI / provider
+        ↓ sobrescreve
+.env.local da raiz
+```
+
+Isso impede que um arquivo local faça shadow de configuração fornecida por CI ou produção.
+
+## 7. Comandos que iniciam subprocessos
+
+Carregar `.env.local` dentro de `pnpm env:check` não altera o ambiente do shell que executará o próximo comando. Cada script npm/pnpm roda em um processo separado.
+
+Além disso, o Next.js é executado a partir de `apps/web`, portanto não devemos depender de descoberta implícita do `.env.local` localizado na raiz do monorepo.
+
+Por isso, comandos raiz que precisam de runtime config usam:
+
+```text
+scripts/run-with-runtime-env.mjs
+```
+
+Hoje:
+
+```bash
+pnpm build
+pnpm start
+```
+
+O wrapper:
+
+1. lê `.env.local` da raiz quando existir;
+2. combina o arquivo com o ambiente atual, mantendo o processo como maior precedência;
+3. valida a configuração antes de iniciar o comando;
+4. passa o ambiente efetivo explicitamente ao processo filho;
+5. não imprime valores de configuração ou secrets.
+
+Esse mecanismo é reutilizável por futuros comandos de Drizzle/migrations que precisarem do mesmo contrato.
+
+Comandos internos de workspace, como `pnpm --filter @lingo-pilot/web build`, não são o caminho canônico para build local porque pressupõem que o ambiente já tenha sido injetado externamente.
+
+## 8. Startup/build validation
 
 `apps/web/next.config.ts` importa o contrato server-side. Portanto, `next dev`/`next build` não devem seguir silenciosamente com configuração inválida.
 
-O objetivo é detectar erro de configuração antes de existir uma aplicação parcialmente funcional.
+A validação ocorre em duas bordas para comandos canônicos de build/start:
 
-## 8. CI
+```text
+root runtime wrapper
+       ↓
+processo filho / Turborepo
+       ↓
+Next config valida novamente
+```
+
+O objetivo é detectar erro de configuração antes de existir uma aplicação parcialmente funcional e, ao mesmo tempo, garantir que o ambiente validado realmente alcance o processo que executa o Next.js.
+
+## 9. CI
 
 CI fornece apenas valores sintéticos e seguros:
 
@@ -197,11 +259,11 @@ APP_TIMEZONE=UTC
 LINGO_TEST_MODE=false
 ```
 
-O job `quality` executa `pnpm env:check`. O job `build` recebe o mesmo ambiente e o Next.js volta a validar a configuração durante o build.
+O job `quality` executa `pnpm env:check`. O job `build` recebe o mesmo ambiente e `pnpm build` passa por `scripts/run-with-runtime-env.mjs`; como as variáveis do processo têm precedência, nenhuma configuração local pode sobrescrevê-las. O Next.js volta a validar a configuração durante o build.
 
 Nenhuma credencial real é necessária para os gates básicos.
 
-## 9. Banco de dados
+## 10. Banco de dados
 
 `DATABASE_URL` não existe ainda no contrato porque a implementação pertence à #10.
 
@@ -212,9 +274,10 @@ Quando entrar:
 - Preview/produção devem usar credenciais próprias;
 - o valor é server-only;
 - não pode ser prefixado com `NEXT_PUBLIC_`;
-- validação deve verificar protocolo/shape sem logar credenciais.
+- validação deve verificar protocolo/shape sem logar credenciais;
+- os comandos de migration devem reutilizar o carregador de ambiente raiz em vez de implementar outro parser de `.env`.
 
-## 10. Adicionando uma nova variável
+## 11. Adicionando uma nova variável
 
 Toda nova variável precisa responder antes do merge:
 
@@ -227,17 +290,20 @@ Toda nova variável precisa responder antes do merge:
 7. a documentação e `.env.example` precisam mudar?;
 8. ela afeta callbacks, CSP, CORS, storage, banco ou providers?;
 9. há risco de secret aparecer em logs/browser?;
-10. existem testes de configuração válida e inválida?
+10. existem testes de configuração válida e inválida?;
+11. algum comando subprocesso precisa receber explicitamente a variável?
 
 Não adicionar variável “para usar depois”. Configuração entra junto com a capacidade que a consome.
 
-## 11. Regras para agentes de IA
+## 12. Regras para agentes de IA
 
 Agentes devem:
 
 - usar os módulos centrais de configuração;
+- reutilizar `scripts/runtime-env.mjs` para comandos raiz que precisem carregar `.env.local`;
 - evitar `process.env` em código de domínio/aplicação;
 - nunca mover secret para `NEXT_PUBLIC_*` para resolver erro de build;
+- nunca duplicar `.env.local` em `apps/web` como workaround;
 - nunca adicionar fallback silencioso para credencial ausente;
 - nunca trocar as portas 5400/5401/5435 sem atualizar o contrato local;
 - atualizar testes e documentação no mesmo PR que alterar configuração.

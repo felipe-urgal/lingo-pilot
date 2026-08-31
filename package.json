@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "turbo run dev --filter=@lingo-pilot/web",
     "dev:e2e": "turbo run dev:e2e --filter=@lingo-pilot/web",
-    "build": "turbo run build",
+    "build": "node scripts/run-with-runtime-env.mjs turbo run build",
+    "start": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/web start",
     "env:init": "node scripts/init-local-env.mjs",
     "env:check": "node scripts/check-local-env.mjs",
     "lint": "eslint scripts tests packages/config/runtime --max-warnings 0 && turbo run lint",
