@@ -4,6 +4,8 @@ Este documento é normativo para desenvolvimento local do LingoPilot.
 
 O objetivo é impedir colisões com projetos e infraestrutura que já executam na máquina de desenvolvimento, evitar comportamento não determinístico de ferramentas que escolhem portas automaticamente e manter URLs estáveis para autenticação, E2E e documentação.
 
+O contrato de variáveis, profiles e separação browser/server está em `docs/RUNTIME_CONFIGURATION.md`.
+
 ## 1. Princípios
 
 1. **Nenhum serviço do LingoPilot deve assumir a porta padrão de uma ferramenta.**
@@ -12,7 +14,8 @@ O objetivo é impedir colisões com projetos e infraestrutura que já executam n
 4. Novas portas só podem ser adicionadas após checar este documento e o registro local de projetos.
 5. Não reutilizar uma porta de outro projeto apenas porque ele parece estar desligado naquele momento.
 6. CI é um ambiente isolado e pode usar portas internas/default quando não houver colisão; isso não altera o contrato do host local.
-7. Serviços locais devem preferir bind em `127.0.0.1`/`localhost` quando não houver necessidade explícita de exposição na rede.
+7. Serviços locais devem preferir bind em `127.0.0.1` quando não houver necessidade explícita de exposição na rede.
+8. Configuração local deve ser criada por `pnpm env:init` e validada por `pnpm env:check`; scripts oficiais não devem exigir conhecimento tribal.
 
 ## 2. Portas já ocupadas no ambiente
 
@@ -51,9 +54,9 @@ O objetivo é impedir colisões com projetos e infraestrutura que já executam n
 | ----------------- | -------------------------------------- |
 | home-music        | web `5173`, api `8787`, e2e `8791`     |
 | dev-dashboard     | web `5174`, preview `4173`, api `4343` |
-| controle-gastos   | web `5100`                             |
-| loto-lab          | app `5200`, postgres `5434`            |
-| portfolio-copilot | web `5300`, postgres `5433`            |
+| controle-gastos   | web `5100`                              |
+| loto-lab          | app `5200`, postgres `5434`             |
+| portfolio-copilot | web `5300`, postgres `5433`             |
 
 Os caminhos absolutos desses projetos são detalhes da máquina do desenvolvedor e não devem virar requisito de runtime do LingoPilot. O checkout pode ficar, por convenção pessoal, em `$HOME/Projetos/lingo-pilot`.
 
@@ -70,16 +73,32 @@ Estas portas ficam reservadas ao projeto mesmo quando o processo não estiver at
 ### URLs canônicas locais
 
 ```text
-App dev:  http://localhost:5400
-App E2E:  http://localhost:5401
-Postgres: localhost:5435
+App dev:  http://127.0.0.1:5400
+App E2E:  http://127.0.0.1:5401
+Postgres: 127.0.0.1:5435
 ```
 
 Não usar `3000` como fallback do Next.js: essa porta já pertence ao ambiente de trabalho.
 
-## 4. Contrato implementado no bootstrap
+## 4. Primeira execução
 
-A Foundation já configura explicitamente as portas do web shell e impede o fallback automático do Next.js.
+Pré-requisitos: Node.js 24.x e Corepack.
+
+```bash
+nvm use
+corepack enable
+corepack prepare pnpm@10.34.5 --activate
+pnpm install --frozen-lockfile
+pnpm env:init
+pnpm env:check
+pnpm dev
+```
+
+`pnpm env:init` cria `.env.local` a partir de `.env.example` somente quando necessário. Ele nunca sobrescreve um `.env.local` existente.
+
+`pnpm env:check` carrega `.env.local` quando presente e valida o contrato central. Erro de configuração termina com código diferente de zero e mensagem com a chave problemática, sem imprimir secrets.
+
+## 5. Contrato web implementado
 
 Comandos canônicos:
 
@@ -88,21 +107,57 @@ pnpm dev      -> 127.0.0.1:5400
 pnpm dev:e2e  -> 127.0.0.1:5401
 ```
 
-Antes de iniciar o Next.js, `apps/web/scripts/port-contract.mjs` verifica se a porta contratada está livre. Se estiver ocupada, o processo termina com código diferente de zero e mensagem explícita; ele não tenta `5401`, `5402` ou qualquer outra porta como substituição silenciosa.
+Antes de iniciar o Next.js, `apps/web/scripts/port-contract.mjs` verifica se a porta contratada está livre. Se estiver ocupada, o processo termina com erro; ele não tenta `5401`, `5402` ou qualquer outra porta.
 
-O bootstrap também versiona `.env.example` apenas com configuração pública que já existe de fato:
+As constantes `WEB_HOST`, `WEB_PORT` e `E2E_PORT` vivem no contrato central `@lingo-pilot/config/runtime/environment`, evitando duplicação entre scripts e validação.
+
+Os scripts oficiais também injetam profiles determinísticos:
+
+```text
+pnpm dev
+  LINGO_PROFILE=development
+  LINGO_TEST_MODE=false
+  NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
+
+pnpm dev:e2e
+  LINGO_PROFILE=e2e
+  LINGO_TEST_MODE=true
+  NEXT_PUBLIC_APP_URL=http://127.0.0.1:5401
+```
+
+Isso impede que um `.env.local` antigo faça o servidor iniciar numa porta enquanto a aplicação acredita estar em outra origem.
+
+## 6. `.env.example`
+
+O arquivo versionado contém somente configuração segura da capacidade atual:
 
 ```dotenv
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
+APP_TIMEZONE=UTC
+LINGO_TEST_MODE=false
 ```
 
-Variáveis de PostgreSQL, autenticação e providers **não são antecipadas**. Elas entram nas issues que implementarem essas capacidades, com schema/validação e placeholders seguros.
+Regras:
 
-A porta `5435` permanece reservada para PostgreSQL, mas nenhum banco é criado pela issue #7. A implementação do banco local pertence à #10; a configuração validada mais ampla pertence à #9; o isolamento completo de E2E pertence à #16.
+- `NEXT_PUBLIC_APP_URL` é público e deliberadamente browser-safe;
+- `APP_TIMEZONE` é fallback de infraestrutura, não preferência pedagógica do usuário;
+- `LINGO_TEST_MODE` é server-side e deve permanecer `false` fora de teste;
+- `LINGO_PROFILE` é injetado/derivado e não precisa ser configurado manualmente;
+- banco, auth e providers entram somente nas issues que implementarem essas capacidades.
 
-## 5. Docker / PostgreSQL
+## 7. Validação de startup/build
 
-Se PostgreSQL for executado por Docker Compose, a publicação de porta deve ser explícita:
+`apps/web/next.config.ts` carrega `apps/web/config/server.ts`. Portanto, `next dev` e `next build` validam configuração antes de prosseguir.
+
+A aplicação possui também `apps/web/config/public.ts`, que recebe explicitamente apenas `NEXT_PUBLIC_APP_URL`. Não passar `process.env` inteiro para módulos públicos.
+
+A regra é falhar cedo. Não usar defaults para esconder URL, credencial ou configuração operacional inválida.
+
+## 8. Docker / PostgreSQL
+
+A porta `5435` continua reservada, mas PostgreSQL funcional pertence à #10.
+
+Quando for executado por Docker Compose, a publicação esperada é:
 
 ```text
 127.0.0.1:5435 -> postgres container:5432
@@ -112,15 +167,17 @@ Regras:
 
 - não publicar `5432:5432` no host;
 - não usar `5433` ou `5434`, pois já pertencem a outros projetos;
-- usar volume/nome de projeto próprios para evitar colisão de containers, networks e volumes;
-- o banco de testes deve ser isolado por database/schema/container conforme definido em #10/#16;
+- usar volume/nome de projeto próprios;
+- testes devem usar database/schema/container isolado conforme #10/#16;
 - CI pode usar `5432` dentro do runner isolado.
 
-## 6. E2E
+`DATABASE_URL` só será introduzida pela #10 e será server-only.
 
-O Playwright deve iniciar/usar a aplicação em `5401` por configuração explícita.
+## 9. E2E
 
-O bootstrap já expõe `pnpm dev:e2e` em `5401`, mas Playwright e a infraestrutura E2E completa são responsabilidade da #16.
+O Playwright deve usar a aplicação em `5401` por configuração explícita.
+
+O bootstrap já expõe `pnpm dev:e2e` em `5401` e o runtime profile correspondente; Playwright e a infraestrutura completa de E2E continuam responsabilidade da #16.
 
 O E2E não deve:
 
@@ -129,50 +186,51 @@ O E2E não deve:
 - escolher porta dinâmica silenciosamente;
 - compartilhar banco mutável com o ambiente de desenvolvimento comum.
 
-Isso permite manter `pnpm dev` aberto em `5400` enquanto a suite executa em ambiente próprio.
+## 10. Diagnóstico de conflito
 
-## 7. Verificação de conflito
+Se houver conflito de porta, a mensagem informa host/porta e que o LingoPilot não auto-incrementa portas.
 
-Os scripts oficiais verificam a disponibilidade das portas web contratadas antes de subir o Next.js.
+Comandos úteis no Linux:
 
-Se houver conflito, a mensagem informa:
+```bash
+lsof -iTCP:5400 -sTCP:LISTEN
+ss -ltnp | grep ':5400'
+```
 
-- host/porta em conflito;
-- que o LingoPilot não auto-incrementa portas;
-- que o processo conflitante deve ser encerrado antes de tentar novamente.
-
-Evitar o padrão comum de frameworks:
+Evitar o padrão:
 
 ```text
 Port 5400 is in use, trying 5401...
 ```
 
-Esse comportamento é proibido para comandos oficiais do projeto, porque pode quebrar callbacks de auth, E2E, CORS/origin e documentação.
+Esse comportamento é proibido porque quebra callbacks, E2E, CORS/origin e documentação.
 
-## 8. Novos serviços futuros
+## 11. Novos serviços futuros
 
-Speaking storage, filas, cache, mail catcher, observability local ou qualquer outro serviço futuro **não recebe uma porta antecipadamente**.
+Speaking storage, filas, cache, mail catcher, observability local ou qualquer outro serviço futuro **não recebe porta antecipadamente**.
 
-Ao introduzir um serviço novo:
+Ao introduzir serviço/configuração nova:
 
-1. confirmar que ele é necessário;
-2. verificar portas já reservadas no ambiente;
-3. escolher uma porta de host sem colisão;
-4. atualizar este documento no mesmo PR;
-5. atualizar `.env.example`, compose/config e testes aplicáveis;
-6. registrar impacto em OAuth/CORS/CSP/callbacks quando relevante.
+1. confirmar necessidade e issue dona;
+2. verificar portas já reservadas;
+3. classificar variável como pública ou server-only;
+4. escolher default somente se realmente seguro;
+5. atualizar parser, `.env.example`, testes e docs;
+6. fornecer valor sintético em CI quando necessário;
+7. registrar impacto em OAuth/CORS/CSP/callbacks.
 
-Não reservar intervalos inteiros sem necessidade.
+Não reservar intervalos inteiros nem criar variáveis “para usar depois”.
 
-## 9. Relação com issues de Foundation
+## 12. Relação com issues de Foundation
 
-- **#7:** implementa o web shell em `5400`, o servidor isolado em `5401` e o fail-fast de conflito de porta.
-- **#9:** transforma configuração de ambiente em contrato validado e tipado conforme as capacidades forem introduzidas.
-- **#10:** cria PostgreSQL/Drizzle/migrations e publica o banco local em `5435`.
-- **#16:** implementa Playwright, isolamento de servidor/banco E2E e suporte determinístico de testes.
+- **#7:** web shell, portas 5400/5401 e fail-fast de conflito.
+- **#8:** CI permanente e proteção da `main`.
+- **#9:** contrato central de configuração, `env:init`, `env:check`, profiles e validação startup/build.
+- **#10:** PostgreSQL/Drizzle/migrations e porta host 5435.
+- **#16:** Playwright, isolamento E2E e suporte determinístico de testes.
 
-## 10. Regra para agentes de IA
+## 13. Regra para agentes de IA
 
-Antes de criar ou alterar qualquer serviço local, container, dev server, test server ou callback URL, o agente deve consultar este arquivo.
+Antes de alterar serviço local, container, callback URL ou variável de ambiente, o agente deve consultar este arquivo e `docs/RUNTIME_CONFIGURATION.md`.
 
-Um agente **não pode** resolver colisão de porta escolhendo outra porta silenciosamente. Alterar o contrato de portas é uma mudança de configuração do projeto e precisa ser explícita, documentada e revisável em PR.
+Um agente não pode resolver erro de configuração escolhendo outra porta, expondo secret como `NEXT_PUBLIC_*` ou adicionando fallback silencioso.

@@ -15,11 +15,18 @@ A governança precisa equilibrar quatro objetivos:
 
 ## 2. Workflow oficial de CI
 
-O workflow permanente é `.github/workflows/ci.yml` e publica dois status checks estáveis:
+O workflow permanente é `.github/workflows/ci.yml` e publica dois checks visíveis no PR:
 
 ```text
 CI / quality
 CI / build
+```
+
+Os contextos usados internamente pelo ruleset do GitHub são:
+
+```text
+quality
+build
 ```
 
 `CI / quality` executa, nesta ordem:
@@ -29,16 +36,29 @@ CI / build
 3. package manager definido por `package.json#packageManager` via Corepack;
 4. `pnpm install --frozen-lockfile`;
 5. `pnpm format:check`;
-6. `pnpm lint`;
-7. `pnpm typecheck`;
-8. `pnpm test`;
-9. `pnpm content:validate`.
+6. `pnpm env:check`;
+7. `pnpm lint`;
+8. `pnpm typecheck`;
+9. `pnpm test`;
+10. `pnpm content:validate`.
 
 `CI / build` só inicia após `quality` ficar verde e executa instalação frozen + `pnpm build`.
 
 A separação é intencional: falhas de qualidade aparecem antes e evitam gastar minutos de runner com build inválido.
 
-## 3. Segurança do GitHub Actions
+## 3. Ambiente sintético de CI
+
+Os gates básicos não dependem de secrets. O workflow fornece apenas configuração segura e sintética:
+
+```text
+NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
+APP_TIMEZONE=UTC
+LINGO_TEST_MODE=false
+```
+
+Isso permite validar o contrato de runtime e o build sem conectar banco, auth ou providers externos.
+
+## 4. Segurança do GitHub Actions
 
 Contrato mínimo:
 
@@ -51,118 +71,99 @@ Contrato mínimo:
 - não executar código de fork com token de escrita;
 - não usar `pull_request_target` para CI comum.
 
-No bootstrap atual, checkout e setup-node são actions oficiais do GitHub pinadas por SHA.
+Checkout e setup-node usam actions oficiais do GitHub pinadas por SHA.
 
-## 4. Cache
+## 5. Cache
 
 Não há cache explícito nesta fase.
 
-A instalação limpa observada no bootstrap é curta e o repositório ainda é pequeno. Introduzir cache agora aumentaria superfície de configuração sem ganho material. Cache de pnpm/Turbo pode ser adicionado quando medições mostrarem benefício claro, preservando lockfile como chave e evitando compartilhar artefatos mutáveis inseguros.
+A instalação limpa é curta e o repositório ainda é pequeno. Cache de pnpm/Turbo pode ser adicionado quando medições mostrarem benefício claro, preservando lockfile como chave e evitando compartilhar artefatos mutáveis inseguros.
 
-## 5. Content validation hook
+## 6. Content validation hook
 
-`pnpm content:validate` é um gate permanente desde Foundation.
+`pnpm content:validate` é gate permanente desde Foundation.
 
-Enquanto a issue #15 ainda não implementou schemas e referências, o hook apenas confirma que o ponto de integração existe e informa explicitamente que validação editorial completa ainda está pendente.
+Enquanto a #15 não implementar schemas e referências, o hook confirma que o ponto de integração existe e informa explicitamente que validação editorial completa ainda está pendente.
 
-Quando #15 entrar, o comando deve evoluir no mesmo nome. Isso evita alterar branch protection e CI apenas porque a implementação interna do validator mudou.
+Quando #15 entrar, o comando deve evoluir mantendo o mesmo nome para não quebrar CI/ruleset desnecessariamente.
 
-## 6. Configuração desejada da `main`
+## 7. Ruleset ativa da `main`
 
-No momento da criação deste documento, a API disponível ao agente permite ler rulesets, mas não criar/alterar proteção de branch. Portanto, a configuração abaixo é parte manual e obrigatória da conclusão operacional da #8.
-
-Criar um ruleset para a default branch em:
-
-```text
-Settings → Rules → Rulesets → New branch ruleset
-```
-
-Configuração recomendada:
+O repositório possui o ruleset:
 
 ```text
 Name: main protection
-Enforcement status: Active
-Target branches: default branch
+Enforcement: Active
+Target: default branch
+Bypass actors: nenhum
 ```
 
-Ativar:
+Regras ativas:
 
 - Restrict deletions;
 - Block force pushes;
 - Require a pull request before merging;
-- Required approvals: 0 enquanto houver um único maintainer;
+- Required approvals: `0` enquanto houver um único maintainer;
 - Require conversation resolution before merging;
 - Require status checks to pass;
 - Require branches to be up to date before merging;
-- Require linear history.
+- Require linear history;
+- Allowed merge method: somente `squash`;
+- Additional approval for unattributed Copilot changes: desabilitado.
 
-Status checks obrigatórios:
+Checks obrigatórios do ruleset:
 
 ```text
-CI / quality
-CI / build
+quality
+build
 ```
+
+A configuração foi validada pela API do GitHub após a conclusão da #8.
 
 ### Por que zero approvals?
 
-O repositório é atualmente mantido por uma única pessoa. Exigir uma aprovação humana tornaria PRs próprios impossíveis de concluir sem criar um bypass permanente, o que reduziria o valor do controle.
-
-A política correta nesta fase é:
+Com um único maintainer, exigir aprovação humana tornaria PR próprio impossível sem bypass. O controle correto nesta fase é:
 
 - PR obrigatório;
 - CI obrigatório;
+- branch atualizada;
 - threads resolvidas;
 - auto code review documentado no PR;
-- aprovação humana obrigatória passa a `1` quando existir um segundo maintainer/reviewer real.
+- sem bypass do ruleset.
 
-## 7. Merge policy
+Quando existir um segundo maintainer/reviewer real, reavaliar `required_approving_review_count` para `1`.
 
-Política desejada:
+## 8. Merge policy
 
-- squash merge como método padrão;
-- evitar merge commits em PRs normais;
-- evitar rebase merge para manter um único commit semântico por PR na `main`;
-- apagar branch remota automaticamente após merge;
+Política do repositório:
+
+- squash merge como único método normal;
+- merge commits desabilitados;
+- rebase merge desabilitado;
+- branch remota apagada automaticamente após merge;
 - branches curtas e específicas por issue.
 
-Configuração em:
+A `main` recebe um commit semântico por PR.
 
-```text
-Settings → General → Pull Requests
-```
-
-Desejado:
-
-```text
-Allow squash merging: ON
-Allow merge commits: OFF
-Allow rebase merging: OFF
-Automatically delete head branches: ON
-```
-
-Se for necessário preservar múltiplos commits por uma razão excepcional, essa decisão deve ser explícita no PR; não deve ser o default do repositório.
-
-## 8. CODEOWNERS
+## 9. CODEOWNERS
 
 Não adicionar `CODEOWNERS` nesta fase.
 
-Com um único maintainer, o arquivo não melhora roteamento de review e pode criar a falsa impressão de revisão independente. Quando houver mais de uma pessoa ou ownership real por área, adicionar `CODEOWNERS` no mesmo PR que documentar essa divisão.
+Com um único maintainer, ele não melhora roteamento de review e pode criar falsa impressão de revisão independente. Quando houver ownership real por área, adicionar junto da documentação da divisão.
 
-## 9. Dependabot / Renovate
+## 10. Dependabot / Renovate
 
 Não habilitar atualização automática de dependências nesta fase.
 
 Razões:
 
-- o bootstrap acabou de estabilizar versões explícitas;
-- o projeto ainda está construindo seus gates e boundaries;
-- PRs automáticos agora adicionariam ruído antes de existir uma política de atualização consolidada.
+- a Foundation ainda está estabilizando boundaries e contratos;
+- PRs automáticos adicionariam ruído antes de existir política madura de upgrades;
+- majors continuam exigindo avaliação explícita.
 
-Reavaliar após Foundation, preferencialmente com agrupamento de updates de baixo risco e revisão explícita de majors.
+Atualizações manuais continuam obrigatórias quando necessárias por segurança ou compatibilidade.
 
-Essa decisão não impede atualização manual de dependências quando necessária por segurança ou compatibilidade.
-
-## 10. Checks locais antes do push
+## 11. Checks locais antes do push
 
 O comando canônico é:
 
@@ -170,10 +171,11 @@ O comando canônico é:
 pnpm check
 ```
 
-Ele deve permanecer semanticamente alinhado ao CI rápido e hoje inclui:
+Hoje inclui:
 
 ```text
 format:check
+env:check
 lint
 typecheck
 test
@@ -183,23 +185,24 @@ build
 
 CI continua sendo autoridade de integração porque roda em ambiente limpo e com instalação frozen.
 
-## 11. Alterações de CI
+## 12. Alterações de CI/configuração
 
-Mudanças em `.github/workflows/**`, scripts usados pelo CI, `.nvmrc`, `packageManager`, lint, TypeScript ou test runner exigem atenção especial no PR.
+Mudanças em `.github/workflows/**`, scripts de CI, `.nvmrc`, `packageManager`, runtime configuration, lint, TypeScript ou test runner exigem atenção especial no PR.
 
 O auto review deve confirmar:
 
-- nome dos status checks não mudou sem necessidade;
+- contextos `quality`/`build` não mudaram sem coordenação do ruleset;
 - permissões não aumentaram sem justificativa;
 - instalação continua frozen;
 - nenhuma secret foi adicionada ao caminho comum;
+- configuração sintética de CI continua não sensível;
 - timeout e concurrency continuam adequados;
 - local e CI não divergiram silenciosamente;
 - action pinning continua verificável.
 
-Se um check obrigatório precisar ser renomeado, atualizar primeiro a documentação e a ruleset de forma coordenada para não bloquear a `main`.
+Renomear check obrigatório é mudança de governança e deve atualizar workflow, ruleset e documentação de forma coordenada.
 
-## 12. Falha ou indisponibilidade do CI
+## 13. Falha ou indisponibilidade do CI
 
 Não remover checks obrigatórios para contornar indisponibilidade transitória.
 
@@ -207,11 +210,11 @@ Procedimento:
 
 1. identificar se é falha do código, runner ou GitHub Actions;
 2. reexecutar apenas quando houver motivo para esperar resultado diferente;
-3. corrigir flaky test ou configuração em vez de adicionar retry global;
-4. bypass de proteção, quando tecnicamente inevitável, deve ser excepcional e documentado no PR/issue.
+3. corrigir flaky test/configuração em vez de adicionar retry global;
+4. bypass é considerado emergência e não faz parte do fluxo normal; hoje o ruleset não possui bypass actors.
 
-## 13. Evolução futura
+## 14. Evolução futura
 
 Quando entrarem PostgreSQL, Playwright, schemas de conteúdo e evals, novos jobs podem surgir, mas o CI deve continuar dividido entre gates rápidos/obrigatórios e pipelines mais caros ou condicionais.
 
-Integração PostgreSQL real, E2E e AI eval online não devem ser enfiados no job `quality` sem avaliar custo, determinismo e necessidade de secrets.
+Integração PostgreSQL real, E2E e AI eval online não devem ser adicionados ao job `quality` sem avaliar custo, determinismo e necessidade de secrets.

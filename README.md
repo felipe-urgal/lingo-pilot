@@ -8,7 +8,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na fase de Foundation. O bootstrap técnico fornece o shell mínimo e os limites de package necessários para as próximas issues; ele **não** implementa ainda Study Engine, autenticação, banco funcional, conteúdo real ou AI Tutor.
+O repositório está na fase de Foundation. O bootstrap técnico fornece o shell mínimo, CI permanente, governança da `main` e configuração de runtime validada; ele **não** implementa ainda Study Engine, autenticação, banco funcional, conteúdo real ou AI Tutor.
 
 Stack inicial fixada:
 
@@ -30,9 +30,12 @@ nvm use
 corepack enable
 corepack prepare pnpm@10.34.5 --activate
 pnpm install --frozen-lockfile
-cp .env.example .env.local
+pnpm env:init
+pnpm env:check
 pnpm dev
 ```
+
+`pnpm env:init` cria `.env.local` a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. `pnpm env:check` valida o contrato antes de você depender dele em runtime.
 
 Aplicação local:
 
@@ -50,19 +53,36 @@ O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocu
 
 ## Comandos
 
-| Comando                 | Função                                                              |
-| ----------------------- | ------------------------------------------------------------------- |
-| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                              |
-| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                      |
-| `pnpm build`            | executa o build de produção via Turborepo                           |
-| `pnpm lint`             | valida scripts, testes, app e packages                              |
-| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                   |
-| `pnpm test`             | executa os testes de bootstrap e valida boundaries                  |
-| `pnpm content:validate` | executa o hook estável de validação de conteúdo                     |
-| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas        |
-| `pnpm format`           | normaliza formatação com Prettier                                   |
-| `pnpm format:check`     | verifica formatação sem alterar arquivos                            |
-| `pnpm check`            | gate local agregado: format, lint, typecheck, test, content e build |
+| Comando                 | Função                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                                       |
+| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                               |
+| `pnpm build`            | executa o build de produção via Turborepo                                    |
+| `pnpm env:init`         | cria `.env.local` de forma não destrutiva                                    |
+| `pnpm env:check`        | valida URL pública, timezone, profile e test mode                            |
+| `pnpm lint`             | valida scripts, testes, runtime config, app e packages                       |
+| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                            |
+| `pnpm test`             | executa testes e valida boundaries                                           |
+| `pnpm content:validate` | executa o hook estável de validação de conteúdo                              |
+| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas                 |
+| `pnpm format`           | normaliza formatação com Prettier                                            |
+| `pnpm format:check`     | verifica formatação sem alterar arquivos                                     |
+| `pnpm check`            | gate agregado: format, env, lint, types, testes, conteúdo e build            |
+
+## Configuração de runtime
+
+Configuração é tratada como contrato, não como acesso espalhado a `process.env`.
+
+A fonte central é `@lingo-pilot/config/runtime/environment`. O web app possui duas entradas deliberadamente separadas:
+
+```text
+apps/web/config/public.ts  -> somente NEXT_PUBLIC_* seguro para browser
+apps/web/config/server.ts  -> configuração de servidor/runtime
+```
+
+`next.config.ts` carrega a configuração de servidor para que configuração inválida interrompa `dev`/`build` cedo. Os perfis oficiais também fixam URL e modo de teste: `pnpm dev` injeta `127.0.0.1:5400` com test mode desligado; `pnpm dev:e2e` injeta `127.0.0.1:5401` com test mode ligado.
+
+Contrato completo: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md).
 
 ## CI e governança
 
@@ -75,7 +95,7 @@ CI / quality
 CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen e executa format check, lint, typecheck, unit tests e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção.
+`CI / quality` usa instalação com lockfile frozen e executa format check, environment config, lint, typecheck, unit tests e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção.
 
 O comando local equivalente é:
 
@@ -97,10 +117,10 @@ packages/
   db/                   persistência, schema e migrations
   ai/                   providers, prompts, guardrails e eval contracts
   ui/                   primitives compartilhados
-  config/               ESLint e TypeScript compartilhados
+  config/               tooling + contrato tipado de configuração
   test-support/         suporte determinístico de testes
-scripts/                checks estruturais do repositório
-tests/                  testes do bootstrap
+scripts/                checks e operações locais do repositório
+tests/                  testes automatizados de Foundation
 docs/                   produto, arquitetura e operação
 ```
 
@@ -170,6 +190,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [`docs/DEVELOPMENT_WORKFLOW.md`](docs/DEVELOPMENT_WORKFLOW.md) — processo de desenvolvimento e revisão;
 - [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos de conclusão;
 - [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
+- [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md) — configuração pública/server-only, profiles e evolução;
 - [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
 
 **Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
@@ -187,6 +208,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Tutor de IA](docs/AI_TUTOR.md)
 - [Segurança e privacidade](docs/SECURITY_PRIVACY.md)
 - [Estratégia de qualidade](docs/QUALITY_STRATEGY.md)
+- [Configuração de runtime](docs/RUNTIME_CONFIGURATION.md)
 - [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
 - [Observabilidade](docs/OBSERVABILITY.md)
 - [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
