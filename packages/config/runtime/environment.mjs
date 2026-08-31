@@ -1,9 +1,4 @@
-const RUNTIME_PROFILES = new Set([
-  "development",
-  "e2e",
-  "test",
-  "production",
-]);
+const RUNTIME_PROFILES = new Set(["development", "e2e", "test", "production"]);
 
 export const WEB_HOST = "127.0.0.1";
 export const WEB_PORT = 5400;
@@ -139,10 +134,7 @@ export function createWebProfileEnvironment(profile) {
 
 export function parsePublicEnvironment(source) {
   return Object.freeze({
-    appUrl: parseHttpBaseUrl(
-      source.NEXT_PUBLIC_APP_URL,
-      "NEXT_PUBLIC_APP_URL",
-    ),
+    appUrl: parseHttpBaseUrl(source.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL"),
   });
 }
 
