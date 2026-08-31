@@ -56,6 +56,23 @@ docs/
 
 A visão detalhada está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## Produção
+
+A topologia inicial aprovada é **Next.js na Vercel + PostgreSQL no Neon**, com `main` como branch de produção, promoção Git-managed e migrations explícitas fora do build da Vercel.
+
+Princípios importantes:
+
+- release identificada por commit SHA;
+- CI/Preview isolados de production;
+- schema compatível antes do código que depende dele;
+- health/readiness da aplicação separados do estado do provider;
+- backup só é considerado confiável depois de restore testado;
+- rollback de aplicação só ocorre após verificar compatibilidade com migrations já aplicadas;
+- integração futura com o Dev Dashboard usa provider Vercel, sem criar `prod:deploy` artificial.
+
+Contrato completo: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md).  
+Decisão arquitetural: [`docs/ADR/0002-production-deployment-topology.md`](docs/ADR/0002-production-deployment-topology.md).
+
 ## Roadmap
 
 O desenvolvimento está dividido em cinco etapas:
@@ -75,8 +92,10 @@ Antes de alterar código, leia obrigatoriamente:
 
 - [`AGENTS.md`](AGENTS.md) — contrato operacional para agentes de IA e desenvolvedores;
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow de contribuição;
+- [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de ambiente/portas locais;
 - [`docs/DEVELOPMENT_WORKFLOW.md`](docs/DEVELOPMENT_WORKFLOW.md) — processo de desenvolvimento e revisão;
-- [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos para considerar trabalho concluído.
+- [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos para considerar trabalho concluído;
+- [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) — contrato de deploy, migration, backup e recovery quando a mudança toca produção.
 
 ### Regra principal
 
@@ -88,6 +107,8 @@ Antes de alterar código, leia obrigatoriamente:
 - [Product Requirements](docs/PRODUCT_REQUIREMENTS.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Arquitetura](docs/ARCHITECTURE.md)
+- [Ambiente local](docs/LOCAL_DEVELOPMENT.md)
+- [Deploy e operações de produção](docs/PRODUCTION_DEPLOYMENT.md)
 - [Modelo de domínio](docs/DOMAIN_MODEL.md)
 - [Learning Engine](docs/LEARNING_ENGINE.md)
 - [Modelo de conteúdo](docs/CONTENT_MODEL.md)
