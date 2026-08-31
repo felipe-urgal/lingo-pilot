@@ -5,7 +5,8 @@ export default function HomePage() {
         <p className="eyebrow">LingoPilot</p>
         <h1 id="foundation-title">Fundação pronta para construir.</h1>
         <p className="description">
-          O shell técnico está ativo. Produto, Study Engine e design system entram nas issues dedicadas.
+          O shell técnico está ativo. Produto, Study Engine e design system
+          entram nas issues dedicadas.
         </p>
         <dl className="status" aria-label="Contrato local">
           <div>

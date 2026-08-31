@@ -16,7 +16,12 @@ export async function assertPortAvailable(port, host = WEB_HOST) {
     const server = createServer();
 
     server.once("error", (error) => {
-      if (error && typeof error === "object" && "code" in error && error.code === "EADDRINUSE") {
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "EADDRINUSE"
+      ) {
         reject(
           new Error(
             `LingoPilot cannot start because ${host}:${port} is already in use. ` +

@@ -35,18 +35,18 @@ Campos conceituais:
 
 ```ts
 type LearnerContext = {
-  sourceLanguage: string
-  targetLanguage: string
-  curriculumLevel: string
-  unlockedConceptIds: string[]
-  masteredConceptIds: string[]
-  weakConceptIds: string[]
-  introducedVocabularyIds: string[]
-  recentErrorPatterns: ErrorPattern[]
-  currentLesson?: LessonContext
-  interactionGoal: TutorGoal
-  constraints: TutorConstraints
-}
+  sourceLanguage: string;
+  targetLanguage: string;
+  curriculumLevel: string;
+  unlockedConceptIds: string[];
+  masteredConceptIds: string[];
+  weakConceptIds: string[];
+  introducedVocabularyIds: string[];
+  recentErrorPatterns: ErrorPattern[];
+  currentLesson?: LessonContext;
+  interactionGoal: TutorGoal;
+  constraints: TutorConstraints;
+};
 ```
 
 O context builder deve aplicar limite de tamanho e escolher somente informação relevante.
@@ -68,8 +68,10 @@ O teto deve ser calculado a partir de conteúdo realmente introduzido/elegível 
 
 ```ts
 interface LanguageModelProvider {
-  generateStructured<T>(request: StructuredRequest<T>): Promise<ProviderResult<T>>
-  generateText(request: TextRequest): Promise<ProviderResult<string>>
+  generateStructured<T>(
+    request: StructuredRequest<T>,
+  ): Promise<ProviderResult<T>>;
+  generateText(request: TextRequest): Promise<ProviderResult<string>>;
 }
 ```
 
@@ -83,15 +85,16 @@ Exemplo conceitual:
 
 ```ts
 type WritingEvaluation = {
-  isAcceptable: boolean
-  correctedText?: string
+  isAcceptable: boolean;
+  correctedText?: string;
   feedback: {
-    category: 'grammar' | 'word-choice' | 'word-order' | 'spelling' | 'naturalness'
-    messagePtBr: string
-    relatedConceptIds: string[]
-  }[]
-  reinforcementConceptIds: string[]
-}
+    category:
+      "grammar" | "word-choice" | "word-order" | "spelling" | "naturalness";
+    messagePtBr: string;
+    relatedConceptIds: string[];
+  }[];
+  reinforcementConceptIds: string[];
+};
 ```
 
 Se o output falhar na validação, o sistema não deve inventar campos faltantes. Deve retry controlado ou fallback.

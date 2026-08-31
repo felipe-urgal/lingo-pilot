@@ -1,5 +1,9 @@
 import { spawn } from "node:child_process";
-import { assertPortAvailable, resolveWebPort, WEB_HOST } from "./port-contract.mjs";
+import {
+  assertPortAvailable,
+  resolveWebPort,
+  WEB_HOST,
+} from "./port-contract.mjs";
 
 const profile = process.argv[2] ?? "dev";
 const port = resolveWebPort(profile);

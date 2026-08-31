@@ -30,7 +30,9 @@ const domainDeps = {
   ...domainManifest.peerDependencies,
 };
 const forbiddenDomainDeps = ["next", "react", "react-dom", "drizzle-orm"];
-const violation = forbiddenDomainDeps.find((dependency) => dependency in domainDeps);
+const violation = forbiddenDomainDeps.find(
+  (dependency) => dependency in domainDeps,
+);
 
 if (violation) {
   throw new Error(`@lingo-pilot/domain must not depend on ${violation}`);

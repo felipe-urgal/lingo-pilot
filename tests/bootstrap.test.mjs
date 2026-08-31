@@ -18,7 +18,9 @@ test("local web ports are deterministic", () => {
 });
 
 test("root package manager and runtime are pinned", async () => {
-  const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const manifest = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  );
 
   assert.equal(manifest.packageManager, "pnpm@10.34.5");
   assert.equal(manifest.engines.node, ">=24 <25");

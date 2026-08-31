@@ -104,8 +104,8 @@ A implementação inicial deve usar um algoritmo de repetição espaçada valida
 
 ```ts
 interface ReviewScheduler {
-  grade(input: ReviewGradeInput): ReviewScheduleResult
-  preview(input: ReviewPreviewInput): ReviewScheduleResult[]
+  grade(input: ReviewGradeInput): ReviewScheduleResult;
+  preview(input: ReviewPreviewInput): ReviewScheduleResult[];
 }
 ```
 

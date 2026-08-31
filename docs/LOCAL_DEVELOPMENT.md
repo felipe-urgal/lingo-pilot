@@ -18,52 +18,52 @@ O objetivo é impedir colisões com projetos e infraestrutura que já executam n
 
 ### Trabalho
 
-| Porta | Serviço/projeto |
-|---:|---|
-| 3000 | caiena |
-| 3001 | fi-editor-api |
-| 3002 | fi-observatorio-app |
-| 3003 | fi-editor-local |
-| 3004 | caiena-reserved |
-| 3005 | caiena-reserved |
-| 3006 | caiena-reserved |
-| 3035 | fi-ferramentas-webpacker |
-| 1025 | fi-ferramentas-mailhog-smtp |
-| 8025 | fi-ferramentas-mailhog-web |
-| 12345 | fi-ferramentas |
-| 12346 | fi-ferramentas |
+| Porta | Serviço/projeto             |
+| ----: | --------------------------- |
+|  3000 | caiena                      |
+|  3001 | fi-editor-api               |
+|  3002 | fi-observatorio-app         |
+|  3003 | fi-editor-local             |
+|  3004 | caiena-reserved             |
+|  3005 | caiena-reserved             |
+|  3006 | caiena-reserved             |
+|  3035 | fi-ferramentas-webpacker    |
+|  1025 | fi-ferramentas-mailhog-smtp |
+|  8025 | fi-ferramentas-mailhog-web  |
+| 12345 | fi-ferramentas              |
+| 12346 | fi-ferramentas              |
 
 ### Infraestrutura
 
-| Porta | Serviço |
-|---:|---|
-| 80 | apache |
-| 443 | tailscale |
-| 3306 | mysql |
-| 33060 | mysql-x |
-| 5432 | postgres |
-| 6379 | redis |
+| Porta | Serviço   |
+| ----: | --------- |
+|    80 | apache    |
+|   443 | tailscale |
+|  3306 | mysql     |
+| 33060 | mysql-x   |
+|  5432 | postgres  |
+|  6379 | redis     |
 | 11211 | memcached |
 
 ### Projetos pessoais
 
-| Projeto | Portas |
-|---|---|
-| home-music | web `5173`, api `8787`, e2e `8791` |
-| dev-dashboard | web `5174`, preview `4173`, api `4343` |
-| controle-gastos | web `5100` |
-| loto-lab | app `5200`, postgres `5434` |
-| portfolio-copilot | web `5300`, postgres `5433` |
+| Projeto           | Portas                                 |
+| ----------------- | -------------------------------------- |
+| home-music        | web `5173`, api `8787`, e2e `8791`     |
+| dev-dashboard     | web `5174`, preview `4173`, api `4343` |
+| controle-gastos   | web `5100`                             |
+| loto-lab          | app `5200`, postgres `5434`            |
+| portfolio-copilot | web `5300`, postgres `5433`            |
 
 Os caminhos absolutos desses projetos são detalhes da máquina do desenvolvedor e não devem virar requisito de runtime do LingoPilot. O checkout pode ficar, por convenção pessoal, em `$HOME/Projetos/lingo-pilot`.
 
 ## 3. Portas reservadas para o LingoPilot
 
-| Finalidade | Host | Porta | Observação |
-|---|---|---:|---|
+| Finalidade                       | Host        |    Porta | Observação                                                                                  |
+| -------------------------------- | ----------- | -------: | ------------------------------------------------------------------------------------------- |
 | Web / Next.js em desenvolvimento | `127.0.0.1` | **5400** | UI e endpoints HTTP da aplicação; não haverá API local separada no monólito modular inicial |
-| Web para Playwright/E2E | `127.0.0.1` | **5401** | servidor isolado de teste para não disputar a sessão de desenvolvimento |
-| PostgreSQL local do projeto | `127.0.0.1` | **5435** | mapping esperado `host:5435 -> container:5432` |
+| Web para Playwright/E2E          | `127.0.0.1` | **5401** | servidor isolado de teste para não disputar a sessão de desenvolvimento                     |
+| PostgreSQL local do projeto      | `127.0.0.1` | **5435** | mapping esperado `host:5435 -> container:5432`                                              |
 
 Estas portas ficam reservadas ao projeto mesmo quando o processo não estiver ativo.
 
