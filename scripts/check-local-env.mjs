@@ -1,24 +1,10 @@
-import { loadEnvFile } from "node:process";
 import { parseServerEnvironment } from "@lingo-pilot/config/runtime/environment";
-
-let source = "process environment";
-
-try {
-  loadEnvFile(".env.local");
-  source = ".env.local + process environment";
-} catch (error) {
-  if (
-    !error ||
-    typeof error !== "object" ||
-    !("code" in error) ||
-    error.code !== "ENOENT"
-  ) {
-    throw error;
-  }
-}
+import { resolveRuntimeEnvironment } from "./runtime-env.mjs";
 
 try {
-  const config = parseServerEnvironment(process.env);
+  const { environment, source } = await resolveRuntimeEnvironment();
+  const config = parseServerEnvironment(environment);
+
   console.log(
     `[env] valid (${source}): profile=${config.profile}, app=${config.public.appUrl}, timezone=${config.timeZone}, testMode=${config.testMode}`,
   );

@@ -35,7 +35,9 @@ pnpm env:check
 pnpm dev
 ```
 
-`pnpm env:init` cria `.env.local` a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. `pnpm env:check` valida o contrato antes de você depender dele em runtime.
+`pnpm env:init` cria `.env.local` na raiz do repositório a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. `pnpm env:check` valida o mesmo contrato usado pelos comandos de runtime.
+
+Os comandos raiz que precisam de configuração, como `pnpm build` e `pnpm start`, carregam explicitamente esse `.env.local` antes de iniciar processos filhos. Variáveis já fornecidas pelo shell, CI ou provider têm precedência sobre o arquivo local. O projeto não copia `.env.local` para `apps/web`.
 
 Aplicação local:
 
@@ -57,7 +59,8 @@ O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocu
 | ----------------------- | ----------------------------------------------------------------- |
 | `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                            |
 | `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                    |
-| `pnpm build`            | executa o build de produção via Turborepo                         |
+| `pnpm build`            | carrega env raiz e executa o build via Turborepo                  |
+| `pnpm start`            | carrega env raiz e inicia o build produzido pelo web app          |
 | `pnpm env:init`         | cria `.env.local` de forma não destrutiva                         |
 | `pnpm env:check`        | valida URL pública, timezone, profile e test mode                 |
 | `pnpm lint`             | valida scripts, testes, runtime config, app e packages            |
@@ -79,6 +82,8 @@ A fonte central é `@lingo-pilot/config/runtime/environment`. O web app possui d
 apps/web/config/public.ts  -> somente NEXT_PUBLIC_* seguro para browser
 apps/web/config/server.ts  -> configuração de servidor/runtime
 ```
+
+A raiz do monorepo possui um carregador explícito de `.env.local` para comandos que iniciam subprocessos. Isso evita depender do diretório de trabalho de `apps/web` e garante que `pnpm env:check`, `pnpm build` e `pnpm start` usem o mesmo contrato sem duplicar arquivos de configuração.
 
 `next.config.ts` carrega a configuração de servidor para que configuração inválida interrompa `dev`/`build` cedo. Os perfis oficiais também fixam URL e modo de teste: `pnpm dev` injeta `127.0.0.1:5400` com test mode desligado; `pnpm dev:e2e` injeta `127.0.0.1:5401` com test mode ligado.
 
