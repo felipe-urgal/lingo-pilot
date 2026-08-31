@@ -9,7 +9,12 @@ try {
     "Content validation hook is active. Authored content exists, but schema/reference validation is intentionally deferred to issue #15.",
   );
 } catch (error) {
-  if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "ENOENT"
+  ) {
     console.log(
       "Content validation hook is active. No authored content directory exists yet; full validation arrives in issue #15.",
     );
