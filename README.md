@@ -66,31 +66,31 @@ O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocu
 
 ## Comandos
 
-| Comando                 | Função                                                                     |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                                     |
-| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                             |
-| `pnpm build`            | carrega env raiz e executa o build via Turborepo                           |
-| `pnpm start`            | carrega env raiz e inicia o build produzido pelo web app                   |
-| `pnpm env:init`         | cria `.env.local` de forma não destrutiva                                  |
-| `pnpm env:check`        | valida configuração pública e server-only                                  |
-| `pnpm db:up`            | sobe o PostgreSQL local isolado e aguarda healthcheck                      |
-| `pnpm db:down`          | remove container/rede local preservando o volume                           |
-| `pnpm db:reset`         | recria volume/bancos locais e reaplica migrations                          |
-| `pnpm db:generate`      | gera migration/metadata Drizzle a partir do schema                         |
-| `pnpm db:migrate`       | aplica migrations versionadas usando `DATABASE_URL`                        |
-| `pnpm db:check`         | valida consistência do histórico de migrations                             |
-| `pnpm db:smoke`         | testa conexão curta e timezone UTC                                         |
-| `pnpm lint`             | valida scripts, testes, runtime config, app e packages                     |
-| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                          |
-| `pnpm test:unit`        | executa testes unitários/estruturais sem banco                             |
-| `pnpm test:integration` | executa integração real contra `TEST_DATABASE_URL`                         |
-| `pnpm test`             | executa unit + integration                                                  |
-| `pnpm content:validate` | executa o hook estável de validação de conteúdo                            |
-| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas               |
-| `pnpm format`           | normaliza formatação com Prettier                                          |
-| `pnpm format:check`     | verifica formatação sem alterar arquivos                                   |
-| `pnpm check`            | gate agregado: format, env, lint, types, testes, migrations, conteúdo/build |
+```text
+pnpm dev               web shell em 127.0.0.1:5400
+pnpm dev:e2e           web shell isolado em 127.0.0.1:5401
+pnpm build             build via Turborepo com env raiz
+pnpm start             inicia o build produzido pelo web app
+pnpm env:init          cria .env.local de forma não destrutiva
+pnpm env:check         valida configuração pública e server-only
+pnpm db:up             sobe PostgreSQL local e aguarda healthcheck
+pnpm db:down           remove container/rede preservando o volume
+pnpm db:reset          recria volume/bancos e reaplica migrations
+pnpm db:generate       gera migration/metadata Drizzle
+pnpm db:migrate        aplica migrations via DATABASE_URL
+pnpm db:check          valida o histórico de migrations
+pnpm db:smoke          testa conexão curta e timezone UTC
+pnpm lint              valida scripts, testes, app e packages
+pnpm typecheck         executa TypeScript strict
+pnpm test:unit         executa testes unitários/estruturais
+pnpm test:integration  executa integração via TEST_DATABASE_URL
+pnpm test              executa unit + integration
+pnpm content:validate  valida conteúdo
+pnpm check:workspace   valida boundaries estruturais
+pnpm format            normaliza formatação com Prettier
+pnpm format:check      verifica formatação sem alterar arquivos
+pnpm check             gate agregado do repositório
+```
 
 ## Configuração de runtime
 
