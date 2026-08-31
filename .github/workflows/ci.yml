@@ -67,6 +67,11 @@ jobs:
       - name: Environment config
         run: pnpm env:check
 
+      - name: Database connection smoke
+        env:
+          DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_test
+        run: pnpm db:smoke
+
       - name: Lint
         run: pnpm lint
 
