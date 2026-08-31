@@ -50,18 +50,40 @@ O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocu
 
 ## Comandos
 
-| Comando                | Função                                                       |
-| ---------------------- | ------------------------------------------------------------ |
-| `pnpm dev`             | inicia o web shell em `127.0.0.1:5400`                       |
-| `pnpm dev:e2e`         | inicia o web shell isolado em `127.0.0.1:5401`               |
-| `pnpm build`           | executa o build de produção via Turborepo                    |
-| `pnpm lint`            | valida scripts, testes, app e packages                       |
-| `pnpm typecheck`       | executa TypeScript strict nos packages aplicáveis            |
-| `pnpm test`            | executa os testes de bootstrap e valida boundaries           |
-| `pnpm check:workspace` | verifica packages esperados e restrições estruturais básicas |
-| `pnpm format`          | normaliza formatação com Prettier                            |
-| `pnpm format:check`    | verifica formatação sem alterar arquivos                     |
-| `pnpm check`           | gate local agregado: format, lint, typecheck, test e build   |
+| Comando                 | Função                                                              |
+| ----------------------- | ------------------------------------------------------------------- |
+| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                              |
+| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                      |
+| `pnpm build`            | executa o build de produção via Turborepo                           |
+| `pnpm lint`             | valida scripts, testes, app e packages                              |
+| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                   |
+| `pnpm test`             | executa os testes de bootstrap e valida boundaries                  |
+| `pnpm content:validate` | executa o hook estável de validação de conteúdo                     |
+| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas        |
+| `pnpm format`           | normaliza formatação com Prettier                                   |
+| `pnpm format:check`     | verifica formatação sem alterar arquivos                            |
+| `pnpm check`            | gate local agregado: format, lint, typecheck, test, content e build |
+
+## CI e governança
+
+Pull requests para `main` executam o workflow permanente `CI` sem depender de secrets.
+
+Status checks estáveis:
+
+```text
+CI / quality
+CI / build
+```
+
+`CI / quality` usa instalação com lockfile frozen e executa format check, lint, typecheck, unit tests e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção.
+
+O comando local equivalente é:
+
+```bash
+pnpm check
+```
+
+O contrato completo de branch protection, merge policy, segurança de Actions e evolução dos checks está em [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md).
 
 ## Estrutura do monorepo
 
@@ -147,7 +169,8 @@ Antes de alterar código, leia obrigatoriamente:
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow de contribuição;
 - [`docs/DEVELOPMENT_WORKFLOW.md`](docs/DEVELOPMENT_WORKFLOW.md) — processo de desenvolvimento e revisão;
 - [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos de conclusão;
-- [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local.
+- [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
+- [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
 
 **Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
 
@@ -164,6 +187,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Tutor de IA](docs/AI_TUTOR.md)
 - [Segurança e privacidade](docs/SECURITY_PRIVACY.md)
 - [Estratégia de qualidade](docs/QUALITY_STRATEGY.md)
+- [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
 - [Observabilidade](docs/OBSERVABILITY.md)
 - [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
 - [Workflow de desenvolvimento](docs/DEVELOPMENT_WORKFLOW.md)

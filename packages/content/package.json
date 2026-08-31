@@ -7,8 +7,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint src scripts --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "validate": "node scripts/validate-content.mjs"
   },
   "devDependencies": {
     "@lingo-pilot/config": "workspace:*",
