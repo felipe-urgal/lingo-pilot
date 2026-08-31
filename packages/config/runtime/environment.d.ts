@@ -7,7 +7,12 @@ export interface PublicRuntimeConfig {
   readonly appUrl: string;
 }
 
+export interface DatabaseRuntimeConfig {
+  readonly url: string;
+}
+
 export interface ServerRuntimeConfig {
+  readonly database: DatabaseRuntimeConfig;
   readonly profile: RuntimeProfile;
   readonly timeZone: string;
   readonly testMode: boolean;
@@ -23,6 +28,8 @@ export interface WebProfileEnvironment {
 export declare const WEB_HOST: "127.0.0.1";
 export declare const WEB_PORT: 5400;
 export declare const E2E_PORT: 5401;
+export declare const DATABASE_HOST: "127.0.0.1";
+export declare const DATABASE_PORT: 5435;
 export declare const DEFAULT_TIME_ZONE: "UTC";
 
 export declare class EnvironmentValidationError extends Error {
@@ -35,6 +42,14 @@ export declare function canonicalAppUrl(profile: WebProfile): string;
 export declare function createWebProfileEnvironment(
   profile: WebProfile,
 ): Readonly<WebProfileEnvironment>;
+
+export declare function parseDatabaseEnvironment(
+  source: EnvironmentSource,
+): Readonly<DatabaseRuntimeConfig>;
+
+export declare function parseTestDatabaseEnvironment(
+  source: EnvironmentSource,
+): Readonly<DatabaseRuntimeConfig>;
 
 export declare function parsePublicEnvironment(
   source: EnvironmentSource,

@@ -20,6 +20,8 @@ env:
   CI: true
   NEXT_PUBLIC_APP_URL: http://127.0.0.1:5400
   APP_TIMEZONE: UTC
+  DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_runtime
+  TEST_DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_test
   LINGO_TEST_MODE: "false"
 
 jobs:
@@ -27,6 +29,20 @@ jobs:
     name: quality
     runs-on: ubuntu-24.04
     timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: lingo_pilot_test
+          POSTGRES_PASSWORD: lingo_pilot_ci
+          POSTGRES_USER: lingo_pilot
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd "pg_isready -U lingo_pilot -d lingo_pilot_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,14 +67,22 @@ jobs:
       - name: Environment config
         run: pnpm env:check
 
+      - name: Database connection smoke
+        env:
+          DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_test
+        run: pnpm db:smoke
+
       - name: Lint
         run: pnpm lint
 
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Unit tests
+      - name: Tests
         run: pnpm test
+
+      - name: Drizzle migration consistency
+        run: pnpm db:check
 
       - name: Content validation
         run: pnpm content:validate

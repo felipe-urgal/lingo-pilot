@@ -1,0 +1,33 @@
+name: lingo-pilot
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: lingo-pilot-postgres
+    environment:
+      POSTGRES_DB: lingo_pilot_dev
+      POSTGRES_PASSWORD: lingo_pilot_local
+      POSTGRES_USER: lingo_pilot
+      PGTZ: UTC
+      TZ: UTC
+    ports:
+      - "127.0.0.1:5435:5432"
+    volumes:
+      - lingo-pilot-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-test-database.sql:/docker-entrypoint-initdb.d/001-test-database.sql:ro
+    networks:
+      - lingo-pilot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lingo_pilot -d lingo_pilot_dev"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 3s
+
+volumes:
+  lingo-pilot-postgres-data:
+    name: lingo-pilot-postgres-data
+
+networks:
+  lingo-pilot-network:
+    name: lingo-pilot-network

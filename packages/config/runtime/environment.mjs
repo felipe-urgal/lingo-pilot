@@ -3,6 +3,8 @@ const RUNTIME_PROFILES = new Set(["development", "e2e", "test", "production"]);
 export const WEB_HOST = "127.0.0.1";
 export const WEB_PORT = 5400;
 export const E2E_PORT = 5401;
+export const DATABASE_HOST = "127.0.0.1";
+export const DATABASE_PORT = 5435;
 export const DEFAULT_TIME_ZONE = "UTC";
 
 export class EnvironmentValidationError extends Error {
@@ -99,6 +101,117 @@ function resolveRuntimeProfile(source) {
   return "development";
 }
 
+function parseDatabaseUrl(value, key) {
+  const rawValue = requireString(value, key);
+  let parsed;
+
+  try {
+    parsed = new URL(rawValue);
+  } catch {
+    throw new EnvironmentValidationError(
+      "must be an absolute PostgreSQL URL",
+      key,
+    );
+  }
+
+  if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") {
+    throw new EnvironmentValidationError(
+      "must use postgres or postgresql protocol",
+      key,
+    );
+  }
+
+  let databaseName;
+
+  try {
+    databaseName = decodeURIComponent(parsed.pathname.slice(1));
+  } catch {
+    throw new EnvironmentValidationError(
+      "contains an invalid encoded database name",
+      key,
+    );
+  }
+
+  if (!parsed.hostname || !databaseName || databaseName.includes("/")) {
+    throw new EnvironmentValidationError(
+      "must include a host and a single database name",
+      key,
+    );
+  }
+
+  return { databaseName, parsed, url: rawValue };
+}
+
+function effectiveDatabasePort(parsed) {
+  return parsed.port ? Number(parsed.port) : 5432;
+}
+
+function databaseIdentity(database) {
+  return [
+    database.parsed.hostname,
+    effectiveDatabasePort(database.parsed),
+    database.databaseName,
+  ].join(":");
+}
+
+function enforceLocalDatabaseEndpoint(database, key, profile) {
+  if (profile !== "development" && profile !== "e2e") return;
+
+  if (database.parsed.hostname !== DATABASE_HOST) {
+    throw new EnvironmentValidationError(
+      `${profile} must use database host ${DATABASE_HOST}`,
+      key,
+    );
+  }
+
+  if (effectiveDatabasePort(database.parsed) !== DATABASE_PORT) {
+    throw new EnvironmentValidationError(
+      `${profile} must use database port ${DATABASE_PORT}`,
+      key,
+    );
+  }
+}
+
+export function parseDatabaseEnvironment(source) {
+  const profile = resolveRuntimeProfile(source);
+  const database = parseDatabaseUrl(source.DATABASE_URL, "DATABASE_URL");
+  enforceLocalDatabaseEndpoint(database, "DATABASE_URL", profile);
+
+  return Object.freeze({ url: database.url });
+}
+
+export function parseTestDatabaseEnvironment(source) {
+  const profile = resolveRuntimeProfile(source);
+  const testDatabase = parseDatabaseUrl(
+    source.TEST_DATABASE_URL,
+    "TEST_DATABASE_URL",
+  );
+  enforceLocalDatabaseEndpoint(testDatabase, "TEST_DATABASE_URL", profile);
+
+  if (!testDatabase.databaseName.toLowerCase().includes("test")) {
+    throw new EnvironmentValidationError(
+      "database name must contain 'test' to protect non-test data",
+      "TEST_DATABASE_URL",
+    );
+  }
+
+  if (source.DATABASE_URL?.trim()) {
+    const runtimeDatabase = parseDatabaseUrl(
+      source.DATABASE_URL,
+      "DATABASE_URL",
+    );
+
+    if (databaseIdentity(runtimeDatabase) === databaseIdentity(testDatabase)) {
+      throw new EnvironmentValidationError(
+        "must not point to the same database as DATABASE_URL",
+        "TEST_DATABASE_URL",
+      );
+    }
+  }
+
+  return Object.freeze({ url: testDatabase.url });
+}
+
 export function canonicalAppUrl(profile) {
   if (profile === "dev") return `http://${WEB_HOST}:${WEB_PORT}`;
   if (profile === "e2e") return `http://${WEB_HOST}:${E2E_PORT}`;
@@ -140,6 +253,7 @@ export function parsePublicEnvironment(source) {
 
 export function parseServerEnvironment(source) {
   const publicConfig = parsePublicEnvironment(source);
+  const database = parseDatabaseEnvironment(source);
   const profile = resolveRuntimeProfile(source);
   const timeZone = parseTimeZone(source.APP_TIMEZONE);
   const testMode = parseBoolean(
@@ -182,6 +296,7 @@ export function parseServerEnvironment(source) {
   }
 
   return Object.freeze({
+    database,
     profile,
     timeZone,
     testMode,
