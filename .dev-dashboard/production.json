@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "production": {
+    "enabled": false,
+    "strategy": "disabled",
+    "provider": "none",
+    "branch": "main",
+    "documentation": "docs/PRODUCTION_DEPLOYMENT.md",
+    "reasonCode": "production-readiness-gate",
+    "commands": {
+      "status": "prod:status",
+      "check": "prod:check"
+    },
+    "blockedBy": [
+      "vercel-project-not-configured",
+      "neon-production-not-validated",
+      "backup-dr-not-validated",
+      "migration-flow-not-validated",
+      "production-health-not-configured"
+    ],
+    "policies": {
+      "backup": "not-configured",
+      "migrations": "not-configured",
+      "rollback": "not-configured"
+    }
+  }
+}
