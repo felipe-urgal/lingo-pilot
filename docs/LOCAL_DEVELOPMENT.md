@@ -4,16 +4,16 @@ Este documento é normativo para desenvolvimento local do LingoPilot.
 
 O objetivo é impedir colisões com projetos e infraestrutura que já executam na máquina de desenvolvimento, evitar comportamento não determinístico de ferramentas que escolhem portas automaticamente e manter URLs estáveis para autenticação, E2E e documentação.
 
-O contrato de variáveis, profiles e separação browser/server está em `docs/RUNTIME_CONFIGURATION.md`.
+O contrato de variáveis e separação browser/server está em `docs/RUNTIME_CONFIGURATION.md`. O workflow de persistência está em `docs/DATABASE.md`.
 
 ## 1. Princípios
 
-1. **Nenhum serviço do LingoPilot deve assumir a porta padrão de uma ferramenta.**
-2. **Nenhum processo deve procurar automaticamente "a próxima porta livre".** Se a porta contratada estiver ocupada, o comando deve falhar com mensagem clara.
-3. Portas de host são diferentes de portas internas de containers. Um PostgreSQL do LingoPilot pode continuar ouvindo `5432` dentro do container, mas deve ser publicado em uma porta de host exclusiva.
+1. **Nenhum serviço do LingoPilot deve assumir a porta padrão de uma ferramenta no host.**
+2. **Nenhum processo deve procurar automaticamente “a próxima porta livre”.** Se a porta contratada estiver ocupada, o comando deve falhar com mensagem clara.
+3. Portas de host são diferentes de portas internas de containers. PostgreSQL continua ouvindo `5432` dentro do container e é publicado em uma porta de host exclusiva.
 4. Novas portas só podem ser adicionadas após checar este documento e o registro local de projetos.
 5. Não reutilizar uma porta de outro projeto apenas porque ele parece estar desligado naquele momento.
-6. CI é um ambiente isolado e pode usar portas internas/default quando não houver colisão; isso não altera o contrato do host local.
+6. CI é ambiente isolado e pode usar portas internas/default quando não houver colisão; isso não altera o contrato do host local.
 7. Serviços locais devem preferir bind em `127.0.0.1` quando não houver necessidade explícita de exposição na rede.
 8. Configuração local deve ser criada por `pnpm env:init` e validada por `pnpm env:check`; scripts oficiais não devem exigir conhecimento tribal.
 
@@ -66,7 +66,7 @@ Os caminhos absolutos desses projetos são detalhes da máquina do desenvolvedor
 | -------------------------------- | ----------- | -------: | ------------------------------------------------------------------------------------------- |
 | Web / Next.js em desenvolvimento | `127.0.0.1` | **5400** | UI e endpoints HTTP da aplicação; não haverá API local separada no monólito modular inicial |
 | Web para Playwright/E2E          | `127.0.0.1` | **5401** | servidor isolado de teste para não disputar a sessão de desenvolvimento                     |
-| PostgreSQL local do projeto      | `127.0.0.1` | **5435** | mapping esperado `host:5435 -> container:5432`                                              |
+| PostgreSQL local do projeto      | `127.0.0.1` | **5435** | mapping `host:5435 -> container:5432`                                                       |
 
 Estas portas ficam reservadas ao projeto mesmo quando o processo não estiver ativo.
 
@@ -78,11 +78,11 @@ App E2E:  http://127.0.0.1:5401
 Postgres: 127.0.0.1:5435
 ```
 
-Não usar `3000` como fallback do Next.js: essa porta já pertence ao ambiente de trabalho.
+Não usar `3000` como fallback do Next.js: essa porta já pertence ao ambiente de trabalho. Não usar `5432`, `5433` ou `5434` para o PostgreSQL do LingoPilot.
 
 ## 4. Primeira execução
 
-Pré-requisitos: Node.js 24.x e Corepack.
+Pré-requisitos: Node.js 24.x, Corepack, Docker Engine e Docker Compose.
 
 ```bash
 nvm use
@@ -91,10 +91,13 @@ corepack prepare pnpm@10.34.5 --activate
 pnpm install --frozen-lockfile
 pnpm env:init
 pnpm env:check
+pnpm db:up
+pnpm db:migrate
+pnpm db:smoke
 pnpm dev
 ```
 
-`pnpm env:init` cria `.env.local` a partir de `.env.example` somente quando necessário. Ele nunca sobrescreve um `.env.local` existente.
+`pnpm env:init` cria `.env.local` a partir de `.env.example` somente quando necessário. Ele nunca sobrescreve um `.env.local` existente. Quem já possuía o arquivo antes da foundation de banco deve adicionar `DATABASE_URL` e `TEST_DATABASE_URL` manualmente a partir do exemplo versionado.
 
 `pnpm env:check` carrega `.env.local` quando presente e valida o contrato central. Erro de configuração termina com código diferente de zero e mensagem com a chave problemática, sem imprimir secrets.
 
@@ -129,12 +132,14 @@ Isso impede que um `.env.local` antigo faça o servidor iniciar numa porta enqua
 
 ## 6. `.env.example`
 
-O arquivo versionado contém somente configuração segura da capacidade atual:
+O arquivo versionado contém somente configuração pública segura ou credenciais locais sintéticas:
 
 ```dotenv
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
 APP_TIMEZONE=UTC
 LINGO_TEST_MODE=false
+DATABASE_URL=postgresql://lingo_pilot:lingo_pilot_local@127.0.0.1:5435/lingo_pilot_dev
+TEST_DATABASE_URL=postgresql://lingo_pilot:lingo_pilot_local@127.0.0.1:5435/lingo_pilot_test
 ```
 
 Regras:
@@ -143,7 +148,9 @@ Regras:
 - `APP_TIMEZONE` é fallback de infraestrutura, não preferência pedagógica do usuário;
 - `LINGO_TEST_MODE` é server-side e deve permanecer `false` fora de teste;
 - `LINGO_PROFILE` é injetado/derivado e não precisa ser configurado manualmente;
-- banco, auth e providers entram somente nas issues que implementarem essas capacidades.
+- `DATABASE_URL` é server-only e, em development/E2E, deve usar `127.0.0.1:5435`;
+- `TEST_DATABASE_URL` é server-only, deve identificar explicitamente um banco de teste e nunca pode reutilizar o banco de desenvolvimento;
+- auth e providers entram somente nas issues que implementarem essas capacidades.
 
 ## 7. Validação de startup/build
 
@@ -151,27 +158,48 @@ Regras:
 
 A aplicação possui também `apps/web/config/public.ts`, que recebe explicitamente apenas `NEXT_PUBLIC_APP_URL`. Não passar `process.env` inteiro para módulos públicos.
 
+`DATABASE_URL` é validada por protocolo/shape e endpoint local, mas essa validação **não abre conexão**. Build e import de módulos não executam migrations nem consultas.
+
 A regra é falhar cedo. Não usar defaults para esconder URL, credencial ou configuração operacional inválida.
 
 ## 8. Docker / PostgreSQL
 
-A porta `5435` continua reservada, mas PostgreSQL funcional pertence à #10.
-
-Quando for executado por Docker Compose, a publicação esperada é:
+O PostgreSQL local é implementado em `compose.yaml` com isolamento explícito:
 
 ```text
-127.0.0.1:5435 -> postgres container:5432
+container: lingo-pilot-postgres
+network:   lingo-pilot-network
+volume:    lingo-pilot-postgres-data
+bind:      127.0.0.1:5435 -> container:5432
 ```
+
+O Compose cria:
+
+```text
+lingo_pilot_dev   -> desenvolvimento comum
+lingo_pilot_test  -> integração automatizada
+```
+
+Comandos:
+
+```bash
+pnpm db:up
+pnpm db:migrate
+pnpm db:smoke
+pnpm test:integration
+pnpm db:down
+```
+
+`pnpm db:reset` é destrutivo somente para o volume próprio do LingoPilot: remove o volume, recria ambos os bancos e reaplica migrations no banco de desenvolvimento.
 
 Regras:
 
 - não publicar `5432:5432` no host;
 - não usar `5433` ou `5434`, pois já pertencem a outros projetos;
-- usar volume/nome de projeto próprios;
-- testes devem usar database/schema/container isolado conforme #10/#16;
-- CI pode usar `5432` dentro do runner isolado.
-
-`DATABASE_URL` só será introduzida pela #10 e será server-only.
+- não compartilhar container/network/volume com outro projeto;
+- integration tests só podem destruir/recriar schemas dentro do `TEST_DATABASE_URL` validado;
+- CI usa um serviço PostgreSQL efêmero próprio;
+- detalhes de schema, migration e reset vivem em `docs/DATABASE.md`.
 
 ## 9. E2E
 
@@ -188,13 +216,14 @@ O E2E não deve:
 
 ## 10. Diagnóstico de conflito
 
-Se houver conflito de porta, a mensagem informa host/porta e que o LingoPilot não auto-incrementa portas.
+Se houver conflito de porta web, a mensagem informa host/porta e que o LingoPilot não auto-incrementa portas.
 
 Comandos úteis no Linux:
 
 ```bash
 lsof -iTCP:5400 -sTCP:LISTEN
 ss -ltnp | grep ':5400'
+lsof -iTCP:5435 -sTCP:LISTEN
 ```
 
 Evitar o padrão:
@@ -231,6 +260,6 @@ Não reservar intervalos inteiros nem criar variáveis “para usar depois”.
 
 ## 13. Regra para agentes de IA
 
-Antes de alterar serviço local, container, callback URL ou variável de ambiente, o agente deve consultar este arquivo e `docs/RUNTIME_CONFIGURATION.md`.
+Antes de alterar serviço local, container, callback URL ou variável de ambiente, o agente deve consultar este arquivo, `docs/RUNTIME_CONFIGURATION.md` e, para persistência, `docs/DATABASE.md`.
 
-Um agente não pode resolver erro de configuração escolhendo outra porta, expondo secret como `NEXT_PUBLIC_*` ou adicionando fallback silencioso.
+Um agente não pode resolver erro de configuração escolhendo outra porta, expondo secret como `NEXT_PUBLIC_*`, compartilhando banco mutável entre perfis ou adicionando fallback silencioso.

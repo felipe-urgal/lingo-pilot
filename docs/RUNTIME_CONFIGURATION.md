@@ -1,6 +1,6 @@
 # Runtime configuration — LingoPilot
 
-Este documento define o contrato de configuração de runtime do LingoPilot. Ele complementa `docs/LOCAL_DEVELOPMENT.md`, `docs/SECURITY_PRIVACY.md` e `docs/PRODUCTION_DEPLOYMENT.md`.
+Este documento define o contrato de configuração de runtime do LingoPilot. Ele complementa `docs/LOCAL_DEVELOPMENT.md`, `docs/DATABASE.md`, `docs/SECURITY_PRIVACY.md` e `docs/PRODUCTION_DEPLOYMENT.md`.
 
 ## 1. Objetivos
 
@@ -13,8 +13,8 @@ Princípios:
 3. valores públicos e server-only são contratos diferentes;
 4. defaults só existem quando são comprovadamente seguros;
 5. perfis de desenvolvimento e E2E não podem escolher portas dinamicamente;
-6. `.env.example` contém apenas valores fictícios ou públicos seguros;
-7. secrets nunca são commitados, logados ou expostos por `NEXT_PUBLIC_*`;
+6. `.env.example` contém apenas valores fictícios, credenciais locais sintéticas ou valores públicos seguros;
+7. secrets reais nunca são commitados, logados ou expostos por `NEXT_PUBLIC_*`;
 8. CI básico não depende de credenciais reais;
 9. o `.env.local` canônico fica na raiz do monorepo e não é duplicado por workspace;
 10. variáveis já presentes no processo sempre têm precedência sobre `.env.local`.
@@ -32,19 +32,21 @@ A implementação é executável por Node.js (`environment.mjs`) e possui contra
 Ele é responsável por:
 
 - validar URL pública;
+- validar URLs PostgreSQL server-only;
 - resolver profile de runtime;
 - validar timezone;
 - normalizar flags booleanas;
 - impor invariantes de dev/E2E;
-- expor as constantes canônicas de host/porta usadas pelos scripts locais.
+- proteger o banco de integração contra reutilização acidental do banco de desenvolvimento;
+- expor constantes canônicas de host/porta usadas pelos scripts locais.
 
-O carregamento do arquivo local fica separado do parser de domínio de configuração. O helper:
+O carregamento do arquivo local fica separado do parser. O helper:
 
 ```text
 scripts/runtime-env.mjs
 ```
 
-resolve o ambiente efetivo combinando `.env.local` da raiz com o ambiente do processo. Essa separação mantém o parser testável e permite reutilizar o mesmo mecanismo em build, start e futuros comandos de banco/migration.
+resolve o ambiente efetivo combinando `.env.local` da raiz com o ambiente do processo. Essa separação mantém o parser testável e permite reutilizar o mesmo mecanismo em build, start, migrations, smoke checks e testes de integração.
 
 ## 3. Separação browser/server
 
@@ -63,7 +65,7 @@ Só recebe variáveis que podem ir para o browser. Hoje:
 NEXT_PUBLIC_APP_URL
 ```
 
-A chamada ao parser recebe um objeto explícito em vez de `process.env` inteiro. Isso impede que uma variável server-only seja propagada acidentalmente pelo módulo público quando novos secrets forem adicionados no futuro.
+A chamada ao parser recebe um objeto explícito em vez de `process.env` inteiro. Testes garantem que `DATABASE_URL`, `TEST_DATABASE_URL` e outros valores server-only não aparecem na configuração pública.
 
 ### `server.ts`
 
@@ -71,11 +73,14 @@ A chamada ao parser recebe um objeto explícito em vez de `process.env` inteiro.
 
 ```text
 APP_TIMEZONE
+DATABASE_URL
 LINGO_PROFILE
 LINGO_TEST_MODE
 NEXT_PUBLIC_APP_URL
 NODE_ENV
 ```
+
+`TEST_DATABASE_URL` não é runtime da aplicação web: é lida somente pela infraestrutura de integration tests.
 
 Novos secrets devem entrar somente no contrato server-side e somente na issue que introduzir a capacidade dona daquele secret.
 
@@ -101,6 +106,34 @@ Regras:
 Timezone de fallback da infraestrutura. Default seguro: `UTC`.
 
 Deve ser um timezone IANA válido. Não representa automaticamente o timezone pedagógico do aluno; a data de estudo do usuário pertence ao domínio/perfil quando essa feature existir.
+
+### `DATABASE_URL`
+
+Conexão PostgreSQL server-only obrigatória para runtime e comandos de banco.
+
+Regras:
+
+- protocolo `postgres:` ou `postgresql:`;
+- deve conter host e exatamente um database name;
+- development/E2E devem usar `127.0.0.1:5435`;
+- Preview/produção usam credenciais próprias do provider;
+- nunca prefixar com `NEXT_PUBLIC_`;
+- nunca imprimir a URL em logs;
+- validar a URL não abre conexão nem executa migration.
+
+### `TEST_DATABASE_URL`
+
+Conexão server-only exclusiva para integration tests.
+
+Regras:
+
+- segue o mesmo shape PostgreSQL de `DATABASE_URL`;
+- development/E2E usam `127.0.0.1:5435`;
+- o database name deve conter `test`;
+- não pode identificar o mesmo host/porta/database de `DATABASE_URL`;
+- não é repassada pelo Turborepo nem consumida pelo web app.
+
+Essas guardas existem porque a suíte de integração recria schemas e, portanto, nunca pode atingir o banco comum de desenvolvimento.
 
 ### `LINGO_TEST_MODE`
 
@@ -148,7 +181,7 @@ LINGO_TEST_MODE=false
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
 ```
 
-A porta é checada antes do Next.js iniciar. Se estiver ocupada, o processo falha; não existe fallback.
+`DATABASE_URL` continua vindo do ambiente efetivo e deve apontar para o endpoint local reservado. A porta web é checada antes do Next.js iniciar; se estiver ocupada, o processo falha.
 
 ### E2E
 
@@ -160,13 +193,13 @@ LINGO_TEST_MODE=true
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5401
 ```
 
-Playwright completo e banco isolado continuam pertencendo à #16.
+A foundation de banco já suporta conexão local isolada. Playwright e o lifecycle completo de banco/fixtures E2E continuam responsabilidade da #16.
 
 ### Produção
 
-Produção usa `NODE_ENV=production` e deve fornecer uma URL pública real no ambiente do provider. Test mode é proibido.
+Produção usa `NODE_ENV=production`, deve fornecer uma URL pública real e uma `DATABASE_URL` real server-side no ambiente do provider. Test mode é proibido.
 
-Quando Vercel/Neon forem efetivamente provisionados, as variáveis adicionais entram no contrato de produção na mesma mudança que implementar a capacidade correspondente.
+Provisionamento Neon/Vercel continua separado do código de foundation; migrations não são executadas automaticamente por build/start.
 
 ## 6. Bootstrap local e precedência
 
@@ -175,6 +208,9 @@ Primeira execução:
 ```bash
 pnpm env:init
 pnpm env:check
+pnpm db:up
+pnpm db:migrate
+pnpm db:smoke
 ```
 
 `pnpm env:init`:
@@ -184,11 +220,13 @@ pnpm env:check
 - não busca secrets em serviços externos;
 - não cria cópia em `apps/web` ou em packages.
 
+Quem já possuía `.env.local` antes da foundation de banco deve adicionar manualmente as variáveis novas do `.env.example`.
+
 `pnpm env:check`:
 
 - resolve `.env.local` quando presente;
 - preserva variáveis já fornecidas pelo processo;
-- valida o contrato central;
+- valida o contrato central, incluindo `DATABASE_URL`;
 - imprime somente valores não sensíveis necessários ao diagnóstico;
 - termina com código diferente de zero quando a configuração é inválida.
 
@@ -214,11 +252,14 @@ Por isso, comandos raiz que precisam de runtime config usam:
 scripts/run-with-runtime-env.mjs
 ```
 
-Hoje:
+Hoje incluem:
 
 ```bash
 pnpm build
 pnpm start
+pnpm db:migrate
+pnpm db:smoke
+pnpm test:integration
 ```
 
 O wrapper:
@@ -229,13 +270,11 @@ O wrapper:
 4. passa o ambiente efetivo explicitamente ao processo filho;
 5. não imprime valores de configuração ou secrets.
 
-Esse mecanismo é reutilizável por futuros comandos de Drizzle/migrations que precisarem do mesmo contrato.
-
-Comandos internos de workspace, como `pnpm --filter @lingo-pilot/web build`, não são o caminho canônico para build local porque pressupõem que o ambiente já tenha sido injetado externamente.
+Comandos internos de workspace pressupõem ambiente já injetado externamente. Para operações comuns, prefira os comandos raiz documentados.
 
 ## 8. Startup/build validation
 
-`apps/web/next.config.ts` importa o contrato server-side. Portanto, `next dev`/`next build` não devem seguir silenciosamente com configuração inválida.
+`apps/web/next.config.ts` importa o contrato server-side. Portanto, `next dev`/`next build` não seguem silenciosamente com configuração inválida.
 
 A validação ocorre em duas bordas para comandos canônicos de build/start:
 
@@ -247,7 +286,7 @@ processo filho / Turborepo
 Next config valida novamente
 ```
 
-O objetivo é detectar erro de configuração antes de existir uma aplicação parcialmente funcional e, ao mesmo tempo, garantir que o ambiente validado realmente alcance o processo que executa o Next.js.
+`DATABASE_URL` participa dessa validação, mas nenhuma chamada de rede acontece. Criar o pool, aplicar migrations e abrir conexão são ações explícitas da boundary `packages/db`.
 
 ## 9. CI
 
@@ -256,26 +295,33 @@ CI fornece apenas valores sintéticos e seguros:
 ```text
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
 APP_TIMEZONE=UTC
+DATABASE_URL=postgresql://<synthetic>@127.0.0.1:5435/lingo_pilot_runtime
+TEST_DATABASE_URL=postgresql://<synthetic>@127.0.0.1:5435/lingo_pilot_test
 LINGO_TEST_MODE=false
 ```
 
-O job `quality` executa `pnpm env:check`. O job `build` recebe o mesmo ambiente e `pnpm build` passa por `scripts/run-with-runtime-env.mjs`; como as variáveis do processo têm precedência, nenhuma configuração local pode sobrescrevê-las. O Next.js volta a validar a configuração durante o build.
+O job `quality` sobe um PostgreSQL efêmero próprio, executa `pnpm env:check`, lint, typecheck, unit tests, integration tests reais, `pnpm db:check` e content validation.
 
-Nenhuma credencial real é necessária para os gates básicos.
+Somente `TEST_DATABASE_URL` é usada como destino destrutivo dos integration tests. `DATABASE_URL` existe no CI para validar o contrato server-side; o banco runtime sintético não precisa existir para build porque build não conecta.
+
+O job `build` recebe o mesmo ambiente e `pnpm build` passa por `scripts/run-with-runtime-env.mjs`; o Next.js volta a validar a configuração sem executar migrations.
+
+Nenhuma credencial real é necessária para esses gates.
 
 ## 10. Banco de dados
 
-`DATABASE_URL` não existe ainda no contrato porque a implementação pertence à #10.
+O contrato implementado é:
 
-Quando entrar:
+- local em `127.0.0.1:5435`;
+- `DATABASE_URL` server-only para desenvolvimento/runtime/migrations;
+- `TEST_DATABASE_URL` server-only e isolada para integration tests;
+- CI com PostgreSQL efêmero;
+- pool PostgreSQL configurado para UTC;
+- migrations versionadas do Drizzle fora do build/deploy da aplicação;
+- comandos de banco reutilizam o carregador de ambiente raiz;
+- nenhuma migration/conexão acontece por import.
 
-- local deve apontar para `127.0.0.1:5435`;
-- CI deve usar PostgreSQL isolado;
-- Preview/produção devem usar credenciais próprias;
-- o valor é server-only;
-- não pode ser prefixado com `NEXT_PUBLIC_`;
-- validação deve verificar protocolo/shape sem logar credenciais;
-- os comandos de migration devem reutilizar o carregador de ambiente raiz em vez de implementar outro parser de `.env`.
+Detalhes operacionais, schema, transações, reset e convenções de timestamps estão em `docs/DATABASE.md`.
 
 ## 11. Adicionando uma nova variável
 
@@ -304,6 +350,7 @@ Agentes devem:
 - evitar `process.env` em código de domínio/aplicação;
 - nunca mover secret para `NEXT_PUBLIC_*` para resolver erro de build;
 - nunca duplicar `.env.local` em `apps/web` como workaround;
+- nunca usar `DATABASE_URL` como fallback de `TEST_DATABASE_URL`;
 - nunca adicionar fallback silencioso para credencial ausente;
 - nunca trocar as portas 5400/5401/5435 sem atualizar o contrato local;
 - atualizar testes e documentação no mesmo PR que alterar configuração.

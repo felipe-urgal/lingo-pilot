@@ -8,7 +8,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na fase de Foundation. O bootstrap técnico fornece o shell mínimo, CI permanente, governança da `main` e configuração de runtime validada; ele **não** implementa ainda Study Engine, autenticação, banco funcional, conteúdo real ou AI Tutor.
+O repositório está na fase de Foundation. O bootstrap técnico fornece o shell mínimo, CI permanente, governança da `main`, configuração de runtime validada e a foundation de persistência PostgreSQL/Drizzle. Ele **não** implementa ainda Study Engine, autenticação, conteúdo pedagógico real ou AI Tutor.
 
 Stack inicial fixada:
 
@@ -18,12 +18,14 @@ Stack inicial fixada:
 - Next.js `16.3.2`;
 - React `19.2.8`;
 - TypeScript `7.0.2` com `strict`;
+- PostgreSQL `17` para desenvolvimento/integração;
+- Drizzle ORM `0.45.2` e Drizzle Kit `0.31.10`;
 - ESLint `10.9.1`;
 - Prettier `3.9.6`.
 
 ## Primeira execução
 
-Pré-requisitos: Node.js 24.x e Corepack.
+Pré-requisitos: Node.js 24.x, Corepack, Docker Engine e Docker Compose.
 
 ```bash
 nvm use
@@ -32,12 +34,15 @@ corepack prepare pnpm@10.34.5 --activate
 pnpm install --frozen-lockfile
 pnpm env:init
 pnpm env:check
+pnpm db:up
+pnpm db:migrate
+pnpm db:smoke
 pnpm dev
 ```
 
-`pnpm env:init` cria `.env.local` na raiz do repositório a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. `pnpm env:check` valida o mesmo contrato usado pelos comandos de runtime.
+`pnpm env:init` cria `.env.local` na raiz do repositório a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. Se o arquivo foi criado antes da foundation de banco, adicione manualmente `DATABASE_URL` e `TEST_DATABASE_URL` seguindo `.env.example`. `pnpm env:check` valida o mesmo contrato usado pelos comandos de runtime.
 
-Os comandos raiz que precisam de configuração, como `pnpm build` e `pnpm start`, carregam explicitamente esse `.env.local` antes de iniciar processos filhos. Variáveis já fornecidas pelo shell, CI ou provider têm precedência sobre o arquivo local. O projeto não copia `.env.local` para `apps/web`.
+Os comandos raiz que precisam de configuração, como `pnpm build`, `pnpm start`, `pnpm db:migrate`, `pnpm db:smoke` e os testes de integração, carregam explicitamente `.env.local` antes de iniciar processos filhos. Variáveis já fornecidas pelo shell, CI ou provider têm precedência sobre o arquivo local. O projeto não copia `.env.local` para `apps/web`.
 
 Aplicação local:
 
@@ -51,26 +56,41 @@ O servidor E2E fica reservado para:
 http://127.0.0.1:5401
 ```
 
-O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocupada, `pnpm dev` falha de forma explícita para proteger callbacks, origins, testes e documentação. O contrato completo está em [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).
+O PostgreSQL local é publicado exclusivamente em:
+
+```text
+127.0.0.1:5435
+```
+
+O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocupada, `pnpm dev` falha de forma explícita. O Compose também fixa `127.0.0.1:5435 -> postgres:5432`, preservando os PostgreSQL já usados por outros projetos. O contrato completo está em [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).
 
 ## Comandos
 
-| Comando                 | Função                                                            |
-| ----------------------- | ----------------------------------------------------------------- |
-| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                            |
-| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                    |
-| `pnpm build`            | carrega env raiz e executa o build via Turborepo                  |
-| `pnpm start`            | carrega env raiz e inicia o build produzido pelo web app          |
-| `pnpm env:init`         | cria `.env.local` de forma não destrutiva                         |
-| `pnpm env:check`        | valida URL pública, timezone, profile e test mode                 |
-| `pnpm lint`             | valida scripts, testes, runtime config, app e packages            |
-| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                 |
-| `pnpm test`             | executa testes e valida boundaries                                |
-| `pnpm content:validate` | executa o hook estável de validação de conteúdo                   |
-| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas      |
-| `pnpm format`           | normaliza formatação com Prettier                                 |
-| `pnpm format:check`     | verifica formatação sem alterar arquivos                          |
-| `pnpm check`            | gate agregado: format, env, lint, types, testes, conteúdo e build |
+| Comando                 | Função                                                                     |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `pnpm dev`              | inicia o web shell em `127.0.0.1:5400`                                     |
+| `pnpm dev:e2e`          | inicia o web shell isolado em `127.0.0.1:5401`                             |
+| `pnpm build`            | carrega env raiz e executa o build via Turborepo                           |
+| `pnpm start`            | carrega env raiz e inicia o build produzido pelo web app                   |
+| `pnpm env:init`         | cria `.env.local` de forma não destrutiva                                  |
+| `pnpm env:check`        | valida configuração pública e server-only                                  |
+| `pnpm db:up`            | sobe o PostgreSQL local isolado e aguarda healthcheck                      |
+| `pnpm db:down`          | remove container/rede local preservando o volume                           |
+| `pnpm db:reset`         | recria volume/bancos locais e reaplica migrations                          |
+| `pnpm db:generate`      | gera migration/metadata Drizzle a partir do schema                         |
+| `pnpm db:migrate`       | aplica migrations versionadas usando `DATABASE_URL`                        |
+| `pnpm db:check`         | valida consistência do histórico de migrations                             |
+| `pnpm db:smoke`         | testa conexão curta e timezone UTC                                         |
+| `pnpm lint`             | valida scripts, testes, runtime config, app e packages                     |
+| `pnpm typecheck`        | executa TypeScript strict nos packages aplicáveis                          |
+| `pnpm test:unit`        | executa testes unitários/estruturais sem banco                             |
+| `pnpm test:integration` | executa integração real contra `TEST_DATABASE_URL`                         |
+| `pnpm test`             | executa unit + integration                                                  |
+| `pnpm content:validate` | executa o hook estável de validação de conteúdo                            |
+| `pnpm check:workspace`  | verifica packages esperados e restrições estruturais básicas               |
+| `pnpm format`           | normaliza formatação com Prettier                                          |
+| `pnpm format:check`     | verifica formatação sem alterar arquivos                                   |
+| `pnpm check`            | gate agregado: format, env, lint, types, testes, migrations, conteúdo/build |
 
 ## Configuração de runtime
 
@@ -83,15 +103,17 @@ apps/web/config/public.ts  -> somente NEXT_PUBLIC_* seguro para browser
 apps/web/config/server.ts  -> configuração de servidor/runtime
 ```
 
-A raiz do monorepo possui um carregador explícito de `.env.local` para comandos que iniciam subprocessos. Isso evita depender do diretório de trabalho de `apps/web` e garante que `pnpm env:check`, `pnpm build` e `pnpm start` usem o mesmo contrato sem duplicar arquivos de configuração.
+`DATABASE_URL` é server-only e obrigatória no runtime. Em desenvolvimento ela deve apontar para `127.0.0.1:5435`. `TEST_DATABASE_URL` é separada e só pode apontar para um banco explicitamente identificado como teste; a suíte de integração rejeita reutilização do banco de desenvolvimento.
 
-`next.config.ts` carrega a configuração de servidor para que configuração inválida interrompa `dev`/`build` cedo. Os perfis oficiais também fixam URL e modo de teste: `pnpm dev` injeta `127.0.0.1:5400` com test mode desligado; `pnpm dev:e2e` injeta `127.0.0.1:5401` com test mode ligado.
+A raiz do monorepo possui um carregador explícito de `.env.local` para comandos que iniciam subprocessos. Isso evita depender do diretório de trabalho de `apps/web` e garante que runtime, build e migrations usem o mesmo contrato sem duplicar arquivos de configuração.
 
-Contrato completo: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md).
+`next.config.ts` carrega a configuração de servidor para que configuração inválida interrompa `dev`/`build` cedo. Validar `DATABASE_URL` não abre conexão nem executa migration durante import/build.
+
+Contrato completo: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md). Operação do banco: [`docs/DATABASE.md`](docs/DATABASE.md).
 
 ## CI e governança
 
-Pull requests para `main` executam o workflow permanente `CI` sem depender de secrets.
+Pull requests para `main` executam o workflow permanente `CI` sem depender de secrets reais.
 
 Status checks estáveis:
 
@@ -100,11 +122,12 @@ CI / quality
 CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen e executa format check, environment config, lint, typecheck, unit tests e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção.
+`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL efêmero isolado e executa format check, environment config, lint, typecheck, testes unitários, integration tests, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção sem executar migrations ou abrir conexão com banco.
 
-O comando local equivalente é:
+Para reproduzir os gates que dependem de persistência localmente:
 
 ```bash
+pnpm db:up
 pnpm check
 ```
 
@@ -129,7 +152,7 @@ tests/                  testes automatizados de Foundation
 docs/                   produto, arquitetura e operação
 ```
 
-Os packages nesta fase são **boundaries explícitos**, não implementações antecipadas. Em especial, `@lingo-pilot/domain` não pode depender de Next.js, React, Drizzle ou providers externos.
+Os packages nesta fase são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A primeira migration cria somente uma tabela técnica de metadata para provar o workflow de persistência sem antecipar o modelo do Study Engine.
 
 ## Princípios do produto
 
@@ -196,6 +219,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos de conclusão;
 - [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
 - [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md) — configuração pública/server-only, profiles e evolução;
+- [`docs/DATABASE.md`](docs/DATABASE.md) — PostgreSQL, Drizzle, migrations, reset e testes de integração;
 - [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
 
 **Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
@@ -214,6 +238,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Segurança e privacidade](docs/SECURITY_PRIVACY.md)
 - [Estratégia de qualidade](docs/QUALITY_STRATEGY.md)
 - [Configuração de runtime](docs/RUNTIME_CONFIGURATION.md)
+- [PostgreSQL e Drizzle](docs/DATABASE.md)
 - [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
 - [Observabilidade](docs/OBSERVABILITY.md)
 - [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
