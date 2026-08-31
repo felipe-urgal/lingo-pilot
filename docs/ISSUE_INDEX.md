@@ -4,13 +4,13 @@ Este documento é o índice do backlog inicial criado a partir da visão, arquit
 
 ## Epics
 
-| Epic                                                 | Prioridade | Objetivo                                                             |
-| ---------------------------------------------------- | ---------: | -------------------------------------------------------------------- |
-| #2 Foundation — engineering baseline                 |         P0 | Base técnica, CI, dados, auth, design, observabilidade e conteúdo    |
-| #3 Study Engine — core learning loop                 |         P0 | Today, lesson, exercise, SRS, mastery, planner e progresso           |
-| #4 Skills — listening, speaking, reading and writing |         P1 | Integrar quatro habilidades ao mesmo modelo de evidência             |
-| #5 AI Tutor — constrained adaptive coaching          |         P1 | Infra de IA, avaliação estruturada, tutor e adaptação com guardrails |
-| #6 Product hardening & language platform             |         P2 | Resiliência, privacidade, operação e expansão multi-idioma           |
+| Epic | Prioridade | Objetivo |
+|---|---:|---|
+| #2 Foundation — engineering baseline | P0 | Base técnica, CI, dados, auth, design, observabilidade e conteúdo |
+| #3 Study Engine — core learning loop | P0 | Today, lesson, exercise, SRS, mastery, planner e progresso |
+| #4 Skills — listening, speaking, reading and writing | P1 | Integrar quatro habilidades ao mesmo modelo de evidência |
+| #5 AI Tutor — constrained adaptive coaching | P1 | Infra de IA, avaliação estruturada, tutor e adaptação com guardrails |
+| #6 Product hardening & language platform | P2 | Resiliência, privacidade, operação e expansão multi-idioma |
 
 ## Fase 0 — Foundation
 

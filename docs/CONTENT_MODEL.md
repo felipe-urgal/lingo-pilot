@@ -48,22 +48,22 @@ Não usar posição como único identificador, porque unidades podem ser reorden
 
 ```ts
 type Lesson = {
-  id: string;
-  version: number;
-  status: "draft" | "review" | "published" | "retired";
-  level: string;
-  unitId: string;
-  title: LocalizedText;
-  estimatedMinutes: number;
-  objectives: LearningObjectiveRef[];
-  prerequisites: PrerequisiteRef[];
-  introduces: ConceptRef[];
-  reinforces: ConceptRef[];
-  vocabulary: VocabularyRef[];
-  blocks: ContentBlock[];
-  activities: ActivityRef[];
-  editorial: EditorialMetadata;
-};
+  id: string
+  version: number
+  status: 'draft' | 'review' | 'published' | 'retired'
+  level: string
+  unitId: string
+  title: LocalizedText
+  estimatedMinutes: number
+  objectives: LearningObjectiveRef[]
+  prerequisites: PrerequisiteRef[]
+  introduces: ConceptRef[]
+  reinforces: ConceptRef[]
+  vocabulary: VocabularyRef[]
+  blocks: ContentBlock[]
+  activities: ActivityRef[]
+  editorial: EditorialMetadata
+}
 ```
 
 O schema real será definido no package `content` e validado em CI.
