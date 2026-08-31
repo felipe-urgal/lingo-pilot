@@ -18,52 +18,52 @@ O objetivo é impedir colisões com projetos e infraestrutura que já executam n
 
 ### Trabalho
 
-| Porta | Serviço/projeto |
-|---:|---|
-| 3000 | caiena |
-| 3001 | fi-editor-api |
-| 3002 | fi-observatorio-app |
-| 3003 | fi-editor-local |
-| 3004 | caiena-reserved |
-| 3005 | caiena-reserved |
-| 3006 | caiena-reserved |
-| 3035 | fi-ferramentas-webpacker |
-| 1025 | fi-ferramentas-mailhog-smtp |
-| 8025 | fi-ferramentas-mailhog-web |
-| 12345 | fi-ferramentas |
-| 12346 | fi-ferramentas |
+| Porta | Serviço/projeto             |
+| ----: | --------------------------- |
+|  3000 | caiena                      |
+|  3001 | fi-editor-api               |
+|  3002 | fi-observatorio-app         |
+|  3003 | fi-editor-local             |
+|  3004 | caiena-reserved             |
+|  3005 | caiena-reserved             |
+|  3006 | caiena-reserved             |
+|  3035 | fi-ferramentas-webpacker    |
+|  1025 | fi-ferramentas-mailhog-smtp |
+|  8025 | fi-ferramentas-mailhog-web  |
+| 12345 | fi-ferramentas              |
+| 12346 | fi-ferramentas              |
 
 ### Infraestrutura
 
-| Porta | Serviço |
-|---:|---|
-| 80 | apache |
-| 443 | tailscale |
-| 3306 | mysql |
-| 33060 | mysql-x |
-| 5432 | postgres |
-| 6379 | redis |
+| Porta | Serviço   |
+| ----: | --------- |
+|    80 | apache    |
+|   443 | tailscale |
+|  3306 | mysql     |
+| 33060 | mysql-x   |
+|  5432 | postgres  |
+|  6379 | redis     |
 | 11211 | memcached |
 
 ### Projetos pessoais
 
-| Projeto | Portas |
-|---|---|
-| home-music | web `5173`, api `8787`, e2e `8791` |
-| dev-dashboard | web `5174`, preview `4173`, api `4343` |
-| controle-gastos | web `5100` |
-| loto-lab | app `5200`, postgres `5434` |
-| portfolio-copilot | web `5300`, postgres `5433` |
+| Projeto           | Portas                                 |
+| ----------------- | -------------------------------------- |
+| home-music        | web `5173`, api `8787`, e2e `8791`     |
+| dev-dashboard     | web `5174`, preview `4173`, api `4343` |
+| controle-gastos   | web `5100`                             |
+| loto-lab          | app `5200`, postgres `5434`            |
+| portfolio-copilot | web `5300`, postgres `5433`            |
 
 Os caminhos absolutos desses projetos são detalhes da máquina do desenvolvedor e não devem virar requisito de runtime do LingoPilot. O checkout pode ficar, por convenção pessoal, em `$HOME/Projetos/lingo-pilot`.
 
 ## 3. Portas reservadas para o LingoPilot
 
-| Finalidade | Host | Porta | Observação |
-|---|---|---:|---|
+| Finalidade                       | Host        |    Porta | Observação                                                                                  |
+| -------------------------------- | ----------- | -------: | ------------------------------------------------------------------------------------------- |
 | Web / Next.js em desenvolvimento | `127.0.0.1` | **5400** | UI e endpoints HTTP da aplicação; não haverá API local separada no monólito modular inicial |
-| Web para Playwright/E2E | `127.0.0.1` | **5401** | servidor isolado de teste para não disputar a sessão de desenvolvimento |
-| PostgreSQL local do projeto | `127.0.0.1` | **5435** | mapping esperado `host:5435 -> container:5432` |
+| Web para Playwright/E2E          | `127.0.0.1` | **5401** | servidor isolado de teste para não disputar a sessão de desenvolvimento                     |
+| PostgreSQL local do projeto      | `127.0.0.1` | **5435** | mapping esperado `host:5435 -> container:5432`                                              |
 
 Estas portas ficam reservadas ao projeto mesmo quando o processo não estiver ativo.
 
@@ -77,21 +77,28 @@ Postgres: localhost:5435
 
 Não usar `3000` como fallback do Next.js: essa porta já pertence ao ambiente de trabalho.
 
-## 4. Contrato esperado no bootstrap
+## 4. Contrato implementado no bootstrap
 
-A issue de bootstrap deve configurar explicitamente as portas, sem depender de defaults implícitos.
+A Foundation já configura explicitamente as portas do web shell e impede o fallback automático do Next.js.
 
-Exemplo conceitual de configuração:
+Comandos canônicos:
 
-```dotenv
-APP_HOST=127.0.0.1
-APP_PORT=5400
-DATABASE_URL=postgresql://lingo_pilot:lingo_pilot@127.0.0.1:5435/lingo_pilot
-E2E_BASE_URL=http://127.0.0.1:5401
-E2E_PORT=5401
+```text
+pnpm dev      -> 127.0.0.1:5400
+pnpm dev:e2e  -> 127.0.0.1:5401
 ```
 
-Os valores reais, nomes de variáveis e credenciais locais sintéticas serão definidos na implementação da configuração. O exemplo acima documenta o contrato de rede, não autoriza secrets reais no repositório.
+Antes de iniciar o Next.js, `apps/web/scripts/port-contract.mjs` verifica se a porta contratada está livre. Se estiver ocupada, o processo termina com código diferente de zero e mensagem explícita; ele não tenta `5401`, `5402` ou qualquer outra porta como substituição silenciosa.
+
+O bootstrap também versiona `.env.example` apenas com configuração pública que já existe de fato:
+
+```dotenv
+NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
+```
+
+Variáveis de PostgreSQL, autenticação e providers **não são antecipadas**. Elas entram nas issues que implementarem essas capacidades, com schema/validação e placeholders seguros.
+
+A porta `5435` permanece reservada para PostgreSQL, mas nenhum banco é criado pela issue #7. A implementação do banco local pertence à #10; a configuração validada mais ampla pertence à #9; o isolamento completo de E2E pertence à #16.
 
 ## 5. Docker / PostgreSQL
 
@@ -113,6 +120,8 @@ Regras:
 
 O Playwright deve iniciar/usar a aplicação em `5401` por configuração explícita.
 
+O bootstrap já expõe `pnpm dev:e2e` em `5401`, mas Playwright e a infraestrutura E2E completa são responsabilidade da #16.
+
 O E2E não deve:
 
 - matar processo que esteja em `5400`;
@@ -124,14 +133,13 @@ Isso permite manter `pnpm dev` aberto em `5400` enquanto a suite executa em ambi
 
 ## 7. Verificação de conflito
 
-Os scripts de ambiente devem, quando prático, verificar a disponibilidade das portas contratadas antes de subir serviços.
+Os scripts oficiais verificam a disponibilidade das portas web contratadas antes de subir o Next.js.
 
-Se houver conflito, a mensagem deve informar:
+Se houver conflito, a mensagem informa:
 
-- porta em conflito;
-- serviço do LingoPilot que precisa dela;
-- comando/ação sugerida para identificar o processo;
-- que a porta não deve ser alterada ad hoc sem atualizar este contrato.
+- host/porta em conflito;
+- que o LingoPilot não auto-incrementa portas;
+- que o processo conflitante deve ser encerrado antes de tentar novamente.
 
 Evitar o padrão comum de frameworks:
 
@@ -158,10 +166,10 @@ Não reservar intervalos inteiros sem necessidade.
 
 ## 9. Relação com issues de Foundation
 
-- **#7** deve aplicar `5400` no web shell e deixar o projeto preparado para `5401` em E2E.
-- **#9** deve transformar estes valores em configuração validada e documentada.
-- **#10** deve publicar o PostgreSQL local em `5435`.
-- **#16** deve garantir isolamento do servidor/banco E2E.
+- **#7:** implementa o web shell em `5400`, o servidor isolado em `5401` e o fail-fast de conflito de porta.
+- **#9:** transforma configuração de ambiente em contrato validado e tipado conforme as capacidades forem introduzidas.
+- **#10:** cria PostgreSQL/Drizzle/migrations e publica o banco local em `5435`.
+- **#16:** implementa Playwright, isolamento de servidor/banco E2E e suporte determinístico de testes.
 
 ## 10. Regra para agentes de IA
 
