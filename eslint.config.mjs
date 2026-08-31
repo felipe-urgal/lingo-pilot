@@ -1,3 +1,3 @@
-import { baseConfig } from "@lingo-pilot/config/eslint/base";
+import { nodeJsConfig } from "@lingo-pilot/config/eslint/node";
 
-export default baseConfig;
+export default nodeJsConfig;
