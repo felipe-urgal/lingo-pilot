@@ -141,6 +141,8 @@ Checks obrigatórios devem bloquear merge.
 
 Falha de CI deve ser investigada. Não desabilitar check sem issue/decisão explícita.
 
+CI/Preview não podem usar credenciais nem banco de Production. O contrato completo de ambientes e promoção está em `docs/PRODUCTION_DEPLOYMENT.md`.
+
 ## 13. Migrations
 
 PR com migration descreve:
@@ -151,6 +153,15 @@ PR com migration descreve:
 - impacto de lock/performance quando relevante;
 - rollback ou forward-fix strategy;
 - ordem de deploy se aplicação e schema precisarem coexistir.
+
+Produção segue `docs/PRODUCTION_DEPLOYMENT.md`:
+
+- build/deploy da aplicação não executa migration;
+- migration já aplicada é imutável;
+- preferir `expand → deploy → contract`;
+- schema exigido por código novo deve ficar compatível antes da promoção do código;
+- migration destrutiva exige checkpoint/backup e recovery plan;
+- rollback da aplicação só é seguro depois de validar compatibilidade com o schema já aplicado.
 
 ## 14. Feature flags
 
@@ -174,17 +185,26 @@ Criar ADR quando decisão:
 - será difícil/caro reverter;
 - futuros agentes precisam entender contexto.
 
+Mudanças que alterem hosting, banco de produção, política de migration, estratégia de promoção, health/readiness, backup/restore ou recovery devem revisar `docs/PRODUCTION_DEPLOYMENT.md` e o ADR de topologia vigente.
+
 ## 16. Release
 
-No início, `main` deve permanecer deployable.
+`main` é a branch de produção e deve permanecer deployable.
+
+A topologia inicial usa Vercel + Neon e promoção Git-managed. O fluxo completo, incluindo migration-before-code, health/readiness, backup e recovery, está em `docs/PRODUCTION_DEPLOYMENT.md`.
 
 Antes de release/redeploy importante:
 
-- CI verde;
-- migrations compatíveis;
-- smoke test;
-- deploy marker;
-- rollback conhecido.
+- CI verde no head final;
+- revision/commit identificado;
+- migrations compatíveis e aplicadas na ordem correta quando necessárias;
+- backup/checkpoint quando o risco exigir;
+- deploy marker/version identificável;
+- readiness e smoke definidos;
+- rollback/forward-fix conhecido;
+- nenhuma Preview/CI apontando para Production.
+
+`READY` do provider não encerra a validação: a aplicação precisa passar pelo smoke/readiness próprio.
 
 ## 17. Hotfix
 
@@ -197,8 +217,11 @@ Fluxo:
 3. menor correção segura;
 4. teste de regressão;
 5. PR prioritário;
-6. merge/deploy;
-7. follow-up de causa raiz se necessário.
+6. merge/deploy conforme `docs/PRODUCTION_DEPLOYMENT.md`;
+7. smoke/readiness;
+8. follow-up de causa raiz se necessário.
+
+Hotfix não autoriza migration destrutiva improvisada, uso de banco de produção em local/Preview ou rollback de código sem conferir compatibilidade de schema.
 
 ## 18. Débito técnico
 
@@ -223,6 +246,8 @@ Antes de adicionar pacote:
 ## 20. Atualização de stack
 
 Atualizações grandes de framework/ORM devem ser PRs próprios quando possível, com migration guide e testes.
+
+Mudança de provider de hosting/banco que altere a topologia aprovada exige revisão do ADR correspondente quando houver trade-off estrutural ou lock-in material.
 
 ## 21. Done
 
