@@ -6,9 +6,9 @@ export const LOCAL_ENV_FILE = ".env.local";
 function isMissingFileError(error) {
   return Boolean(
     error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === "ENOENT",
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "ENOENT",
   );
 }
 
