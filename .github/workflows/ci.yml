@@ -48,6 +48,12 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
+      - name: Show formatting diff
+        if: failure()
+        run: |
+          pnpm format
+          git diff -- packages/config/runtime/environment.d.ts packages/config/runtime/environment.mjs README.md
+
       - name: Environment config
         run: pnpm env:check
 
