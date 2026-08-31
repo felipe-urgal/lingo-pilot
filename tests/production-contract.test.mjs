@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 const manifestUrl = new URL(
   "../.dev-dashboard/production.json",
   import.meta.url,
 );
-const gateUrl = new URL("../scripts/production-gate.mjs", import.meta.url);
+const gatePath = fileURLToPath(
+  new URL("../scripts/production-gate.mjs", import.meta.url),
+);
 
 const manifest = JSON.parse(await readFile(manifestUrl, "utf8"));
 
@@ -31,8 +34,8 @@ test(
   },
 );
 
-test("prod:status informa blockers sem falhar", () => {
-  const result = spawnSync(process.execPath, [gateUrl.pathname, "status"], {
+test("prod:status informa blockers do contrato sem falhar", () => {
+  const result = spawnSync(process.execPath, [gatePath, "status"], {
     encoding: "utf8",
   });
 
@@ -41,11 +44,14 @@ test("prod:status informa blockers sem falhar", () => {
     result.stdout,
     /Produção do LingoPilot ainda está bloqueada por contrato/,
   );
-  assert.match(result.stdout, /vercel-project-not-configured/);
+
+  for (const blocker of manifest.production.blockedBy) {
+    assert.ok(result.stdout.includes(blocker));
+  }
 });
 
-test("prod:check falha de propósito enquanto produção não está pronta", () => {
-  const result = spawnSync(process.execPath, [gateUrl.pathname, "check"], {
+test("prod:check falha de propósito e informa blockers do contrato", () => {
+  const result = spawnSync(process.execPath, [gatePath, "check"], {
     encoding: "utf8",
   });
 
@@ -54,4 +60,8 @@ test("prod:check falha de propósito enquanto produção não está pronta", () 
     result.stderr,
     /Produção do LingoPilot não está pronta para habilitação/,
   );
+
+  for (const blocker of manifest.production.blockedBy) {
+    assert.ok(result.stderr.includes(blocker));
+  }
 });
