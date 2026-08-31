@@ -4,14 +4,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
   },
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:check": "drizzle-kit check",
+    "db:smoke": "node scripts/smoke.mjs",
+    "lint": "eslint drizzle.config.ts scripts src test --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0"
   },
   "devDependencies": {
     "@lingo-pilot/config": "workspace:*",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.10",
     "eslint": "10.9.1",
     "typescript": "7.0.2"
   }

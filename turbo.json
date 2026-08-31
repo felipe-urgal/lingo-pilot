@@ -3,6 +3,7 @@
   "ui": "tui",
   "globalEnv": [
     "APP_TIMEZONE",
+    "DATABASE_URL",
     "LINGO_PROFILE",
     "LINGO_TEST_MODE",
     "NEXT_PUBLIC_APP_URL",

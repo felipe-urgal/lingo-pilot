@@ -1,9 +1,10 @@
 {
   "extends": "@lingo-pilot/config/tsconfig/base.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "declaration": false,
     "declarationMap": false,
     "noEmit": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["drizzle.config.ts", "src/**/*.ts"]
 }
