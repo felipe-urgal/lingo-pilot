@@ -1,0 +1,98 @@
+name: Bootstrap validation
+
+on:
+  push:
+    branches:
+      - feature/bootstrap-monorepo
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.5 --activate
+
+      - name: Install and generate lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify frozen install contract
+        run: pnpm install --frozen-lockfile
+
+      - name: Normalize formatting
+        run: pnpm format
+
+      - name: Verify formatting
+        run: pnpm format:check
+
+      - name: Verify workspace boundaries
+        run: node scripts/verify-workspace.mjs
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify occupied-port failure
+        shell: bash
+        run: |
+          node -e 'const net=require("node:net");const s=net.createServer();s.listen(5400,"127.0.0.1",()=>setTimeout(()=>{},30000));' &
+          HOLDER_PID=$!
+          sleep 1
+          set +e
+          OUTPUT=$(timeout 8s pnpm dev 2>&1)
+          STATUS=$?
+          set -e
+          kill "$HOLDER_PID" 2>/dev/null || true
+          wait "$HOLDER_PID" 2>/dev/null || true
+          printf '%s\n' "$OUTPUT"
+          test "$STATUS" -ne 0
+          printf '%s' "$OUTPUT" | grep -q "already in use"
+
+      - name: Smoke dev server on 5400
+        shell: bash
+        run: |
+          pnpm dev > /tmp/lingo-pilot-dev.log 2>&1 &
+          DEV_PID=$!
+          trap 'kill "$DEV_PID" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:5400/ > /tmp/lingo-pilot-home.html; then
+              grep -q "LingoPilot" /tmp/lingo-pilot-home.html
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/lingo-pilot-dev.log
+          exit 1
+
+      - name: Commit generated bootstrap artifacts
+        shell: bash
+        run: |
+          if git diff --quiet && git ls-files --error-unmatch pnpm-lock.yaml >/dev/null 2>&1; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: normalize bootstrap workspace"
+          git push

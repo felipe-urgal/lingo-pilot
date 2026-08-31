@@ -1,0 +1,14 @@
+{
+  "extends": "@lingo-pilot/config/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

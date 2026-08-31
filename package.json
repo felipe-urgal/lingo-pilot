@@ -1,0 +1,25 @@
+{
+  "name": "lingo-pilot",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@lingo-pilot/web",
+    "dev:e2e": "turbo run dev:e2e --filter=@lingo-pilot/web",
+    "build": "turbo run build",
+    "lint": "eslint scripts tests --max-warnings 0 && turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "node --test tests/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@lingo-pilot/config": "workspace:*",
+    "eslint": "10.9.1",
+    "prettier": "3.9.6",
+    "turbo": "2.10.11"
+  }
+}
