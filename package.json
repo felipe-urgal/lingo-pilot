@@ -28,6 +28,8 @@
     "content:validate": "pnpm --filter @lingo-pilot/content validate",
     "check:workspace": "node scripts/verify-workspace.mjs",
     "check": "pnpm format:check && pnpm env:check && pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm db:check && pnpm build",
+    "prod:status": "node scripts/production-gate.mjs status",
+    "prod:check": "node scripts/production-gate.mjs check",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
