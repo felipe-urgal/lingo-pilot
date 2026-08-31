@@ -9,7 +9,7 @@ Este documento é o índice do backlog inicial criado a partir da visão, arquit
 | #2 Foundation — engineering baseline | P0 | Base técnica, CI, dados, auth, design, observabilidade e conteúdo |
 | #3 Study Engine — core learning loop | P0 | Today, lesson, exercise, SRS, mastery, planner e progresso |
 | #4 Skills — listening, speaking, reading and writing | P1 | Integrar quatro habilidades ao mesmo modelo de evidência |
-| #5 AI Tutor — constrained adaptive coaching | P1 | IA contextual, validada, observável e pedagogicamente limitada |
+| #5 AI Tutor — constrained adaptive coaching | P1 | Infra de IA, avaliação estruturada, tutor e adaptação com guardrails |
 | #6 Product hardening & language platform | P2 | Resiliência, privacidade, operação e expansão multi-idioma |
 
 ## Fase 0 — Foundation
@@ -59,10 +59,10 @@ PR #1 merge
 
 ### Estratégia de entrega
 
-A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar os fundamentos de integridade:
+A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar os fundamentos de integridade. O dogfood A0 é **gate intermediário**, não autorização para considerar a Fase 1 concluída sem A1/A2.
 
 ```text
-profile/enrollment
+profile + LanguageProfile + Enrollment
       ↓
 lesson → exercise → attempt
       ↓             ↓
@@ -74,10 +74,16 @@ resume ───────────────→ progress
       ↓
 A0 dogfood
       ↓
-A1/A2 expansion
+A1/A2 content + progression + representative E2E
 ```
 
-## Fase 2 — Skills
+A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especial por nível e quando entry point manual A1/A2 não fabrica mastery.
+
+## Fase 2 — Skills + AI Evaluation Foundation
+
+A infraestrutura compartilhada de IA entra **antes** das avaliações por IA de writing/speaking. Captura/UX pode avançar sem ela, mas feedback inteligente não.
+
+### Skill foundations
 
 - #30 Listening player, graded dialogues and comprehension activities
 - #31 Graded reading experience and comprehension evidence
@@ -85,27 +91,58 @@ A1/A2 expansion
 - #33 Speaking recorder, secure upload and retention lifecycle
 - #34 Speech transcription pipeline and speaking attempt processing
 
-## Fase 3 — AI Tutor
+### AI evaluation foundation — prerequisite compartilhado
 
 - #35 Provider abstraction, structured outputs and prompt registry
 - #36 LearnerContext builder and pedagogical constraints
 - #41 Versioned AI evaluation harness and quality gates
-- #37 Context-aware tutor conversation experience
+
+### Structured skill evaluation
+
 - #38 Structured writing evaluation and corrective feedback
 - #39 Structured speaking feedback from transcript and available speech signals
+
+### Ordem obrigatória
+
+```text
+listening / reading
+writing capture / speaking capture
+          ↓
+STT adapter quando aplicável
+          ↓
+provider contracts → learner context → eval harness
+          ↓
+writing evaluation / speaking evaluation
+          ↓
+Fase 2 exit: quatro skills ponta a ponta
+```
+
+`#38` e `#39` não podem ser implementadas antes de `#35`, `#36` e `#41` estarem prontas para a feature correspondente.
+
+## Fase 3 — AI Tutor & Adaptation
+
+- #37 Context-aware tutor conversation experience
 - #40 Adaptive micropractice generation from recurring errors
 
 ### Regra de sequência da IA
 
-A infraestrutura e os evals vêm antes de liberar comportamentos inteligentes:
+Tutor e prática adaptativa reutilizam a foundation já validada na Fase 2:
 
 ```text
-provider contracts → learner context → eval harness
-                              ↓
-                  tutor / writing / speaking
-                              ↓
-                    adaptive micropractice
+#35 provider contracts
+   ↓
+#36 learner context
+   ↓
+#41 eval harness
+   ↓
+#38/#39 skill evaluations
+   ↓
+#37 tutor
+   ↓
+#40 adaptive micropractice
 ```
+
+O tutor V1 precisa de evals representativos de **A0, A1 e A2**; cobertura A0/A1 não é suficiente para liberar A2.
 
 ## Fases 4 e 5 — Hardening & Platform
 
@@ -126,7 +163,7 @@ O produto não deve avançar seriamente sem estes itens. Inclui Foundation e o c
 
 ### P1
 
-Entrega valor alto após o core estar confiável: skills, dogfood/expansão e AI Tutor.
+Entrega valor alto após o core estar confiável: skills, dogfood/expansão, evaluation foundation e AI Tutor.
 
 ### P2
 
@@ -144,6 +181,8 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 8. Documentação e testes fazem parte da issue.
 9. Epics são tracking; tarefas implementáveis são as issues filhas.
 10. O roadmap é vivo, mas mudanças de prioridade devem preservar dependências técnicas e pedagógicas.
+11. Ponto de entrada/placement nunca é convertido em mastery, attempt ou review fictício.
+12. Nenhum fluxo de IA de usuário é liberado sem schema/guardrails/evals proporcionais ao risco e aos níveis suportados.
 
 ## Próximo passo
 
