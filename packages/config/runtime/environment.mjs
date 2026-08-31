@@ -196,7 +196,10 @@ export function parseTestDatabaseEnvironment(source) {
   }
 
   if (source.DATABASE_URL?.trim()) {
-    const runtimeDatabase = parseDatabaseUrl(source.DATABASE_URL, "DATABASE_URL");
+    const runtimeDatabase = parseDatabaseUrl(
+      source.DATABASE_URL,
+      "DATABASE_URL",
+    );
 
     if (databaseIdentity(runtimeDatabase) === databaseIdentity(testDatabase)) {
       throw new EnvironmentValidationError(

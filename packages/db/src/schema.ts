@@ -20,9 +20,6 @@ export const appMetadata = pgTable(
       .notNull(),
   },
   (table) => [
-    check(
-      "app_metadata_key_not_blank",
-      sql`length(btrim(${table.key})) > 0`,
-    ),
+    check("app_metadata_key_not_blank", sql`length(btrim(${table.key})) > 0`),
   ],
 );

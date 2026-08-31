@@ -1,8 +1,5 @@
 import { parseDatabaseEnvironment } from "@lingo-pilot/config/runtime/environment";
-import {
-  createDatabaseClient,
-  migrateDatabase,
-} from "../src/index.ts";
+import { createDatabaseClient, migrateDatabase } from "../src/index.ts";
 
 let client;
 
