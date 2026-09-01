@@ -36,6 +36,12 @@ test("Production Contract preserva a interface operacional validada", () => {
     backup: "prod:backup",
     restoreCheck: "prod:restore-check",
   });
+
+  assert.deepEqual(manifest.production.policies, {
+    backup: "required-before-migration",
+    migrations: "before-deploy",
+    rollback: "provider-only-when-schema-compatible",
+  });
 });
 
 test("prod:status reporta a readiness canônica configurada", () => {
