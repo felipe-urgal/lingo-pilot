@@ -6,54 +6,50 @@ import { fileURLToPath } from "node:url";
 
 const rootUrl = new URL("../", import.meta.url);
 const manifestUrl = new URL(".dev-dashboard/production.json", rootUrl);
-const gatePath = fileURLToPath(new URL("scripts/production-gate.mjs", rootUrl));
+const statusPath = fileURLToPath(
+  new URL("scripts/production-status.mjs", rootUrl),
+);
 const manifest = JSON.parse(await readFile(manifestUrl, "utf8"));
 
-test("Production Contract continua fail-closed", () => {
+test("Production Contract está habilitado e mapeado explicitamente", () => {
   assert.equal(manifest.version, 1);
-  assert.equal(manifest.production.enabled, false);
-  assert.equal(manifest.production.strategy, "disabled");
-  assert.equal(manifest.production.provider, "none");
+  assert.equal(manifest.production.enabled, true);
+  assert.equal(manifest.production.strategy, "git-managed");
+  assert.equal(manifest.production.provider, "vercel");
   assert.equal(manifest.production.branch, "main");
-  assert.equal(manifest.production.commands.status, "prod:status");
-  assert.equal(manifest.production.commands.check, "prod:check");
-  assert.deepEqual(manifest.production.blockedBy, [
-    "vercel-project-not-configured",
-    "neon-production-not-validated",
-    "backup-dr-not-validated",
-    "migration-flow-not-validated",
-    "production-health-not-configured",
-  ]);
+  assert.equal(manifest.production.external.project, "lingo-pilot");
+  assert.equal(manifest.production.health.type, "http");
+  assert.equal(
+    manifest.production.health.url,
+    "https://lingo-pilot.vercel.app/api/health/ready",
+  );
+  assert.equal(manifest.production.blockedBy, undefined);
+  assert.equal(manifest.production.reasonCode, undefined);
 });
 
-test("prod:status lê blockers do contrato", () => {
-  const result = spawnSync(process.execPath, [gatePath, "status"], {
+test("Production Contract preserva a interface operacional validada", () => {
+  assert.deepEqual(manifest.production.commands, {
+    status: "prod:status",
+    check: "prod:check",
+    migrate: "prod:migrate",
+    verify: "prod:verify",
+    backup: "prod:backup",
+    restoreCheck: "prod:restore-check",
+  });
+});
+
+test("prod:status reporta a readiness canônica configurada", () => {
+  const result = spawnSync(process.execPath, [statusPath], {
     encoding: "utf8",
+    env: {
+      ...process.env,
+      LINGO_PRODUCTION_READY_URL: manifest.production.health.url,
+    },
   });
 
   assert.equal(result.status, 0);
   assert.match(
     result.stdout,
-    /Produção do LingoPilot ainda está bloqueada por contrato/,
+    /\[prod:status\] configurado: https:\/\/lingo-pilot\.vercel\.app\/api\/health\/ready/,
   );
-
-  for (const blocker of manifest.production.blockedBy) {
-    assert.ok(result.stdout.includes(blocker));
-  }
-});
-
-test("prod:check lê blockers do contrato e falha", () => {
-  const result = spawnSync(process.execPath, [gatePath, "check"], {
-    encoding: "utf8",
-  });
-
-  assert.equal(result.status, 1);
-  assert.match(
-    result.stderr,
-    /Produção do LingoPilot não está pronta para habilitação/,
-  );
-
-  for (const blocker of manifest.production.blockedBy) {
-    assert.ok(result.stderr.includes(blocker));
-  }
 });
