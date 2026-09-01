@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { mkdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parsedProductionDatabase } from "./production-environment.mjs";
 
@@ -18,8 +18,14 @@ try {
 const backupsDirectory = resolve(".dev-dashboard/backups");
 await mkdir(backupsDirectory, { recursive: true, mode: 0o700 });
 
-const timestamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
-const outputFile = resolve(backupsDirectory, `lingo-pilot-${timestamp}.dump`);
+const timestamp = new Date()
+  .toISOString()
+  .replaceAll(":", "-")
+  .replaceAll(".", "-");
+const outputFile = resolve(
+  backupsDirectory,
+  `lingo-pilot-${timestamp}.dump`,
+);
 const sslMode = databaseUrl.searchParams.get("sslmode") || "require";
 
 const environment = {
