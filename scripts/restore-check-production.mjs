@@ -79,6 +79,4 @@ if (
   process.exit(1);
 }
 
-console.log(
-  "[prod:restore-check] backup restaurado e schema mínimo validado.",
-);
+console.log("[prod:restore-check] backup restaurado e schema mínimo validado.");
