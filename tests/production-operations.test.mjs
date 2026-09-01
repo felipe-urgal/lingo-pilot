@@ -12,8 +12,7 @@ test("prod check exige dois bancos isolados e remove configuração de produçã
   assert.throws(() => createCheckEnvironment({}), /CHECK_DATABASE_URL/);
 
   const environment = createCheckEnvironment({
-    CHECK_DATABASE_URL:
-      "postgresql://user:pass@127.0.0.1:5435/lingo_check",
+    CHECK_DATABASE_URL: "postgresql://user:pass@127.0.0.1:5435/lingo_check",
     CHECK_TEST_DATABASE_URL:
       "postgresql://user:pass@127.0.0.1:5435/lingo_check_test",
     DATABASE_DIRECT_URL: "postgresql://prod:secret@prod.example/prod",
@@ -49,10 +48,7 @@ test("prod check recusa runtime e testes no mesmo banco semanticamente", () => {
 });
 
 test("produção exige conexão PostgreSQL explícita e readiness HTTPS", () => {
-  assert.throws(
-    () => productionDatabaseEnvironment({}),
-    /DATABASE_DIRECT_URL/,
-  );
+  assert.throws(() => productionDatabaseEnvironment({}), /DATABASE_DIRECT_URL/);
   assert.throws(
     () =>
       productionReadyUrl({
