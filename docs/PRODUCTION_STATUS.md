@@ -55,7 +55,7 @@ Falha de PostgreSQL ou ausência do schema retorna `503`. Providers opcionais de
 
 `prod:backup` gera dump PostgreSQL em `.dev-dashboard/backups/`, caminho ignorado pelo Git. A senha não é incluída na linha de comando do `pg_dump`.
 
-`prod:restore-check` exige `RESTORE_CHECK_DATABASE_URL` cujo nome do database contenha `restore`, restaura o dump em ambiente não produtivo e valida a presença do schema mínimo. O Production Contract só pode ser habilitado depois que esse procedimento tiver sido executado com sucesso.
+`prod:restore-check` exige `RESTORE_CHECK_DATABASE_URL` apontando para um ambiente não produtivo e a confirmação explícita `RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check`. Quando `DATABASE_DIRECT_URL` também está presente, o comando compara host, porta e database e recusa executar se o destino do restore for o mesmo banco de produção. Após o restore, valida a presença do schema mínimo. O Production Contract só pode ser habilitado depois que esse procedimento tiver sido executado com sucesso.
 
 ## Blockers que permanecem até a ativação final
 
