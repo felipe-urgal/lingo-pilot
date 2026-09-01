@@ -58,6 +58,12 @@ pnpm env:check
 
 Variáveis públicas devem ser explicitamente `NEXT_PUBLIC_*`. Secrets e configuração server-only não podem ser importados por módulos destinados ao browser.
 
+Quando o escopo usa persistência, suba o PostgreSQL local antes dos checks:
+
+```bash
+pnpm db:up
+```
+
 ## Checks locais
 
 Antes de abrir ou atualizar um PR, execute:
@@ -75,10 +81,11 @@ lint
 typecheck
 test
 content:validate
+db:check
 build
 ```
 
-Checks adicionais entram conforme o escopo, por exemplo integration tests, E2E ou evals. Não substitua um check automatizado por validação manual quando o check já existir.
+`pnpm test` inclui unitários/estruturais e integration tests PostgreSQL. Checks adicionais entram conforme o escopo, por exemplo E2E ou evals. Não substitua um check automatizado por validação manual quando o check já existir.
 
 ## Pull Requests
 
@@ -100,7 +107,7 @@ CI / quality
 CI / build
 ```
 
-O primeiro valida instalação frozen, formatação, configuração de ambiente, lint, tipos, testes e conteúdo. O segundo valida o build de produção após o gate de qualidade ficar verde.
+O primeiro valida instalação frozen, formatação, configuração de ambiente, smoke PostgreSQL, lint, tipos, testes unitários/integração, migrations e conteúdo. O segundo valida o build de produção após o gate de qualidade ficar verde e confirma que comandos oficiais não alteraram arquivos rastreados.
 
 Mudanças nos nomes desses checks são breaking changes de governança porque podem bloquear a ruleset da `main`.
 
