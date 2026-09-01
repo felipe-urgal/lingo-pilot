@@ -8,7 +8,9 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na fase de Foundation. O bootstrap técnico fornece o shell mínimo, CI permanente, governança da `main`, configuração de runtime validada e a foundation de persistência PostgreSQL/Drizzle. Ele **não** implementa ainda Study Engine, autenticação, conteúdo pedagógico real ou AI Tutor.
+O repositório está na **Fase 0 — Foundation**. As issues #7–#10 já concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local e foundation PostgreSQL/Drizzle. A Foundation ainda **não está concluída**: auth/ownership (#11), boundaries executáveis (#12), design system (#13), observabilidade (#14), schemas de conteúdo (#15) e infraestrutura completa de testes (#16) continuam no backlog.
+
+O projeto **não** implementa ainda o Study Engine, autenticação funcional, conteúdo pedagógico real ou AI Tutor.
 
 Stack inicial fixada:
 
@@ -22,6 +24,8 @@ Stack inicial fixada:
 - Drizzle ORM `0.45.2` e Drizzle Kit `0.31.10`;
 - ESLint `10.9.1`;
 - Prettier `3.9.6`.
+
+O status operacional e a sequência do backlog ficam em [`docs/ISSUE_INDEX.md`](docs/ISSUE_INDEX.md) e [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Primeira execução
 
@@ -90,6 +94,8 @@ pnpm check:workspace   valida boundaries estruturais
 pnpm format            normaliza formatação com Prettier
 pnpm format:check      verifica formatação sem alterar arquivos
 pnpm check             gate agregado do repositório
+pnpm prod:status       mostra o estado fail-closed de produção
+pnpm prod:check        falha enquanto os blockers de produção existirem
 ```
 
 ## Configuração de runtime
@@ -122,7 +128,7 @@ CI / quality
 CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL efêmero isolado e executa format check, environment config, lint, typecheck, testes unitários, integration tests, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção sem executar migrations ou abrir conexão com banco.
+`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
 
 Para reproduzir os gates que dependem de persistência localmente:
 
@@ -182,7 +188,7 @@ A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) e [
 
 ## Produção
 
-A topologia inicial aprovada é:
+A topologia aprovada continua sendo:
 
 ```text
 GitHub main
@@ -194,13 +200,15 @@ Next.js / LingoPilot
 Neon PostgreSQL
 ```
 
-Deploy é Git-managed, migrations ficam fora do build da Vercel e o projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+Isso é **topologia alvo, não declaração de produção ativa**. A #59 estabeleceu um Production Contract intencionalmente `disabled`/fail-closed: hoje o repositório expõe `pnpm prod:status` e `pnpm prod:check`, mas Vercel, Neon, migrations de produção, backup/restore e health/readiness ainda precisam de implementação e validação operacional na #45.
 
-Contrato operacional: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md).
+Deploy futuro será Git-managed, migrations ficarão fora do build da Vercel e o projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+
+Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
 
 ## Roadmap
 
-- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio.
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#10 concluídas.**
 - **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
@@ -229,6 +237,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Visão do produto](docs/VISION.md)
 - [Product Requirements](docs/PRODUCT_REQUIREMENTS.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Índice de issues](docs/ISSUE_INDEX.md)
 - [Arquitetura](docs/ARCHITECTURE.md)
 - [Modelo de domínio](docs/DOMAIN_MODEL.md)
 - [Learning Engine](docs/LEARNING_ENGINE.md)
@@ -239,8 +248,10 @@ Antes de alterar código, leia obrigatoriamente:
 - [Estratégia de qualidade](docs/QUALITY_STRATEGY.md)
 - [Configuração de runtime](docs/RUNTIME_CONFIGURATION.md)
 - [PostgreSQL e Drizzle](docs/DATABASE.md)
+- [Arquivos gerados](docs/GENERATED_FILES.md)
 - [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
 - [Observabilidade](docs/OBSERVABILITY.md)
 - [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
+- [Status de produção](docs/PRODUCTION_STATUS.md)
 - [Workflow de desenvolvimento](docs/DEVELOPMENT_WORKFLOW.md)
 - [Definition of Done](docs/DEFINITION_OF_DONE.md)

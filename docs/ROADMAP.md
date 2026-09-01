@@ -2,11 +2,33 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
+> **Estado de execução em 2026-09-01:** a Fase 0 está em andamento. #7, #8, #9 e #10 foram concluídas; #11–#15 estão abertas e elegíveis conforme suas dependências; #16 continua dependente de #12. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
+
 ## Fase 0 — Foundation
 
 ### Objetivo
 
 Criar uma base pequena, profissional e previsível antes de implementar comportamento de produto.
+
+### Estado atual
+
+Concluído:
+
+- monorepo e web shell (#7);
+- CI permanente e governança da `main` (#8);
+- contrato de ambiente/runtime local (#9);
+- PostgreSQL, Drizzle, migrations e integration baseline (#10).
+
+Em aberto:
+
+- autenticação e ownership (#11);
+- boundaries de domínio/aplicação executáveis (#12);
+- design system e app shell (#13);
+- observabilidade/error taxonomy (#14);
+- schemas e pipeline de conteúdo (#15);
+- infraestrutura completa de testes, incluindo Playwright/fake clock/factories (#16), após #12.
+
+As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados, e #59 adicionou somente o Production Contract fail-closed. Nenhum desses itens significa que a Fase 0 inteira ou a produção real estejam concluídas.
 
 ### Entregas
 
@@ -32,6 +54,8 @@ Criar uma base pequena, profissional e previsível antes de implementar comporta
 - uma migration de exemplo e um teste de integração passam;
 - design tokens básicos existem;
 - nenhuma regra de negócio crítica está acoplada a Next.js/ORM.
+
+A fase só deve ser marcada como concluída quando todos os exit criteria aplicáveis forem validados, não apenas porque as primeiras quatro issues foram encerradas.
 
 ---
 
@@ -267,6 +291,8 @@ Transformar uma ferramenta funcional em um produto confiável para uso diário c
 - browser/device matrix;
 - disaster recovery runbook.
 
+A #59 já garante apenas que produção permaneça **explicitamente bloqueada** enquanto essas capacidades operacionais não existirem. A ativação real de Vercel/Neon, migrations, health e backup pertence à #45.
+
 ### Exit criteria
 
 - recuperação de incidentes documentada;
@@ -306,11 +332,13 @@ Adicionar um segundo idioma não exige alterar regras centrais de sessão, progr
 ```text
 Docs/ADRs
   ↓
-Tooling + CI
+Tooling + CI                     ✅ #7/#8
   ↓
-DB/Auth + Domain Skeleton
+Runtime config + DB              ✅ #9/#10
   ↓
-Content Schema + Seed Course
+Auth + Domain Skeleton           ← próximo bloco da Foundation
+  ↓
+Design/Observability/Content/Test foundations
   ↓
 Onboarding + LanguageProfile + Enrollment
   ↓
@@ -365,4 +393,4 @@ Cada item executável deve existir como issue com:
 - dependências;
 - riscos.
 
-Issues de épico servem como índice, não como substituto de tarefas implementáveis.
+Issues de épico servem como índice, não como substituto de tarefas implementáveis. O fechamento de uma issue deve ser refletido no épico/índice aplicável para evitar que documentação de status volte a apontar trabalho concluído como próximo passo.

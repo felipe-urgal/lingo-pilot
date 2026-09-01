@@ -8,17 +8,17 @@ A escolha é intencional: o produto ainda precisa validar seu Study Engine. Micr
 
 ## 2. Stack de referência
 
-A issue de bootstrap deve fixar versões estáveis e gerar lockfile. A direção arquitetural é:
+A #7 fixou o bootstrap executável e o lockfile; as versões concretas em uso ficam nos manifests do repositório e são resumidas no `README.md`. A direção arquitetural permanece:
 
 - **Monorepo:** pnpm workspaces + Turborepo;
 - **Web:** Next.js + React + TypeScript strict;
-- **UI:** Tailwind CSS + componentes acessíveis encapsulados em `packages/ui`;
-- **Validação:** Zod ou schema validator equivalente nas fronteiras;
+- **UI:** primitives acessíveis encapsuladas em `packages/ui`, com estratégia visual concretizada pela #13;
+- **Validação:** schema validation explícita nas fronteiras;
 - **Banco:** PostgreSQL;
 - **ORM/query layer:** Drizzle ORM;
-- **Testes unit/integration:** Vitest;
-- **Componentes:** Testing Library;
-- **E2E:** Playwright;
+- **Testes unit/integration:** runner definido no bootstrap/test foundation;
+- **Componentes:** Testing Library quando a #16 consolidar a infraestrutura correspondente;
+- **E2E:** Playwright na #16;
 - **CI:** GitHub Actions;
 - **Observabilidade:** logs estruturados + OpenTelemetry quando aplicável;
 - **Storage:** interface S3-compatible para mídia;
@@ -47,6 +47,8 @@ packages/
 docs/
   ADR/
 ```
+
+A árvore acima é conceitual: packages podem começar como boundaries mínimos e ganhar subestruturas somente quando a issue dona da capacidade exigir.
 
 ### `packages/domain`
 
