@@ -2,18 +2,13 @@
 
 import { spawnSync } from "node:child_process";
 import { access } from "node:fs/promises";
+import { parseRestoreCheckDatabase } from "./production-environment.mjs";
 
 const backupFile = process.argv[2];
-const restoreUrlValue = process.env.RESTORE_CHECK_DATABASE_URL?.trim();
 
 if (!backupFile) {
   console.error("Uso: pnpm prod:restore-check -- <backup.dump>");
   process.exit(2);
-}
-
-if (!restoreUrlValue) {
-  console.error("[prod:restore-check] RESTORE_CHECK_DATABASE_URL é obrigatório.");
-  process.exit(1);
 }
 
 await access(backupFile).catch(() => {
@@ -23,15 +18,10 @@ await access(backupFile).catch(() => {
 
 let restoreUrl;
 try {
-  restoreUrl = new URL(restoreUrlValue);
-} catch {
-  console.error("[prod:restore-check] RESTORE_CHECK_DATABASE_URL inválida.");
-  process.exit(1);
-}
-
-if (!restoreUrl.pathname.toLowerCase().includes("restore")) {
+  restoreUrl = parseRestoreCheckDatabase();
+} catch (error) {
   console.error(
-    "[prod:restore-check] o database de restore-check precisa conter 'restore' no nome.",
+    `[prod:restore-check] configuração inválida: ${error instanceof Error ? error.message : String(error)}`,
   );
   process.exit(1);
 }
@@ -51,7 +41,14 @@ const connectionArgs = [
 
 const restore = spawnSync(
   "pg_restore",
-  ["--clean", "--if-exists", "--no-owner", "--no-privileges", ...connectionArgs, backupFile],
+  [
+    "--clean",
+    "--if-exists",
+    "--no-owner",
+    "--no-privileges",
+    ...connectionArgs,
+    backupFile,
+  ],
   { env: environment, shell: false, stdio: "inherit" },
 );
 
@@ -63,13 +60,25 @@ if (restore.status !== 0) process.exit(restore.status ?? 1);
 
 const smoke = spawnSync(
   "psql",
-  [...connectionArgs, "--tuples-only", "--command=SELECT to_regclass('public.app_metadata');"],
+  [
+    ...connectionArgs,
+    "--tuples-only",
+    "--command=SELECT to_regclass('public.app_metadata');",
+  ],
   { env: environment, encoding: "utf8", shell: false },
 );
 
-if (smoke.error || smoke.status !== 0 || !smoke.stdout?.includes("app_metadata")) {
-  console.error("[prod:restore-check] restore concluído, mas validação de schema falhou.");
+if (
+  smoke.error ||
+  smoke.status !== 0 ||
+  !smoke.stdout?.includes("app_metadata")
+) {
+  console.error(
+    "[prod:restore-check] restore concluído, mas validação de schema falhou.",
+  );
   process.exit(1);
 }
 
-console.log("[prod:restore-check] backup restaurado e schema mínimo validado.");
+console.log(
+  "[prod:restore-check] backup restaurado e schema mínimo validado.",
+);
