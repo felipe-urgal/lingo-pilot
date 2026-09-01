@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createDatabaseClient } from "../../../../../../packages/db/src/index.ts";
+import { createDatabaseClient } from "../../../../../../packages/db/src/client.ts";
 
 export const dynamic = "force-dynamic";
 
