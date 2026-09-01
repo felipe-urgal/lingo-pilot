@@ -22,9 +22,9 @@
       "project": "lingo-pilot"
     },
     "policies": {
-      "backup": "required-before-risky-migration",
-      "migrations": "explicit-before-deploy",
-      "rollback": "app-rollback-or-forward-fix"
+      "backup": "required-before-migration",
+      "migrations": "before-deploy",
+      "rollback": "provider-only-when-schema-compatible"
     }
   }
 }
