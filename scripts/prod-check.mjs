@@ -32,7 +32,9 @@ for (const [command, args] of steps) {
   });
 
   if (result.error) {
-    console.error(`[prod:check] falha ao executar ${command}: ${result.error.message}`);
+    console.error(
+      `[prod:check] falha ao executar ${command}: ${result.error.message}`,
+    );
     process.exit(1);
   }
 
