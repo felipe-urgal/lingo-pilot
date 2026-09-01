@@ -22,10 +22,7 @@ const timestamp = new Date()
   .toISOString()
   .replaceAll(":", "-")
   .replaceAll(".", "-");
-const outputFile = resolve(
-  backupsDirectory,
-  `lingo-pilot-${timestamp}.dump`,
-);
+const outputFile = resolve(backupsDirectory, `lingo-pilot-${timestamp}.dump`);
 const sslMode = databaseUrl.searchParams.get("sslmode") || "require";
 
 const environment = {
