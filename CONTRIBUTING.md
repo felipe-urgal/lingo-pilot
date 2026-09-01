@@ -58,7 +58,7 @@ pnpm env:check
 
 Variáveis públicas devem ser explicitamente `NEXT_PUBLIC_*`. Secrets e configuração server-only não podem ser importados por módulos destinados ao browser.
 
-Quando o escopo usa persistência, suba o PostgreSQL local antes dos checks:
+O gate canônico `pnpm check` inclui integration tests PostgreSQL. Antes de executá-lo localmente, garanta o banco do projeto ativo:
 
 ```bash
 pnpm db:up
