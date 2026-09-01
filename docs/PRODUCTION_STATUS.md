@@ -16,13 +16,20 @@ A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.m
 - readiness canônica: `https://lingo-pilot.vercel.app/api/health/ready`;
 - migrations permanecem fora do build da Vercel.
 
-O ambiente Production da Vercel recebe apenas a configuração de runtime necessária. `DATABASE_URL` usa a conexão pooled do Neon. Credenciais administrativas de migration/backup não são colocadas no runtime da aplicação.
+O ambiente Production da Vercel recebe apenas a configuração de runtime necessária. `DATABASE_URL` usa a conexão pooled da branch Neon `main`. Credenciais administrativas de migration/backup não são colocadas no runtime da aplicação.
+
+Deployments Preview usam `DATABASE_URL` própria apontando para a conexão pooled da branch Neon `preview`; nunca recebem a conexão da `main`. A URL pública de cada Preview usa `VERCEL_URL` automaticamente quando `NEXT_PUBLIC_APP_URL` não está definida, enquanto Production mantém o domínio canônico explícito.
 
 ### Neon PostgreSQL
 
-Em 2026-09-01 foi provisionado o projeto dedicado `lingo-pilot-production`, PostgreSQL 18, exclusivo de Production. Local, CI e Preview não reutilizam esse banco.
+Em 2026-09-01 foi provisionado o projeto `lingo-pilot-production`, PostgreSQL 18, com duas branches permanentes e isoladas:
 
-A primeira migration versionada foi aplicada com sucesso usando a conexão administrativa direta/unpooled. A readiness publicada confirmou conectividade com PostgreSQL e presença do schema mínimo `app_metadata`.
+- `main` — dados e schema de Production;
+- `preview` — ambiente de banco para deployments Preview da Vercel.
+
+A branch `preview` foi criada a partir da `main` depois da primeira migration, portanto nasceu com o schema versionado atual. Local e CI continuam usando bancos próprios e não reutilizam nenhuma dessas branches.
+
+A primeira migration versionada foi aplicada com sucesso em `main` usando a conexão administrativa direta/unpooled. A readiness publicada confirmou conectividade com PostgreSQL e presença do schema mínimo `app_metadata`.
 
 ## Interface operacional validada
 
@@ -64,7 +71,8 @@ Restore-check usa adicionalmente `RESTORE_CHECK_DATABASE_URL` e a confirmação 
 - validação pós-restore confirmou `app_metadata`;
 - projeto Vercel criado e ligado ao GitHub/`main`;
 - primeiro deployment Production ficou `Ready` no domínio canônico;
-- `prod:verify` confirmou readiness real em produção.
+- `prod:verify` confirmou readiness real em produção;
+- Preview isolado em branch Neon permanente `preview`, sem acesso ao banco de Production.
 
 ## Health/readiness
 
