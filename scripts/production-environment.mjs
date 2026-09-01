@@ -48,10 +48,7 @@ export function sameDatabaseEndpoint(left, right) {
 export function createCheckEnvironment(environment = process.env) {
   const runtimeUrl = requiredValue(environment, "CHECK_DATABASE_URL");
   const testUrl = requiredValue(environment, "CHECK_TEST_DATABASE_URL");
-  const parsedRuntimeUrl = parsePostgresUrl(
-    runtimeUrl,
-    "CHECK_DATABASE_URL",
-  );
+  const parsedRuntimeUrl = parsePostgresUrl(runtimeUrl, "CHECK_DATABASE_URL");
   const parsedTestUrl = parsePostgresUrl(testUrl, "CHECK_TEST_DATABASE_URL");
 
   if (sameDatabaseEndpoint(parsedRuntimeUrl, parsedTestUrl)) {
