@@ -1,6 +1,8 @@
 # Issue Index — LingoPilot
 
-Este documento é o índice do backlog inicial criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
+Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
+
+> **Estado de referência:** 2026-09-01. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -14,31 +16,38 @@ Este documento é o índice do backlog inicial criado a partir da visão, arquit
 
 ## Fase 0 — Foundation
 
-- #7 Bootstrap monorepo and web application shell
-- #8 CI quality gates and repository governance
-- #9 Local development environment and configuration contract
-- #10 PostgreSQL, Drizzle schema and migration workflow
-- #11 Authentication and ownership authorization baseline
-- #12 Establish domain/application boundaries and repository contracts
-- #13 Design system tokens, primitives and application shell
-- #14 Structured logging, error taxonomy and observability baseline
-- #15 Versioned content schemas and validation pipeline
-- #16 Test infrastructure, factories and deterministic clock
+| Issue | Status | Observação |
+|---|---|---|
+| #7 Bootstrap monorepo and web application shell | Concluída | Monorepo, web shell, scripts-base e contrato inicial de portas |
+| #8 CI quality gates and repository governance | Concluída | CI permanente e proteção da `main` |
+| #9 Local development environment and configuration contract | Concluída | Runtime config, `.env.local` raiz e profiles determinísticos |
+| #10 PostgreSQL, Drizzle schema and migration workflow | Concluída | PostgreSQL/Drizzle, migrations e integration baseline |
+| #11 Authentication and ownership authorization baseline | Aberta | Desbloqueada por #10 |
+| #12 Establish domain/application boundaries and repository contracts | Aberta | Desbloqueada por #7 e #10 |
+| #13 Design system tokens, primitives and application shell | Aberta | Desbloqueada por #7 |
+| #14 Structured logging, error taxonomy and observability baseline | Aberta | Desbloqueada por #7 e #9 |
+| #15 Versioned content schemas and validation pipeline | Aberta | Desbloqueada por #7 e #8 |
+| #16 Test infrastructure, factories and deterministic clock | Bloqueada | Depende de #12 além de #7/#10 |
 
-### Sequência inicial recomendada
+### Manutenção concluída durante a Foundation
+
+- #54 corrigiu a propagação do `.env.local` raiz para build/runtime;
+- #56 alinhou `next-env.d.ts` à política atual do Next.js e protegeu a árvore Git contra churn gerado;
+- #59 estabeleceu o Production Contract fail-closed consumido pelo Dev Dashboard, sem fingir que Vercel/Neon já estão operacionais.
+
+### Sequência atual recomendada
+
+Os fundamentos de bootstrap/configuração/persistência já foram entregues. A janela imediata da Foundation é:
 
 ```text
-PR #1 merge
-   ↓
-#7 bootstrap
-   ├── #8 CI
-   ├── #9 config → #10 DB → #11 auth
-   ├── #12 boundaries
-   ├── #13 design system
-   ├── #14 observability
-   ├── #15 content schemas
-   └── #16 test infrastructure
+#11 auth
+#12 boundaries ─→ #16 test infrastructure
+#13 design system
+#14 observability
+#15 content schemas
 ```
+
+#11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -155,6 +164,8 @@ O tutor V1 precisa de evals representativos de **A0, A1 e A2**; cobertura A0/A1 
 - #48 Content publication, revision rollout and rollback workflow
 - #50 Validate platform with B1 expansion and a second-language pilot
 
+A #59 já entregou somente o **baseline fail-closed** de produção. Ela não substitui a #45: Vercel, Neon, migrations de produção, backup/restore e health/readiness continuam bloqueados até implementação e validação reais.
+
 ## Prioridades
 
 ### P0
@@ -183,7 +194,8 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 10. O roadmap é vivo, mas mudanças de prioridade devem preservar dependências técnicas e pedagógicas.
 11. Ponto de entrada/placement nunca é convertido em mastery, attempt ou review fictício.
 12. Nenhum fluxo de IA de usuário é liberado sem schema/guardrails/evals proporcionais ao risco e aos níveis suportados.
+13. Uma issue fechada deve ser refletida nos épicos/índices aplicáveis; não manter checklist operacional propositalmente desatualizado.
 
 ## Próximo passo
 
-Após merge do PR #1, a primeira implementação recomendada é **#7 — Bootstrap monorepo and web application shell**.
+A Foundation já concluiu #7–#10. As próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
