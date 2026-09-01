@@ -24,7 +24,9 @@ const result = spawnSync(
 );
 
 if (result.error) {
-  console.error(`[prod:migrate] falha ao iniciar migration: ${result.error.message}`);
+  console.error(
+    `[prod:migrate] falha ao iniciar migration: ${result.error.message}`,
+  );
   process.exit(1);
 }
 
