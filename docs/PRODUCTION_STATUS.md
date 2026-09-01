@@ -1,49 +1,68 @@
 # Status de produção
 
-A topologia alvo do LingoPilot continua definida em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): Vercel para aplicação, Neon PostgreSQL para dados e promoção `git-managed` pela branch `main`.
+A topologia alvo do LingoPilot permanece definida em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): Vercel para aplicação, Neon PostgreSQL para dados e promoção `git-managed` pela branch `main`.
 
-> **Estado atual:** produção operacional ainda não está habilitada. A issue #59 concluiu somente o baseline **fail-closed** necessário para representar essa indisponibilidade de forma explícita e segura. A operacionalização real continua na #45.
+> **Estado atual:** ativação operacional em andamento pela issue #45. O Production Contract continua fail-closed até que Vercel, migrations, backup/restore e readiness estejam exercitados de ponta a ponta.
 
-O Production Contract consumido pelo Dev Dashboard está **desabilitado por intenção**. Isso não significa que a arquitetura de produção foi abandonada; significa que o repositório ainda não possui evidência suficiente para anunciar capacidade operacional real.
+## Infraestrutura provisionada
 
-## Baseline concluída em #59
+Em 2026-09-01 foi provisionado um projeto Neon dedicado chamado `lingo-pilot-production`, PostgreSQL 18, com branch principal própria. Esse recurso é exclusivo de Production e não deve ser reutilizado por local, CI ou Preview.
 
-O repositório já possui:
+A existência do recurso não remove sozinha o blocker `neon-production-not-validated`: ele só é considerado resolvido após migration, conectividade/readiness e restore-check serem validados.
 
-- contrato explícito `enabled=false` / `strategy=disabled` / `provider=none`;
-- `pnpm prod:status` somente leitura;
-- `pnpm prod:check` que falha de propósito enquanto houver blockers;
-- blockers estáveis para impedir habilitação acidental;
-- documentação que separa topologia aprovada de produção efetivamente pronta.
+O projeto Vercel real ainda precisa ser criado e ligado explicitamente a `felipe-urgal/lingo-pilot`; o Dev Dashboard não deve inferi-lo pelo nome do repositório.
 
-Esse baseline é uma proteção de governança, não um deploy parcial.
+## Interface operacional em implementação
 
-## Blockers atuais
+A #45 introduz os comandos canônicos:
 
-- `vercel-project-not-configured`: falta registrar e validar o identificador real do projeto Vercel; ele não será inferido pelo nome do repositório.
-- `neon-production-not-validated`: falta validar o banco/branch Neon de produção e sua configuração server-side.
-- `backup-dr-not-validated`: backup/checkpoint e procedimento de recuperação ainda não foram exercitados em produção.
-- `migration-flow-not-validated`: migrations explícitas fora do build da Vercel ainda precisam do fluxo operacional real.
-- `production-health-not-configured`: os endpoints `/api/health/live` e `/api/health/ready` e o smoke externo ainda não existem no produto atual.
+```bash
+pnpm prod:status
+pnpm prod:check
+pnpm prod:migrate
+pnpm prod:verify
+pnpm prod:backup
+pnpm prod:restore-check -- <backup.dump>
+```
 
-Enquanto qualquer blocker permanecer, `.dev-dashboard/production.json` deve continuar desabilitado.
+`prod:check` usa somente `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL`, dois bancos de check distintos. Ele não carrega `.env.local` nem recebe `DATABASE_DIRECT_URL`, URL de readiness ou credenciais do provider.
 
-## Comandos canônicos atuais
+As operações reais usam configuração local separada, destinada ao Dev Dashboard:
 
-`pnpm prod:status` é somente leitura e lista os blockers. `pnpm prod:check` falha de propósito para impedir que CI, operadores ou o Dev Dashboard confundam arquitetura planejada com produção pronta.
+```text
+<Project.path>/.dev-dashboard/.env.production.local
+```
 
-Ainda **não** existem `prod:migrate`, `prod:verify` e `prod:backup` operacionais para Production. Esses comandos pertencem à implementação real da #45 e só devem ser anunciados como disponíveis quando seus contratos estiverem testados.
+Variáveis operacionais previstas:
 
-## Próxima transição válida
+```text
+DATABASE_DIRECT_URL=<conexão direta de migration/backup>
+LINGO_PRODUCTION_READY_URL=https://<dominio>/api/health/ready
+```
 
-A futura ativação para `strategy=git-managed` exige trabalho explícito na #45 ou issue filha equivalente que:
+A conexão de runtime da aplicação continua sendo `DATABASE_URL` no ambiente Production da Vercel. O build não executa migrations.
 
-1. configure e valide o projeto Vercel real;
-2. configure e valide Neon Production isolado de local/CI/Preview;
-3. implemente migrations operacionais fora do build;
-4. implemente health/readiness e smoke;
-5. implemente backup/restore com restore exercitado;
-6. substitua blockers por evidência verificável;
-7. atualize o manifesto do Dev Dashboard somente depois dessas validações.
+## Health/readiness
 
-Até lá, o estado correto é **produção planejada e intencionalmente bloqueada**.
+A ativação implementa:
+
+- `GET /api/health/live` — liveness mínima, sem diagnóstico sensível;
+- `GET /api/health/ready` — readiness do core, validando conexão PostgreSQL e existência do schema mínimo (`app_metadata`).
+
+Falha de PostgreSQL ou ausência do schema retorna `503`. Providers opcionais de IA não participam da readiness do core.
+
+## Backup e restore-check
+
+`prod:backup` gera dump PostgreSQL em `.dev-dashboard/backups/`, caminho ignorado pelo Git. A senha não é incluída na linha de comando do `pg_dump`.
+
+`prod:restore-check` exige `RESTORE_CHECK_DATABASE_URL` apontando para um ambiente não produtivo e a confirmação explícita `RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check`. Quando `DATABASE_DIRECT_URL` também está presente, o comando compara host, porta e database e recusa executar se o destino do restore for o mesmo banco de produção. Após o restore, valida a presença do schema mínimo. O Production Contract só pode ser habilitado depois que esse procedimento tiver sido executado com sucesso.
+
+## Blockers que permanecem até a ativação final
+
+- `vercel-project-not-configured` — criar e validar o projeto Vercel real, branch `main` e domínio canônico;
+- `neon-production-not-validated` — aplicar migrations e validar runtime/readiness contra o Neon dedicado;
+- `backup-dr-not-validated` — executar backup e restore-check real;
+- `migration-flow-not-validated` — executar `prod:migrate` com a configuração administrativa separada;
+- `production-health-not-configured` — validar `/api/health/live` e `/api/health/ready` no deployment Production.
+
+`.dev-dashboard/production.json` continua `enabled=false` enquanto qualquer item acima não tiver evidência operacional. A transição final será para `strategy=git-managed`, `provider=vercel`, branch `main`, projeto Vercel explícito e comandos locais `check`, `migrate`, `verify`, `backup` e `restoreCheck`.

@@ -9,7 +9,11 @@
     "reasonCode": "production-readiness-gate",
     "commands": {
       "status": "prod:status",
-      "check": "prod:check"
+      "check": "prod:check",
+      "migrate": "prod:migrate",
+      "verify": "prod:verify",
+      "backup": "prod:backup",
+      "restoreCheck": "prod:restore-check"
     },
     "blockedBy": [
       "vercel-project-not-configured",
@@ -19,9 +23,9 @@
       "production-health-not-configured"
     ],
     "policies": {
-      "backup": "not-configured",
-      "migrations": "not-configured",
-      "rollback": "not-configured"
+      "backup": "required-before-risky-migration",
+      "migrations": "explicit-before-deploy",
+      "rollback": "app-rollback-or-forward-fix"
     }
   }
 }

@@ -17,6 +17,9 @@ apps/web/next-env.d.ts
 .env.*
 !.env.example
 
+# production operations
+.dev-dashboard/backups/
+
 # local tooling
 .DS_Store
 *.log
