@@ -18,8 +18,8 @@ import { errorCodes } from "../../../../server/observability/errors";
 import { createErrorResponse } from "../../../../server/observability/request";
 import { observeRequest } from "../../../../server/observability/runtime";
 
-function signupRedirect(request: NextRequest, error?: string): NextResponse {
-  const url = new URL("/signup", request.url);
+function signupRedirect(error?: string): NextResponse {
+  const url = new URL("/signup", serverConfig.public.appUrl);
   if (error) url.searchParams.set("error", error);
   return NextResponse.redirect(url, 303);
 }
@@ -42,7 +42,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           errorCode: errorCodes.requestInvalidInput,
           result: "rejected",
         });
-        return signupRedirect(request, "invalid_input");
+        return signupRedirect("invalid_input");
       }
 
       const passwordHash = await hashPassword(password);
@@ -57,14 +57,17 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           errorCode: errorCodes.authAccountUnavailable,
           result: "rejected",
         });
-        return signupRedirect(request, "account_unavailable");
+        return signupRedirect("account_unavailable");
       }
 
       const grant = await authAdapter.authenticate({ email, password });
       if (!grant)
         throw new Error("Newly registered account could not authenticate");
 
-      const response = NextResponse.redirect(new URL("/app", request.url), 303);
+      const response = NextResponse.redirect(
+        new URL("/app", serverConfig.public.appUrl),
+        303,
+      );
       response.cookies.set(SESSION_COOKIE_NAME, grant.token, {
         ...sessionCookieOptions(serverConfig.profile, SESSION_TTL_SECONDS),
         expires: grant.expiresAt,

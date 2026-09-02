@@ -26,7 +26,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       const response = NextResponse.redirect(
-        new URL("/login", request.url),
+        new URL("/login", serverConfig.public.appUrl),
         303,
       );
       response.cookies.set(SESSION_COOKIE_NAME, "", {

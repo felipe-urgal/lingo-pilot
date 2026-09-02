@@ -7,11 +7,8 @@ import { errorCodes } from "../../../server/observability/errors";
 import { createErrorResponse } from "../../../server/observability/request";
 import { observeRequest } from "../../../server/observability/runtime";
 
-function onboardingRedirect(
-  request: NextRequest,
-  error?: string,
-): NextResponse {
-  const url = new URL("/app/onboarding", request.url);
+function onboardingRedirect(error?: string): NextResponse {
+  const url = new URL("/app/onboarding", serverConfig.public.appUrl);
   if (error) url.searchParams.set("error", error);
   return NextResponse.redirect(url, 303);
 }
@@ -27,7 +24,10 @@ export function POST(request: NextRequest): Promise<NextResponse> {
 
       const user = await getCurrentUser();
       if (!user) {
-        return NextResponse.redirect(new URL("/login", request.url), 303);
+        return NextResponse.redirect(
+          new URL("/login", serverConfig.public.appUrl),
+          303,
+        );
       }
 
       const formData = await request.formData();
@@ -45,7 +45,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           errorCode: errorCodes.requestInvalidInput,
           result: "rejected",
         });
-        return onboardingRedirect(request, "invalid_input");
+        return onboardingRedirect("invalid_input");
       }
 
       logger.info("learner.onboarding.completed", {
@@ -54,7 +54,10 @@ export function POST(request: NextRequest): Promise<NextResponse> {
         primaryGoal: result.value.learnerProfile.primaryGoal ?? "none",
         result: "completed",
       });
-      return NextResponse.redirect(new URL("/app/today", request.url), 303);
+      return NextResponse.redirect(
+        new URL("/app/today", serverConfig.public.appUrl),
+        303,
+      );
     },
   );
 }

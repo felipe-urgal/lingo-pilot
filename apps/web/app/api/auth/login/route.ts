@@ -15,8 +15,8 @@ import { errorCodes } from "../../../../server/observability/errors";
 import { createErrorResponse } from "../../../../server/observability/request";
 import { observeRequest } from "../../../../server/observability/runtime";
 
-function loginRedirect(request: NextRequest, error?: string): NextResponse {
-  const url = new URL("/login", request.url);
+function loginRedirect(error?: string): NextResponse {
+  const url = new URL("/login", serverConfig.public.appUrl);
   if (error) url.searchParams.set("error", error);
 
   return NextResponse.redirect(url, 303);
@@ -40,7 +40,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           errorCode: errorCodes.authInvalidCredentials,
           result: "rejected",
         });
-        return loginRedirect(request, "invalid_credentials");
+        return loginRedirect("invalid_credentials");
       }
 
       const grant = await authAdapter.authenticate({ email, password });
@@ -50,10 +50,13 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           errorCode: errorCodes.authInvalidCredentials,
           result: "rejected",
         });
-        return loginRedirect(request, "invalid_credentials");
+        return loginRedirect("invalid_credentials");
       }
 
-      const response = NextResponse.redirect(new URL("/app", request.url), 303);
+      const response = NextResponse.redirect(
+        new URL("/app", serverConfig.public.appUrl),
+        303,
+      );
       response.cookies.set(SESSION_COOKIE_NAME, grant.token, {
         ...sessionCookieOptions(serverConfig.profile, SESSION_TTL_SECONDS),
         expires: grant.expiresAt,
