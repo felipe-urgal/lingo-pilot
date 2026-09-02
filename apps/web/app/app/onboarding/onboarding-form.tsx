@@ -142,9 +142,11 @@ export function OnboardingForm({
           </p>
           <fieldset className="choice-group">
             <legend className="sr-only">Ponto de entrada</legend>
-            <label className="choice-card">
+            <label className="choice-card" htmlFor="entry-zero">
               <input
+                aria-label="Começar do zero (A0)"
                 checked={route === "zero"}
+                id="entry-zero"
                 name="entryRoute"
                 onChange={() => setRoute("zero")}
                 type="radio"
@@ -155,9 +157,11 @@ export function OnboardingForm({
                 <small>Quero construir a base desde o início.</small>
               </span>
             </label>
-            <label className="choice-card">
+            <label className="choice-card" htmlFor="entry-manual">
               <input
+                aria-label="Já estudei antes"
                 checked={route === "manual"}
+                id="entry-manual"
                 name="entryRoute"
                 onChange={() => {
                   setRoute("manual");
@@ -176,21 +180,28 @@ export function OnboardingForm({
           {route === "manual" ? (
             <fieldset className="level-options">
               <legend>Escolha seu ponto de entrada</legend>
-              {(["A1", "A2"] as const).map((level) => (
-                <label key={level}>
-                  <input
-                    checked={entryPointLevel === level}
-                    onChange={() => setEntryPointLevel(level)}
-                    type="radio"
-                  />
-                  <span>
-                    <strong>{level}</strong>
-                    {level === "A1"
-                      ? " — já conheço o básico"
-                      : " — já consigo lidar com estruturas básicas"}
-                  </span>
-                </label>
-              ))}
+              {(["A1", "A2"] as const).map((level) => {
+                const id = `entry-level-${level.toLowerCase()}`;
+
+                return (
+                  <label htmlFor={id} key={level}>
+                    <input
+                      aria-label={level}
+                      checked={entryPointLevel === level}
+                      id={id}
+                      name="manualEntryPointLevel"
+                      onChange={() => setEntryPointLevel(level)}
+                      type="radio"
+                    />
+                    <span>
+                      <strong>{level}</strong>
+                      {level === "A1"
+                        ? " — já conheço o básico"
+                        : " — já consigo lidar com estruturas básicas"}
+                    </span>
+                  </label>
+                );
+              })}
             </fieldset>
           ) : null}
         </section>
