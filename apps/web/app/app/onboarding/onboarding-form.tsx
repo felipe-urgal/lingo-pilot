@@ -222,11 +222,19 @@ export function OnboardingForm({
           </Button>
         ) : null}
         {!isEditing && step < 3 ? (
-          <Button type="button" onClick={nextStep}>
+          <Button
+            key="continue"
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              nextStep();
+            }}
+          >
             Continuar
           </Button>
         ) : (
           <Button
+            key="submit"
             isLoading={isSubmitting}
             loadingLabel="Salvando"
             type="submit"
