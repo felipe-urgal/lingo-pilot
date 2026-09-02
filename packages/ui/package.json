@@ -4,11 +4,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
     "lint": "eslint src --max-warnings 0",
     "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@types/react": "19.2.18",
+    "react": "19.2.8"
   },
   "devDependencies": {
     "@lingo-pilot/config": "workspace:*",

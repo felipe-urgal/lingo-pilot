@@ -1,0 +1,367 @@
+:root {
+  color-scheme: light;
+  --lp-color-canvas: #f6f7fb;
+  --lp-color-surface: #ffffff;
+  --lp-color-surface-subtle: #f0f3f8;
+  --lp-color-text: #172033;
+  --lp-color-text-muted: #5d687d;
+  --lp-color-border: #d7dde8;
+  --lp-color-border-strong: #aeb8c9;
+  --lp-color-primary: #3157d5;
+  --lp-color-primary-hover: #2748b3;
+  --lp-color-on-primary: #ffffff;
+  --lp-color-success: #216b49;
+  --lp-color-success-surface: #eef8f2;
+  --lp-color-success-border: #a9d8bd;
+  --lp-color-warning: #805b16;
+  --lp-color-warning-surface: #fff8e7;
+  --lp-color-warning-border: #e8cf8d;
+  --lp-color-danger: #9b2f35;
+  --lp-color-danger-hover: #7f252b;
+  --lp-color-danger-surface: #fff1f2;
+  --lp-color-danger-border: #e7b4b8;
+  --lp-color-info: #2f5f8d;
+  --lp-color-info-surface: #eef6fd;
+  --lp-color-info-border: #b6d2eb;
+  --lp-focus-ring: #7992ee;
+  --lp-font-sans: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --lp-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  --lp-font-size-xs: 0.75rem;
+  --lp-font-size-sm: 0.875rem;
+  --lp-font-size-md: 1rem;
+  --lp-font-size-lg: 1.125rem;
+  --lp-font-size-xl: 1.5rem;
+  --lp-font-size-2xl: clamp(2rem, 7vw, 3.5rem);
+  --lp-line-height-tight: 1.1;
+  --lp-line-height-body: 1.6;
+  --lp-space-1: 0.25rem;
+  --lp-space-2: 0.5rem;
+  --lp-space-3: 0.75rem;
+  --lp-space-4: 1rem;
+  --lp-space-5: 1.25rem;
+  --lp-space-6: 1.5rem;
+  --lp-space-8: 2rem;
+  --lp-space-10: 2.5rem;
+  --lp-space-12: 3rem;
+  --lp-radius-sm: 0.5rem;
+  --lp-radius-md: 0.75rem;
+  --lp-radius-lg: 1rem;
+  --lp-radius-xl: 1.25rem;
+  --lp-shadow-card: 0 1rem 3rem rgb(23 32 51 / 8%);
+  --lp-shadow-dialog: 0 1.5rem 4rem rgb(23 32 51 / 22%);
+  --lp-control-height: 2.75rem;
+  --lp-motion-fast: 140ms;
+  --lp-motion-normal: 220ms;
+  --lp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.lp-button,
+.lp-icon-button,
+.lp-input,
+.lp-textarea,
+.lp-select {
+  font: inherit;
+}
+
+.lp-button,
+.lp-icon-button {
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color var(--lp-motion-fast) var(--lp-ease-standard),
+    border-color var(--lp-motion-fast) var(--lp-ease-standard),
+    color var(--lp-motion-fast) var(--lp-ease-standard),
+    transform var(--lp-motion-fast) var(--lp-ease-standard);
+}
+
+.lp-button:focus-visible,
+.lp-icon-button:focus-visible,
+.lp-input:focus-visible,
+.lp-textarea:focus-visible,
+.lp-select:focus-visible {
+  outline: 3px solid var(--lp-focus-ring);
+  outline-offset: 2px;
+}
+
+.lp-button:disabled,
+.lp-icon-button:disabled,
+.lp-input:disabled,
+.lp-textarea:disabled,
+.lp-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.lp-button {
+  min-height: var(--lp-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-3) var(--lp-space-4);
+  border-radius: var(--lp-radius-md);
+}
+
+.lp-button--primary {
+  background: var(--lp-color-primary);
+  color: var(--lp-color-on-primary);
+}
+
+.lp-button--primary:not(:disabled):hover {
+  background: var(--lp-color-primary-hover);
+}
+
+.lp-button--secondary {
+  border-color: var(--lp-color-border-strong);
+  background: var(--lp-color-surface);
+  color: var(--lp-color-text);
+}
+
+.lp-button--secondary:not(:disabled):hover {
+  background: var(--lp-color-surface-subtle);
+}
+
+.lp-button--danger {
+  background: var(--lp-color-danger);
+  color: var(--lp-color-on-primary);
+}
+
+.lp-button--danger:not(:disabled):hover {
+  background: var(--lp-color-danger-hover);
+}
+
+.lp-icon-button {
+  width: var(--lp-control-height);
+  min-width: var(--lp-control-height);
+  height: var(--lp-control-height);
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--lp-color-surface);
+  color: var(--lp-color-text);
+}
+
+.lp-icon-button--secondary {
+  border-color: var(--lp-color-border);
+}
+
+.lp-icon-button--primary {
+  background: var(--lp-color-primary);
+  color: var(--lp-color-on-primary);
+}
+
+.lp-icon-button--danger {
+  background: var(--lp-color-danger);
+  color: var(--lp-color-on-primary);
+}
+
+.lp-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: lp-spin 700ms linear infinite;
+}
+
+.lp-field {
+  display: grid;
+  gap: var(--lp-space-2);
+  color: var(--lp-color-text);
+}
+
+.lp-field__label {
+  font-size: var(--lp-font-size-sm);
+  font-weight: 700;
+}
+
+.lp-field__hint,
+.lp-field__error {
+  font-size: var(--lp-font-size-sm);
+  line-height: 1.4;
+}
+
+.lp-field__hint {
+  color: var(--lp-color-text-muted);
+}
+
+.lp-field__error {
+  color: var(--lp-color-danger);
+}
+
+.lp-input,
+.lp-textarea,
+.lp-select {
+  width: 100%;
+  min-height: var(--lp-control-height);
+  border: 1px solid var(--lp-color-border-strong);
+  border-radius: var(--lp-radius-md);
+  background: var(--lp-color-surface);
+  color: var(--lp-color-text);
+}
+
+.lp-input,
+.lp-select {
+  padding: 0 var(--lp-space-3);
+}
+
+.lp-textarea {
+  min-height: 7rem;
+  resize: vertical;
+  padding: var(--lp-space-3);
+}
+
+.lp-input[aria-invalid="true"],
+.lp-textarea[aria-invalid="true"],
+.lp-select[aria-invalid="true"] {
+  border-color: var(--lp-color-danger);
+}
+
+.lp-alert {
+  padding: var(--lp-space-3) var(--lp-space-4);
+  border: 1px solid;
+  border-radius: var(--lp-radius-md);
+  line-height: var(--lp-line-height-body);
+}
+
+.lp-alert--info {
+  border-color: var(--lp-color-info-border);
+  background: var(--lp-color-info-surface);
+  color: var(--lp-color-info);
+}
+
+.lp-alert--success {
+  border-color: var(--lp-color-success-border);
+  background: var(--lp-color-success-surface);
+  color: var(--lp-color-success);
+}
+
+.lp-alert--warning {
+  border-color: var(--lp-color-warning-border);
+  background: var(--lp-color-warning-surface);
+  color: var(--lp-color-warning);
+}
+
+.lp-alert--danger {
+  border-color: var(--lp-color-danger-border);
+  background: var(--lp-color-danger-surface);
+  color: var(--lp-color-danger);
+}
+
+.lp-progress {
+  display: grid;
+  gap: var(--lp-space-2);
+}
+
+.lp-progress__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--lp-space-3);
+  font-size: var(--lp-font-size-sm);
+  font-weight: 700;
+}
+
+.lp-progress progress {
+  width: 100%;
+  height: 0.75rem;
+  accent-color: var(--lp-color-primary);
+}
+
+.lp-dialog {
+  width: min(calc(100% - 2rem), 32rem);
+  max-height: min(80vh, 42rem);
+  padding: 0;
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-xl);
+  background: var(--lp-color-surface);
+  color: var(--lp-color-text);
+  box-shadow: var(--lp-shadow-dialog);
+}
+
+.lp-dialog::backdrop {
+  background: rgb(23 32 51 / 48%);
+}
+
+.lp-dialog--sheet {
+  width: min(100%, 28rem);
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0 0 0 auto;
+  border-radius: var(--lp-radius-xl) 0 0 var(--lp-radius-xl);
+}
+
+.lp-dialog__header,
+.lp-dialog__content,
+.lp-dialog__actions {
+  padding: var(--lp-space-5);
+}
+
+.lp-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--lp-space-4);
+  border-bottom: 1px solid var(--lp-color-border);
+}
+
+.lp-dialog__header h2,
+.lp-dialog__header p {
+  margin: 0;
+}
+
+.lp-dialog__header p {
+  margin-top: var(--lp-space-2);
+  color: var(--lp-color-text-muted);
+  line-height: var(--lp-line-height-body);
+}
+
+.lp-dialog__content {
+  overflow: auto;
+  line-height: var(--lp-line-height-body);
+}
+
+.lp-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--lp-space-3);
+  border-top: 1px solid var(--lp-color-border);
+}
+
+.lp-skip-link {
+  position: fixed;
+  top: var(--lp-space-3);
+  left: var(--lp-space-3);
+  z-index: 1000;
+  transform: translateY(-180%);
+  padding: var(--lp-space-3) var(--lp-space-4);
+  border-radius: var(--lp-radius-md);
+  background: var(--lp-color-text);
+  color: var(--lp-color-surface);
+  font-weight: 700;
+  transition: transform var(--lp-motion-fast) var(--lp-ease-standard);
+}
+
+.lp-skip-link:focus {
+  transform: translateY(0);
+}
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lp-motion-fast: 0.01ms;
+    --lp-motion-normal: 0.01ms;
+  }
+
+  .lp-spinner {
+    animation: none;
+    border-right-color: currentColor;
+  }
+}
