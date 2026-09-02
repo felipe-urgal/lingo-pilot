@@ -58,7 +58,10 @@ test("dialog maps keyboard cancellation to its close contract", () => {
     </Dialog>,
   );
 
-  fireEvent.cancel(screen.getByRole("dialog", { name: "Confirmar" }));
+  fireEvent(
+    screen.getByRole("dialog", { name: "Confirmar" }),
+    new Event("cancel", { cancelable: true }),
+  );
   expect(onClose).toHaveBeenCalledOnce();
 });
 
