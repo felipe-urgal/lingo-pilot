@@ -1,3 +1,4 @@
+import { Button } from "@lingo-pilot/ui";
 import type { ReactNode } from "react";
 import { requireCurrentUser } from "../../server/auth/current-user";
 
@@ -11,16 +12,22 @@ export default async function ProtectedLayout({
   await requireCurrentUser();
 
   return (
-    <main className="app-shell">
+    <div className="app-shell">
       <header className="app-header">
-        <strong>LingoPilot</strong>
-        <form action="/api/auth/logout" method="post">
-          <button className="secondary-button" type="submit">
-            Sair
-          </button>
-        </form>
+        <div className="app-header__inner">
+          <a className="app-brand" href="/app">
+            LingoPilot
+          </a>
+          <form action="/api/auth/logout" method="post">
+            <Button type="submit" variant="secondary">
+              Sair
+            </Button>
+          </form>
+        </div>
       </header>
-      <div className="app-content">{children}</div>
-    </main>
+      <main className="app-content" id="main-content">
+        {children}
+      </main>
+    </div>
   );
 }

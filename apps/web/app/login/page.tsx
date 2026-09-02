@@ -1,3 +1,4 @@
+import { Alert, Button, Input } from "@lingo-pilot/ui";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../server/auth/current-user";
 
@@ -13,7 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const hasInvalidCredentials = params.error === "invalid_credentials";
 
   return (
-    <main className="shell">
+    <main className="shell" id="main-content">
       <section className="foundation auth-card" aria-labelledby="login-title">
         <p className="eyebrow">LingoPilot</p>
         <h1 id="login-title">Entrar</h1>
@@ -22,35 +23,29 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
 
         {hasInvalidCredentials ? (
-          <p className="form-error" role="alert">
-            Email ou senha inválidos.
-          </p>
+          <Alert variant="danger">Email ou senha inválidos.</Alert>
         ) : null}
 
         <form className="auth-form" action="/api/auth/login" method="post">
-          <label>
-            Email
-            <input
-              autoComplete="email"
-              inputMode="email"
-              name="email"
-              required
-              type="email"
-            />
-          </label>
-
-          <label>
-            Senha
-            <input
-              autoComplete="current-password"
-              minLength={8}
-              name="password"
-              required
-              type="password"
-            />
-          </label>
-
-          <button type="submit">Entrar</button>
+          <Input
+            autoComplete="email"
+            id="email"
+            inputMode="email"
+            label="Email"
+            name="email"
+            required
+            type="email"
+          />
+          <Input
+            autoComplete="current-password"
+            id="password"
+            label="Senha"
+            minLength={8}
+            name="password"
+            required
+            type="password"
+          />
+          <Button type="submit">Entrar</Button>
         </form>
       </section>
     </main>
