@@ -24,7 +24,9 @@ test("signup/login -> onboarding A0 -> Today shell", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page).toHaveURL(/\/app\/onboarding$/);
 
-  await page.getByLabel("Objetivo principal (opcional)").selectOption("conversation");
+  await page
+    .getByLabel("Objetivo principal (opcional)")
+    .selectOption("conversation");
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByLabel("Meta diária").selectOption("20");
   await page.getByRole("button", { name: "Continuar" }).click();
@@ -36,7 +38,9 @@ test("signup/login -> onboarding A0 -> Today shell", async ({ page }) => {
   await expect(page.getByText("20 minutos")).toBeVisible();
 });
 
-test("false beginner can choose A2 manual entry without fabricated completion UI", async ({ page }) => {
+test("false beginner can choose A2 manual entry without fabricated completion UI", async ({
+  page,
+}) => {
   await signup(page, uniqueEmail("a2"), "correct-horse-18");
 
   await page.getByRole("button", { name: "Continuar" }).click();

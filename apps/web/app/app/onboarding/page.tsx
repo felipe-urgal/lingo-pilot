@@ -10,7 +10,9 @@ type OnboardingPageProps = Readonly<{
   }>;
 }>;
 
-export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
+export default async function OnboardingPage({
+  searchParams,
+}: OnboardingPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
   const params = await searchParams;
@@ -21,7 +23,9 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
 
   return (
     <section className="onboarding-card" aria-labelledby="onboarding-title">
-      <p className="eyebrow">{isEditing ? "Preferências" : "Primeiros passos"}</p>
+      <p className="eyebrow">
+        {isEditing ? "Preferências" : "Primeiros passos"}
+      </p>
       <h1 id="onboarding-title">
         {isEditing ? "Ajuste sua rotina." : "Vamos montar sua jornada."}
       </h1>

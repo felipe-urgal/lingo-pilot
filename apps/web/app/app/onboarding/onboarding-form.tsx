@@ -60,7 +60,8 @@ export function OnboardingForm({
     setIsSubmitting(true);
   }
 
-  const effectiveEntryPoint = route === "zero" ? "A0" : entryPointLevel === "A0" ? "A1" : entryPointLevel;
+  const effectiveEntryPoint =
+    route === "zero" ? "A0" : entryPointLevel === "A0" ? "A1" : entryPointLevel;
 
   return (
     <form
@@ -74,17 +75,22 @@ export function OnboardingForm({
 
       {error === "invalid_input" ? (
         <Alert variant="danger">
-          Não foi possível salvar essas preferências. Revise os campos e tente novamente.
+          Não foi possível salvar essas preferências. Revise os campos e tente
+          novamente.
         </Alert>
       ) : null}
 
       <div className="onboarding-progress" aria-label="Progresso do onboarding">
-        <span>Etapa {isEditing ? 1 : step} de {isEditing ? 1 : 3}</span>
+        <span>
+          Etapa {isEditing ? 1 : step} de {isEditing ? 1 : 3}
+        </span>
       </div>
 
       <section hidden={!isEditing && step !== 1} aria-labelledby="goal-title">
         <h2 id="goal-title">Qual é seu principal objetivo?</h2>
-        <p className="onboarding-copy">Isso ajuda a manter a experiência focada. Você pode ajustar depois.</p>
+        <p className="onboarding-copy">
+          Isso ajuda a manter a experiência focada. Você pode ajustar depois.
+        </p>
         <Select
           defaultValue={initialPrimaryGoal ?? ""}
           id="primaryGoal"
@@ -93,14 +99,22 @@ export function OnboardingForm({
         >
           <option value="">Prefiro não escolher agora</option>
           {Object.entries(goalLabels).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+            <option key={value} value={value}>
+              {label}
+            </option>
           ))}
         </Select>
       </section>
 
-      <section hidden={!isEditing && step !== 2} aria-labelledby="routine-title">
+      <section
+        hidden={!isEditing && step !== 2}
+        aria-labelledby="routine-title"
+      >
         <h2 id="routine-title">Quanto tempo cabe no seu dia?</h2>
-        <p className="onboarding-copy">Uma meta pequena e repetível é melhor do que uma sessão difícil de manter.</p>
+        <p className="onboarding-copy">
+          Uma meta pequena e repetível é melhor do que uma sessão difícil de
+          manter.
+        </p>
         <Select
           defaultValue={String(initialDailyGoalMinutes)}
           id="dailyGoalMinutes"
@@ -128,7 +142,10 @@ export function OnboardingForm({
       {!isEditing ? (
         <section hidden={step !== 3} aria-labelledby="entry-title">
           <h2 id="entry-title">De onde você quer começar?</h2>
-          <p className="onboarding-copy">Escolher A1 ou A2 posiciona sua trilha, mas não conta como prova de domínio.</p>
+          <p className="onboarding-copy">
+            Escolher A1 ou A2 posiciona sua trilha, mas não conta como prova de
+            domínio.
+          </p>
           <fieldset className="choice-group">
             <legend className="sr-only">Ponto de entrada</legend>
             <label className="choice-card">
@@ -139,7 +156,10 @@ export function OnboardingForm({
                 type="radio"
                 value="zero"
               />
-              <span><strong>Começar do zero (A0)</strong><small>Quero construir a base desde o início.</small></span>
+              <span>
+                <strong>Começar do zero (A0)</strong>
+                <small>Quero construir a base desde o início.</small>
+              </span>
             </label>
             <label className="choice-card">
               <input
@@ -152,7 +172,10 @@ export function OnboardingForm({
                 type="radio"
                 value="manual"
               />
-              <span><strong>Já estudei antes</strong><small>Quero escolher A1 ou A2 como ponto de entrada.</small></span>
+              <span>
+                <strong>Já estudei antes</strong>
+                <small>Quero escolher A1 ou A2 como ponto de entrada.</small>
+              </span>
             </label>
           </fieldset>
 
@@ -166,7 +189,12 @@ export function OnboardingForm({
                     onChange={() => setEntryPointLevel(level)}
                     type="radio"
                   />
-                  <span><strong>{level}</strong>{level === "A1" ? " — já conheço o básico" : " — já consigo lidar com estruturas básicas"}</span>
+                  <span>
+                    <strong>{level}</strong>
+                    {level === "A1"
+                      ? " — já conheço o básico"
+                      : " — já consigo lidar com estruturas básicas"}
+                  </span>
                 </label>
               ))}
             </fieldset>
@@ -175,18 +203,29 @@ export function OnboardingForm({
       ) : (
         <div className="placement-note">
           <strong>Ponto de entrada atual: {initialEntryPointLevel}</strong>
-          <span>O ponto de entrada fica preservado; esta tela altera apenas suas preferências globais.</span>
+          <span>
+            O ponto de entrada fica preservado; esta tela altera apenas suas
+            preferências globais.
+          </span>
         </div>
       )}
 
       <div className="onboarding-actions">
         {!isEditing && step > 1 ? (
-          <Button type="button" variant="secondary" onClick={previousStep}>Voltar</Button>
+          <Button type="button" variant="secondary" onClick={previousStep}>
+            Voltar
+          </Button>
         ) : null}
         {!isEditing && step < 3 ? (
-          <Button type="button" onClick={nextStep}>Continuar</Button>
+          <Button type="button" onClick={nextStep}>
+            Continuar
+          </Button>
         ) : (
-          <Button isLoading={isSubmitting} loadingLabel="Salvando" type="submit">
+          <Button
+            isLoading={isSubmitting}
+            loadingLabel="Salvando"
+            type="submit"
+          >
             {isEditing ? "Salvar preferências" : "Começar minha jornada"}
           </Button>
         )}

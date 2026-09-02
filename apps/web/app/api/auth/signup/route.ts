@@ -13,10 +13,7 @@ import { isSameOriginRequest } from "../../../../server/auth/http";
 import { hashPassword } from "../../../../server/auth/password";
 import { authAdapter } from "../../../../server/auth/postgres-adapter";
 import { SESSION_TTL_SECONDS } from "../../../../server/auth/session-token";
-import {
-  createAuthAccount,
-  getDatabase,
-} from "../../../../server/database";
+import { createAuthAccount, getDatabase } from "../../../../server/database";
 import { errorCodes } from "../../../../server/observability/errors";
 import { createErrorResponse } from "../../../../server/observability/request";
 import { observeRequest } from "../../../../server/observability/runtime";
@@ -64,7 +61,8 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       const grant = await authAdapter.authenticate({ email, password });
-      if (!grant) throw new Error("Newly registered account could not authenticate");
+      if (!grant)
+        throw new Error("Newly registered account could not authenticate");
 
       const response = NextResponse.redirect(new URL("/app", request.url), 303);
       response.cookies.set(SESSION_COOKIE_NAME, grant.token, {

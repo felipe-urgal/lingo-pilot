@@ -7,7 +7,10 @@ import { errorCodes } from "../../../server/observability/errors";
 import { createErrorResponse } from "../../../server/observability/request";
 import { observeRequest } from "../../../server/observability/runtime";
 
-function onboardingRedirect(request: NextRequest, error?: string): NextResponse {
+function onboardingRedirect(
+  request: NextRequest,
+  error?: string,
+): NextResponse {
   const url = new URL("/app/onboarding", request.url);
   if (error) url.searchParams.set("error", error);
   return NextResponse.redirect(url, 303);

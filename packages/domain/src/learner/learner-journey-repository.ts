@@ -36,7 +36,5 @@ export interface SaveInitialLearnerJourneyInput {
 
 export interface LearnerJourneyRepository {
   findForUser(userId: string): Promise<LearnerJourney | null>;
-  saveInitial(
-    input: SaveInitialLearnerJourneyInput,
-  ): Promise<LearnerJourney>;
+  saveInitial(input: SaveInitialLearnerJourneyInput): Promise<LearnerJourney>;
 }

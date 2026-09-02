@@ -11,11 +11,7 @@ import type {
   SaveInitialLearnerJourneyInput,
 } from "../../../domain/src/index.ts";
 import type { Database } from "../client.ts";
-import {
-  enrollments,
-  languageProfiles,
-  learnerProfiles,
-} from "../schema.ts";
+import { enrollments, languageProfiles, learnerProfiles } from "../schema.ts";
 
 const SOURCE_LANGUAGE = "pt-BR";
 const TARGET_LANGUAGE = "en";
@@ -44,9 +40,7 @@ function languageProfileFromRow(
   };
 }
 
-function enrollmentFromRow(
-  row: typeof enrollments.$inferSelect,
-): Enrollment {
+function enrollmentFromRow(row: typeof enrollments.$inferSelect): Enrollment {
   return {
     ...row,
     entryPointLevel: row.entryPointLevel as EntryPointLevel,
@@ -55,9 +49,7 @@ function enrollmentFromRow(
   };
 }
 
-export class PostgresLearnerJourneyRepository
-  implements LearnerJourneyRepository
-{
+export class PostgresLearnerJourneyRepository implements LearnerJourneyRepository {
   constructor(private readonly database: Database) {}
 
   async findForUser(userId: string): Promise<LearnerJourney | null> {
@@ -143,7 +135,8 @@ export class PostgresLearnerJourneyRepository
           },
         })
         .returning();
-      if (!languageProfile) throw new Error("Failed to persist language profile");
+      if (!languageProfile)
+        throw new Error("Failed to persist language profile");
 
       const [enrollment] = await transaction
         .insert(enrollments)

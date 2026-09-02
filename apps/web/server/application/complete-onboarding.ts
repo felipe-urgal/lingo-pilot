@@ -58,7 +58,8 @@ function parseDailyGoalMinutes(value: unknown): number | null {
 
 function parsePrimaryGoal(value: unknown): PrimaryGoal | null | undefined {
   if (value === null || value === undefined || value === "") return null;
-  return typeof value === "string" && primaryGoals.includes(value as PrimaryGoal)
+  return typeof value === "string" &&
+    primaryGoals.includes(value as PrimaryGoal)
     ? (value as PrimaryGoal)
     : undefined;
 }

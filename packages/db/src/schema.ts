@@ -125,7 +125,10 @@ export const languageProfiles = pgTable(
       table.sourceLanguage,
       table.targetLanguage,
     ),
-    check("language_profiles_id_not_blank", sql`length(btrim(${table.id})) > 0`),
+    check(
+      "language_profiles_id_not_blank",
+      sql`length(btrim(${table.id})) > 0`,
+    ),
     check(
       "language_profiles_languages_distinct",
       sql`${table.sourceLanguage} <> ${table.targetLanguage}`,
@@ -138,7 +141,10 @@ export const languageProfiles = pgTable(
       "language_profiles_estimated_level_supported",
       sql`${table.currentEstimatedLevel} is null or ${table.currentEstimatedLevel} in ('A0', 'A1', 'A2')`,
     ),
-    check("language_profiles_status_supported", sql`${table.status} = 'active'`),
+    check(
+      "language_profiles_status_supported",
+      sql`${table.status} = 'active'`,
+    ),
   ],
 );
 

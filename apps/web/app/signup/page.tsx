@@ -19,14 +19,19 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         <p className="eyebrow">LingoPilot</p>
         <h1 id="signup-title">Criar conta</h1>
         <p className="description">
-          Crie sua conta e configure sua primeira jornada de inglês em poucos passos.
+          Crie sua conta e configure sua primeira jornada de inglês em poucos
+          passos.
         </p>
 
         {error === "invalid_input" ? (
-          <Alert variant="danger">Informe um email válido e uma senha com pelo menos 8 caracteres.</Alert>
+          <Alert variant="danger">
+            Informe um email válido e uma senha com pelo menos 8 caracteres.
+          </Alert>
         ) : null}
         {error === "account_unavailable" ? (
-          <Alert variant="danger">Não foi possível criar essa conta. Tente entrar ou use outro email.</Alert>
+          <Alert variant="danger">
+            Não foi possível criar essa conta. Tente entrar ou use outro email.
+          </Alert>
         ) : null}
 
         <form className="auth-form" action="/api/auth/signup" method="post">
@@ -52,7 +57,10 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <Button type="submit">Criar conta</Button>
         </form>
         <p className="auth-switch">
-          Já tem conta? <a className="text-link" href="/login">Entrar</a>
+          Já tem conta?{" "}
+          <a className="text-link" href="/login">
+            Entrar
+          </a>
         </p>
       </section>
     </main>

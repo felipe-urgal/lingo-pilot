@@ -106,7 +106,10 @@ describe("complete onboarding", () => {
       entryPointLevel: "B1",
     });
 
-    expect(result).toEqual({ ok: false, error: { code: "onboarding_invalid_input" } });
+    expect(result).toEqual({
+      ok: false,
+      error: { code: "onboarding_invalid_input" },
+    });
     expect(repository.saved).toBeNull();
   });
 });
