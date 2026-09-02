@@ -43,16 +43,16 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 
 ### Sequência atual recomendada
 
-A **Foundation está concluída**: bootstrap, runtime, persistência, auth, boundaries, design system, observabilidade, schemas de conteúdo e infraestrutura de testes já foram entregues. A próxima frente elegível é a Fase 1:
+A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding; a próxima frente elegível passa a ser:
 
 ```text
-#17 learner profile and onboarding
+#18 course catalog, enrollment and curriculum eligibility
 ```
 
 ## Fase 1 — Study Engine
 
-- #17 Learner profile and onboarding flow
-- #18 Course catalog, enrollment and curriculum eligibility
+- #17 Learner profile and onboarding flow — **Concluída**
+- #18 Course catalog, enrollment and curriculum eligibility — **Próxima**
 - #19 StudySession data model and Today experience shell
 - #20 Lesson Player with structured pedagogical blocks
 - #21 Exercise Engine for deterministic activity types
@@ -66,12 +66,30 @@ A **Foundation está concluída**: bootstrap, runtime, persistência, auth, boun
 - #49 14-day A0 dogfood validation and learning-loop review
 - #29 Migrate and editorially review A1 and A2 course content
 
+### Vertical entregue pela #17
+
+```text
+signup/login
+    ↓
+LearnerProfile
+    ↓
+LanguageProfile pt-BR → en
+    ↓
+Enrollment A0/A1/A2
+    ↓
+Today shell
+```
+
+A persistência inicial é transacional/idempotente. `placementSource=manual` para A1/A2 só posiciona a trilha: não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
+
 ### Estratégia de entrega
 
 A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar os fundamentos de integridade. O dogfood A0 é **gate intermediário**, não autorização para considerar a Fase 1 concluída sem A1/A2.
 
 ```text
-profile + LanguageProfile + Enrollment
+profile + LanguageProfile + Enrollment       ✅ #17
+      ↓
+course + eligibility                         ← #18
       ↓
 lesson → exercise → attempt
       ↓             ↓
@@ -198,4 +216,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu **#7–#16**. A próxima issue elegível é **#17 — Learner profile and onboarding flow**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. A próxima issue elegível é **#18 — Course catalog, enrollment and curriculum eligibility**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
