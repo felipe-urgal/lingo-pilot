@@ -30,6 +30,7 @@ test("Production Contract está habilitado e mapeado explicitamente", () => {
 test("Production Contract preserva a interface operacional validada", () => {
   assert.deepEqual(manifest.production.commands, {
     status: "prod:status",
+    prepare: "prod:prepare",
     check: "prod:check",
     migrate: "prod:migrate",
     verify: "prod:verify",
