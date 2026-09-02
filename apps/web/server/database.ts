@@ -8,7 +8,7 @@ import {
   updateOwnershipFixtureForUser,
   type Database,
   type DatabaseClient,
-} from "../../../packages/db/src/index.ts";
+} from "../../../packages/db/src/runtime.ts";
 import { serverConfig } from "../config/server";
 
 const globalDatabase = globalThis as typeof globalThis & {
