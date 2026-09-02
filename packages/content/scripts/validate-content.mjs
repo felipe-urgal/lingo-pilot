@@ -32,7 +32,8 @@ async function listJsonFiles(path) {
   )) {
     const entryPath = resolve(path, entry.name);
     if (entry.isDirectory()) files.push(...(await listJsonFiles(entryPath)));
-    else if (entry.isFile() && entry.name.endsWith(".json")) files.push(entryPath);
+    else if (entry.isFile() && entry.name.endsWith(".json"))
+      files.push(entryPath);
   }
   return files;
 }
@@ -69,7 +70,9 @@ if (!(await pathExists(requestedRoot))) {
     console.error(`Content path does not exist: ${requestedRoot}`);
     process.exitCode = 1;
   } else {
-    console.log("Content validation passed: no authored content directory yet.");
+    console.log(
+      "Content validation passed: no authored content directory yet.",
+    );
   }
 } else {
   const files = await listJsonFiles(requestedRoot);
