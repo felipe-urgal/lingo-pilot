@@ -4,6 +4,8 @@
     "declaration": false,
     "declarationMap": false,
     "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
