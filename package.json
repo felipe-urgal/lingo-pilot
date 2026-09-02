@@ -38,7 +38,7 @@
     "prod:backup": "node scripts/backup-production.mjs",
     "prod:restore-check": "node scripts/restore-check-production.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --write . && git diff --exit-code"
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@lingo-pilot/config": "workspace:*",
