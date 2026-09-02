@@ -6,23 +6,32 @@ import {
 } from "../../../../server/auth/cookie";
 import { isSameOriginRequest } from "../../../../server/auth/http";
 import { authAdapter } from "../../../../server/auth/postgres-adapter";
+import { errorCodes } from "../../../../server/observability/errors";
+import { createErrorResponse } from "../../../../server/observability/request";
+import { observeRequest } from "../../../../server/observability/runtime";
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!isSameOriginRequest(request, serverConfig.public.appUrl)) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
+export function POST(request: NextRequest): Promise<NextResponse> {
+  return observeRequest(
+    request,
+    { route: "/api/auth/logout", useCase: "auth.logout" },
+    async ({ requestId }) => {
+      if (!isSameOriginRequest(request, serverConfig.public.appUrl)) {
+        return createErrorResponse(errorCodes.authForbidden, requestId);
+      }
 
-  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+      const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
-  if (token) {
-    await authAdapter.revoke(token);
-  }
+      if (token) {
+        await authAdapter.revoke(token);
+      }
 
-  const response = NextResponse.redirect(new URL("/login", request.url), 303);
-  response.cookies.set(SESSION_COOKIE_NAME, "", {
-    ...sessionCookieOptions(serverConfig.profile, 0),
-    expires: new Date(0),
-  });
+      const response = NextResponse.redirect(new URL("/login", request.url), 303);
+      response.cookies.set(SESSION_COOKIE_NAME, "", {
+        ...sessionCookieOptions(serverConfig.profile, 0),
+        expires: new Date(0),
+      });
 
-  return response;
+      return response;
+    },
+  );
 }
