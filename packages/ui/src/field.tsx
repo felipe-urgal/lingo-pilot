@@ -18,9 +18,11 @@ function describedBy(
   error?: string,
   existing?: string,
 ) {
-  return [existing, hint ? `${id}-hint` : null, error ? `${id}-error` : null]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  return (
+    [existing, hint ? `${id}-hint` : null, error ? `${id}-error` : null]
+      .filter(Boolean)
+      .join(" ") || undefined
+  );
 }
 
 function FieldMessages({ id, hint, error }: Omit<FieldProps, "label">) {
@@ -42,7 +44,14 @@ function FieldMessages({ id, hint, error }: Omit<FieldProps, "label">) {
 
 export type InputProps = FieldProps & InputHTMLAttributes<HTMLInputElement>;
 
-export function Input({ error, hint, id, label, className, ...props }: InputProps) {
+export function Input({
+  error,
+  hint,
+  id,
+  label,
+  className,
+  ...props
+}: InputProps) {
   return (
     <label className="lp-field" htmlFor={id}>
       <span className="lp-field__label">{label}</span>

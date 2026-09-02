@@ -29,7 +29,10 @@ test("form primitives expose labels and field errors", () => {
     </form>,
   );
 
-  expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true");
+  expect(screen.getByLabelText("Email")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
   expect(screen.getByLabelText("Email")).toHaveAccessibleDescription(
     "Email inválido",
   );

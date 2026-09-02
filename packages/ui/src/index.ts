@@ -20,11 +20,6 @@ export {
   type AlertVariant,
   type ProgressProps,
 } from "./feedback.tsx";
-export {
-  Dialog,
-  Sheet,
-  type DialogProps,
-  type SheetProps,
-} from "./dialog.tsx";
+export { Dialog, Sheet, type DialogProps, type SheetProps } from "./dialog.tsx";
 
 export const packageBoundary = "ui" as const;
