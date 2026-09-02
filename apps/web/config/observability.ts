@@ -1,4 +1,5 @@
-const environment = process.env.LINGO_PROFILE ?? process.env.NODE_ENV ?? "unknown";
+const environment =
+  process.env.LINGO_PROFILE ?? process.env.NODE_ENV ?? "unknown";
 
 export const observabilityConfig = Object.freeze({
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
