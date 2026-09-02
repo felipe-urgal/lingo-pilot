@@ -151,13 +151,7 @@ export type VocabularyItem = ContentEntityBase<"vocabulary"> &
   }>;
 
 export type ContentDocument =
-  | Course
-  | Level
-  | Unit
-  | Lesson
-  | Activity
-  | Concept
-  | VocabularyItem;
+  Course | Level | Unit | Lesson | Activity | Concept | VocabularyItem;
 
 export type ContentDocumentKind = ContentDocument["kind"];
 
