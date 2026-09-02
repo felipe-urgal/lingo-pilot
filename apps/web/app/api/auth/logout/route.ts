@@ -25,7 +25,10 @@ export function POST(request: NextRequest): Promise<NextResponse> {
         await authAdapter.revoke(token);
       }
 
-      const response = NextResponse.redirect(new URL("/login", request.url), 303);
+      const response = NextResponse.redirect(
+        new URL("/login", request.url),
+        303,
+      );
       response.cookies.set(SESSION_COOKIE_NAME, "", {
         ...sessionCookieOptions(serverConfig.profile, 0),
         expires: new Date(0),
