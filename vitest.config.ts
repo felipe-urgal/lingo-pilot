@@ -21,6 +21,9 @@ export default defineConfig({
     },
     projects: [
       {
+        esbuild: {
+          jsx: "automatic",
+        },
         test: {
           environment: "jsdom",
           include: ["test/**/*.component.test.tsx"],
