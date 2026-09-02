@@ -50,7 +50,11 @@ function enrollmentFromRow(row: typeof enrollments.$inferSelect): Enrollment {
 }
 
 export class PostgresLearnerJourneyRepository implements LearnerJourneyRepository {
-  constructor(private readonly database: Database) {}
+  private readonly database: Database;
+
+  constructor(database: Database) {
+    this.database = database;
+  }
 
   async findForUser(userId: string): Promise<LearnerJourney | null> {
     const [learnerProfile] = await this.database
