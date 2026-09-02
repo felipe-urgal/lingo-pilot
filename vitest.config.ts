@@ -21,8 +21,11 @@ export default defineConfig({
     },
     projects: [
       {
-        esbuild: {
-          jsx: "automatic",
+        oxc: {
+          jsx: {
+            importSource: "react",
+            runtime: "automatic",
+          },
         },
         test: {
           environment: "jsdom",
