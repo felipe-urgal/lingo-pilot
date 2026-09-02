@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "../../../packages/ui/src/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +15,12 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <a className="lp-skip-link" href="#main-content">
+          Ir para o conteúdo
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
