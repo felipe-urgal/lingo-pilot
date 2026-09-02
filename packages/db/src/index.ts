@@ -9,6 +9,17 @@ export {
 } from "./client.ts";
 export { DEFAULT_MIGRATIONS_FOLDER, migrateDatabase } from "./migrations.ts";
 export {
+  createAuthCredential,
+  createAuthSession,
+  findActiveAuthSessionByTokenHash,
+  findAuthCredentialByEmail,
+  revokeAuthSessionByTokenHash,
+  type AuthCredentialRecord,
+  type AuthSessionRecord,
+  type CreateAuthCredentialInput,
+  type CreateAuthSessionInput,
+} from "./auth.ts";
+export {
   createOwnershipFixture,
   createUser,
   findOwnershipFixtureForUser,
@@ -17,6 +28,12 @@ export {
   type OwnershipFixtureRecord,
   type UserRecord,
 } from "./ownership.ts";
-export { appMetadata, ownershipFixtures, users } from "./schema.ts";
+export {
+  appMetadata,
+  authCredentials,
+  authSessions,
+  ownershipFixtures,
+  users,
+} from "./schema.ts";
 
 export const packageBoundary = "db" as const;
