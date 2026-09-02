@@ -2,7 +2,7 @@
 
 Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
 
-> **Estado de referência:** 2026-09-01. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
+> **Estado de referência:** 2026-09-02. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -35,11 +35,17 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 - #56 alinhou `next-env.d.ts` à política atual do Next.js e protegeu a árvore Git contra churn gerado;
 - #59 estabeleceu o Production Contract fail-closed consumido pelo Dev Dashboard, sem fingir que Vercel/Neon já estão operacionais.
 
+### Segurança prioritária
+
+- #66 — **Em revisão**: atualiza Next.js `16.3.2` para `16.3.4`, acima do security floor `16.3.3`, mantendo `@next/eslint-plugin-next` e lockfile alinhados. Nenhuma nova feature da Foundation deve ultrapassar essa correção P0 antes do merge.
+
 ### Sequência atual recomendada
 
 Os fundamentos de bootstrap/configuração/persistência já foram entregues. A janela imediata da Foundation é:
 
 ```text
+#66 Next.js security patch
+          ↓
 #11 auth
 #12 boundaries ─→ #16 test infrastructure
 #13 design system
@@ -47,7 +53,7 @@ Os fundamentos de bootstrap/configuração/persistência já foram entregues. A 
 #15 content schemas
 ```
 
-#11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+Depois da #66, #11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -198,4 +204,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation já concluiu #7–#10. As próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
+A Foundation já concluiu #7–#10. A prioridade imediata é concluir a correção de segurança **#66**. Depois dela, as próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
