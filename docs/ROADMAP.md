@@ -2,7 +2,7 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
-> **Estado de execução em 2026-09-01:** a Fase 0 está em andamento. #7, #8, #9 e #10 foram concluídas; #11–#15 estão abertas e elegíveis conforme suas dependências; #16 continua dependente de #12. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
+> **Estado de execução em 2026-09-02:** a Fase 0 está em andamento. #7, #8, #9, #10 e #11 foram concluídas; #12–#15 estão abertas e elegíveis conforme suas dependências; #16 continua dependente de #12. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
 
 ## Fase 0 — Foundation
 
@@ -17,18 +17,18 @@ Concluído:
 - monorepo e web shell (#7);
 - CI permanente e governança da `main` (#8);
 - contrato de ambiente/runtime local (#9);
-- PostgreSQL, Drizzle, migrations e integration baseline (#10).
+- PostgreSQL, Drizzle, migrations e integration baseline (#10);
+- autenticação first-party, sessão server-side e ownership authorization baseline (#11).
 
 Em aberto:
 
-- autenticação e ownership (#11);
 - boundaries de domínio/aplicação executáveis (#12);
 - design system e app shell (#13);
 - observabilidade/error taxonomy (#14);
 - schemas e pipeline de conteúdo (#15);
 - infraestrutura completa de testes, incluindo Playwright/fake clock/factories (#16), após #12.
 
-As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados, e #59 adicionou somente o Production Contract fail-closed. Nenhum desses itens significa que a Fase 0 inteira ou a produção real estejam concluídas.
+As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados. O baseline fail-closed de produção da #59 evoluiu em #63–#65 para uma capability operacional ativa com Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e integração com o Dev Dashboard. Isso melhora a operação do repositório, mas **não** significa que a Fase 0 inteira ou o hardening operacional da #45 estejam concluídos.
 
 ### Entregas
 
@@ -55,7 +55,7 @@ As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados, e
 - design tokens básicos existem;
 - nenhuma regra de negócio crítica está acoplada a Next.js/ORM.
 
-A fase só deve ser marcada como concluída quando todos os exit criteria aplicáveis forem validados, não apenas porque as primeiras quatro issues foram encerradas.
+A fase só deve ser marcada como concluída quando todos os exit criteria aplicáveis forem validados, não apenas porque as primeiras issues foram encerradas.
 
 ---
 
@@ -291,7 +291,7 @@ Transformar uma ferramenta funcional em um produto confiável para uso diário c
 - browser/device matrix;
 - disaster recovery runbook.
 
-A #59 já garante apenas que produção permaneça **explicitamente bloqueada** enquanto essas capacidades operacionais não existirem. A ativação real de Vercel/Neon, migrations, health e backup pertence à #45.
+A capability de Production já está ativa após #63–#65, com Vercel + Neon, migrations explícitas, health/readiness e backup/restore-check exercitados. A #45 continua responsável pelo **hardening operacional restante**, especialmente runbooks, incident response, recovery criteria e evolução das garantias conforme o produto passe a armazenar dados reais.
 
 ### Exit criteria
 
@@ -336,7 +336,9 @@ Tooling + CI                     ✅ #7/#8
   ↓
 Runtime config + DB              ✅ #9/#10
   ↓
-Auth + Domain Skeleton           ← próximo bloco da Foundation
+Auth                             ✅ #11
+  ↓
+Domain Skeleton                  ← próximo bloco da Foundation
   ↓
 Design/Observability/Content/Test foundations
   ↓
