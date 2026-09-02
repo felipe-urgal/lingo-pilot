@@ -26,7 +26,7 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 | #12 Establish domain/application boundaries and repository contracts | Concluída | Boundaries executáveis, ports e Result/erros tipados |
 | #13 Design system tokens, primitives and application shell | Concluída | Tokens, primitives acessíveis, app shell responsivo e demo interna |
 | #14 Structured logging, error taxonomy and observability baseline | Concluída | Logger estruturado, correlation ID, taxonomy, redaction e hooks de telemetria |
-| #15 Versioned content schemas and validation pipeline | Aberta | Desbloqueada por #7 e #8 |
+| #15 Versioned content schemas and validation pipeline | Concluída | Schemas v1 versionados, validation graph, CLI `content:validate` e testes de integridade |
 | #16 Test infrastructure, factories and deterministic clock | Concluída | Vitest, Testing Library, Playwright, test-support e harness PostgreSQL isolado |
 
 ### Manutenção concluída durante a Foundation
@@ -39,14 +39,14 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 - #65 alinhou o manifesto ativo ao vocabulário canônico do Dev Dashboard;
 - #66/#69 atualizaram Next.js para `16.3.4`, acima do security floor corrigido da linha 16.3.
 
-A capability de Production está ativa, mas isso não encerra o hardening operacional da #45 nem a Foundation de produto/engenharia.
+A capability de Production está ativa, mas isso não encerra o hardening operacional da #45.
 
 ### Sequência atual recomendada
 
-Bootstrap, runtime, persistência, auth, boundaries, design system, observabilidade e infraestrutura de testes já foram entregues. A próxima frente elegível da Foundation é:
+A **Foundation está concluída**: bootstrap, runtime, persistência, auth, boundaries, design system, observabilidade, schemas de conteúdo e infraestrutura de testes já foram entregues. A próxima frente elegível é a Fase 1:
 
 ```text
-#15 content schemas
+#17 learner profile and onboarding
 ```
 
 ## Fase 1 — Study Engine
@@ -198,4 +198,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu #7–#14 e #16. A próxima issue elegível é **#15**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu **#7–#16**. A próxima issue elegível é **#17 — Learner profile and onboarding flow**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
