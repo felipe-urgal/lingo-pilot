@@ -93,7 +93,10 @@ function expectReference<TKind extends ContentDocument["kind"]>(
     );
     return null;
   }
-  if (isPublished(owner.document.status) && !isPublished(target.document.status)) {
+  if (
+    isPublished(owner.document.status) &&
+    !isPublished(target.document.status)
+  ) {
     addIssue(
       issues,
       owner,
@@ -149,7 +152,14 @@ function courseForLevel(
   owner: LoadedContentDocument,
   level: Level,
 ): Course | null {
-  return expectReference(index, issues, owner, level.courseId, "course", "$.courseId");
+  return expectReference(
+    index,
+    issues,
+    owner,
+    level.courseId,
+    "course",
+    "$.courseId",
+  );
 }
 
 function levelForUnit(
@@ -158,7 +168,14 @@ function levelForUnit(
   owner: LoadedContentDocument,
   unit: Unit,
 ): Level | null {
-  return expectReference(index, issues, owner, unit.levelId, "level", "$.levelId");
+  return expectReference(
+    index,
+    issues,
+    owner,
+    unit.levelId,
+    "level",
+    "$.levelId",
+  );
 }
 
 function unitForLesson(
@@ -167,7 +184,14 @@ function unitForLesson(
   owner: LoadedContentDocument,
   lesson: Lesson,
 ): Unit | null {
-  return expectReference(index, issues, owner, lesson.unitId, "unit", "$.unitId");
+  return expectReference(
+    index,
+    issues,
+    owner,
+    lesson.unitId,
+    "unit",
+    "$.unitId",
+  );
 }
 
 function courseFromLevelId(
@@ -217,7 +241,8 @@ function validateLevel(
 ): void {
   const level = loaded.document;
   const course = courseForLevel(index, issues, loaded, level);
-  if (course) requireLocale(issues, loaded, level.title, course.sourceLocale, "$.title");
+  if (course)
+    requireLocale(issues, loaded, level.title, course.sourceLocale, "$.title");
   for (const [position, unitId] of level.unitIds.entries()) {
     const unit = expectReference(
       index,
@@ -247,9 +272,17 @@ function validateUnit(
   const unit = loaded.document;
   const level = levelForUnit(index, issues, loaded, unit);
   const course = level
-    ? expectReference(index, issues, loaded, level.courseId, "course", "$.levelId")
+    ? expectReference(
+        index,
+        issues,
+        loaded,
+        level.courseId,
+        "course",
+        "$.levelId",
+      )
     : null;
-  if (course) requireLocale(issues, loaded, unit.title, course.sourceLocale, "$.title");
+  if (course)
+    requireLocale(issues, loaded, unit.title, course.sourceLocale, "$.title");
   for (const [position, lessonId] of unit.lessonIds.entries()) {
     const lesson = expectReference(
       index,
@@ -278,7 +311,14 @@ function validateLesson(
 ): void {
   const lesson = loaded.document;
   const unit = unitForLesson(index, issues, loaded, lesson);
-  const level = expectReference(index, issues, loaded, lesson.levelId, "level", "$.levelId");
+  const level = expectReference(
+    index,
+    issues,
+    loaded,
+    lesson.levelId,
+    "level",
+    "$.levelId",
+  );
   if (unit && unit.levelId !== lesson.levelId) {
     addIssue(
       issues,
@@ -289,7 +329,14 @@ function validateLesson(
     );
   }
   const course = level
-    ? expectReference(index, issues, loaded, level.courseId, "course", "$.levelId")
+    ? expectReference(
+        index,
+        issues,
+        loaded,
+        level.courseId,
+        "course",
+        "$.levelId",
+      )
     : null;
   if (course) {
     requireLocale(issues, loaded, lesson.title, course.sourceLocale, "$.title");
@@ -411,10 +458,18 @@ function validateActivity(
     "$.lessonId",
   );
   if (course) {
-    requireLocale(issues, loaded, activity.prompt, course.sourceLocale, "$.prompt");
+    requireLocale(
+      issues,
+      loaded,
+      activity.prompt,
+      course.sourceLocale,
+      "$.prompt",
+    );
   }
 
-  const objectiveIds = new Set(lesson.objectives.map((objective) => objective.id));
+  const objectiveIds = new Set(
+    lesson.objectives.map((objective) => objective.id),
+  );
   for (const [position, objectiveId] of activity.objectiveIds.entries()) {
     if (!objectiveIds.has(objectiveId)) {
       addIssue(
@@ -453,7 +508,13 @@ function validateConcept(
     "$.courseId",
   );
   if (course) {
-    requireLocale(issues, loaded, concept.title, course.sourceLocale, "$.title");
+    requireLocale(
+      issues,
+      loaded,
+      concept.title,
+      course.sourceLocale,
+      "$.title",
+    );
     requireLocale(
       issues,
       loaded,
@@ -584,7 +645,8 @@ function validateDocument(
       break;
     case "vocabulary":
       validateVocabulary(
-        loaded as LoadedContentDocument & Readonly<{ document: VocabularyItem }>,
+        loaded as LoadedContentDocument &
+          Readonly<{ document: VocabularyItem }>,
         index,
         issues,
       );
@@ -599,7 +661,10 @@ function detectCycles<T extends Lesson | Concept>(
   dependencyPath: string,
   issues: MutableIssues,
 ): void {
-  const nodes = new Map<string, LoadedContentDocument & Readonly<{ document: T }>>();
+  const nodes = new Map<
+    string,
+    LoadedContentDocument & Readonly<{ document: T }>
+  >();
   for (const loaded of documents) {
     if (loaded.document.kind === kind) {
       nodes.set(
