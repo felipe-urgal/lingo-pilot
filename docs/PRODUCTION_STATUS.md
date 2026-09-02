@@ -1,6 +1,6 @@
 # Status de produção
 
-A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): Vercel para aplicação, Neon PostgreSQL para dados e promoção `git-managed` pela branch `main`.
+A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): Vercel para aplicação, Neon PostgreSQL para dados e promoção `git-managed` pela branch `main`. A política mais recente de acionamento automático da integração Git está registrada no [`ADR 0004`](ADR/0004-vercel-main-only-automatic-deployments.md).
 
 > **Estado atual:** Production capability habilitada em 2026-09-01 após validação real de check isolado, migration, deployment Vercel, readiness, backup e restore-check. O manifesto `.dev-dashboard/production.json` está ativo e mapeia explicitamente o projeto Vercel `lingo-pilot`.
 
@@ -11,6 +11,7 @@ A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.m
 - projeto: `lingo-pilot`;
 - repositório: `felipe-urgal/lingo-pilot`;
 - production branch: `main`;
+- deployments automáticos da integração Git: somente `main`, conforme `vercel.json` e ADR 0004;
 - aplicação Next.js em `apps/web`;
 - domínio canônico: `https://lingo-pilot.vercel.app`;
 - readiness canônica: `https://lingo-pilot.vercel.app/api/health/ready`;
@@ -18,16 +19,16 @@ A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.m
 
 O ambiente Production da Vercel recebe apenas a configuração de runtime necessária. `DATABASE_URL` usa a conexão pooled da branch Neon `main`. Credenciais administrativas de migration/backup não são colocadas no runtime da aplicação.
 
-Deployments Preview usam `DATABASE_URL` própria apontando para a conexão pooled da branch Neon `preview`; nunca recebem a conexão da `main`. A URL pública de cada Preview usa `VERCEL_URL` automaticamente quando `NEXT_PUBLIC_APP_URL` não está definida, enquanto Production mantém o domínio canônico explícito.
+Preview Deployments automáticos para branches de trabalho estão desabilitados. A branch Neon `preview` permanece provisionada e isolada para uso explícito caso um preview manual seja necessário no futuro; qualquer preview criado manualmente deve usar configuração própria e nunca receber a conexão da `main`. Quando um Preview existir, `VERCEL_URL` pode fornecer sua origem pública automática se `NEXT_PUBLIC_APP_URL` não estiver definida.
 
 ### Neon PostgreSQL
 
 Em 2026-09-01 foi provisionado o projeto `lingo-pilot-production`, PostgreSQL 18, com duas branches permanentes e isoladas:
 
 - `main` — dados e schema de Production;
-- `preview` — ambiente de banco para deployments Preview da Vercel.
+- `preview` — ambiente não produtivo reservado para Preview explícito/manual quando necessário.
 
-A branch `preview` foi criada a partir da `main` depois da primeira migration, portanto nasceu com o schema versionado atual. Local e CI continuam usando bancos próprios e não reutilizam nenhuma dessas branches.
+A branch `preview` foi criada a partir da `main` depois da primeira migration, portanto nasceu com o schema versionado atual. Ela não é consumida automaticamente por pushes de branches enquanto a política do ADR 0004 estiver vigente. Local e CI continuam usando bancos próprios e não reutilizam nenhuma dessas branches.
 
 A primeira migration versionada foi aplicada com sucesso em `main` usando a conexão administrativa direta/unpooled. A readiness publicada confirmou conectividade com PostgreSQL e presença do schema mínimo `app_metadata`.
 
@@ -75,7 +76,7 @@ Restore-check usa adicionalmente `RESTORE_CHECK_DATABASE_URL` e a confirmação 
 - projeto Vercel criado e ligado ao GitHub/`main`;
 - primeiro deployment Production ficou `Ready` no domínio canônico;
 - `prod:verify` confirmou readiness real em produção;
-- Preview isolado em branch Neon permanente `preview`, sem acesso ao banco de Production.
+- isolamento de Preview foi validado com branch Neon permanente `preview`, sem acesso ao banco de Production; desde o ADR 0004, o acionamento automático de Preview por branches de trabalho está desabilitado.
 
 ## Health/readiness
 
@@ -104,5 +105,7 @@ external.project = lingo-pilot
 prepare = prod:prepare
 health = https://lingo-pilot.vercel.app/api/health/ready
 ```
+
+O `vercel.json` complementa esse contrato restringindo deployments automáticos da integração Git à `main`. Deployments manuais continuam fora desse bloqueio e devem respeitar os mesmos contratos de isolamento e segurança.
 
 Não existem mais blockers de ativação no manifesto. A issue #45 continua sendo a referência para hardening operacional mais amplo, incluindo runbooks e critérios adicionais de incident response que não são pré-requisito para manter a capability de Production habilitada.
