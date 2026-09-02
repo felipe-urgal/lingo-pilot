@@ -15,19 +15,22 @@ A governança precisa equilibrar quatro objetivos:
 
 ## 2. Workflow oficial de CI
 
-O workflow permanente é `.github/workflows/ci.yml` e publica dois checks visíveis no PR:
+O workflow permanente é `.github/workflows/ci.yml` e executa três jobs visíveis no PR:
 
 ```text
 CI / quality
+CI / e2e
 CI / build
 ```
 
-Os contextos usados internamente pelo ruleset do GitHub são:
+Os contextos diretamente exigidos pelo ruleset do GitHub continuam:
 
 ```text
 quality
 build
 ```
+
+`e2e` é um gate intermediário obrigatório no grafo do workflow: ele depende de `quality`, e `build` depende de `quality + e2e`. Portanto, um E2E vermelho impede o check obrigatório `build` de ficar verde mesmo sem adicionar um terceiro contexto ao ruleset.
 
 ### `CI / quality`
 
@@ -48,9 +51,20 @@ Executa, nesta ordem:
 
 O job sobe PostgreSQL `17-alpine` como service isolado, publicado apenas no runner em `5435`, usando credenciais sintéticas.
 
+### `CI / e2e`
+
+Só inicia depois de `quality` ficar verde e executa:
+
+1. checkout e setup de Node/Corepack;
+2. instalação frozen;
+3. instalação do Chromium usado pelo Playwright;
+4. `pnpm test:e2e` contra servidor reservado em `127.0.0.1:5401` e PostgreSQL efêmero próprio.
+
+A suíte E2E usa banco explicitamente identificado como teste, reinicializado pelo harness antes da execução. Ela cobre fluxos browser-first críticos sem reutilizar Development, Preview ou Production.
+
 ### `CI / build`
 
-Só inicia após `quality` ficar verde e executa:
+Só inicia após `quality` e `e2e` ficarem verdes e executa:
 
 1. checkout;
 2. setup de Node/Corepack;
@@ -58,7 +72,7 @@ Só inicia após `quality` ficar verde e executa:
 4. `pnpm build`;
 5. verificação de que o build não alterou **arquivos rastreados** da working tree.
 
-A separação é intencional: falhas de qualidade aparecem antes e evitam gastar minutos de runner com build inválido.
+A separação é intencional: falhas de qualidade aparecem primeiro, E2E valida os fluxos críticos no browser e somente então o runner gasta tempo com o build final de produção.
 
 ## 3. Ambiente sintético de CI
 
@@ -72,7 +86,9 @@ TEST_DATABASE_URL=postgresql://<synthetic>@127.0.0.1:5435/lingo_pilot_test
 LINGO_TEST_MODE=false
 ```
 
-O PostgreSQL do job é efêmero e nunca representa Production. `TEST_DATABASE_URL` é o destino dos integration tests; o smoke usa explicitamente o banco de teste do service. Build continua sem abrir conexão nem aplicar migration.
+O PostgreSQL de cada job que precisa de persistência é efêmero e nunca representa Production. `TEST_DATABASE_URL` é o destino dos integration/E2E tests; o smoke usa explicitamente o banco de teste do service. Build continua sem abrir conexão nem aplicar migration.
+
+O profile E2E sobrescreve a configuração web para `127.0.0.1:5401`, `LINGO_PROFILE=e2e` e `LINGO_TEST_MODE=true` somente no processo correspondente.
 
 ## 4. Segurança do GitHub Actions
 
@@ -99,17 +115,18 @@ A instalação limpa é curta e o repositório ainda é pequeno. Cache de pnpm/T
 
 `pnpm content:validate` é gate permanente desde Foundation.
 
-Enquanto a #15 não implementar schemas e referências completos, o hook confirma que o ponto de integração existe. Quando #15 entrar, o comando deve evoluir mantendo o mesmo nome para não quebrar CI/ruleset desnecessariamente.
+A #15 implementou schemas, referências e validação do grafo mantendo o mesmo comando estável usado pelo CI. Evoluções de conteúdo devem preservar esse ponto de integração para não quebrar workflow/ruleset desnecessariamente.
 
 ## 7. Database validation baseline
 
-A #10 adicionou a baseline real de persistência ao CI.
+A #10 adicionou a baseline real de persistência ao CI e as issues posteriores a estendem pelo mesmo contrato.
 
 O contrato atual inclui:
 
-- PostgreSQL efêmero por job `quality`;
+- PostgreSQL efêmero por job que precisa de dados;
 - smoke de conexão;
 - integration tests usando `TEST_DATABASE_URL` isolada;
+- E2E com banco de teste reinicializado e isolado;
 - `pnpm db:check` para consistência de migrations;
 - nenhuma migration/conexão durante o build da aplicação.
 
@@ -145,6 +162,8 @@ Checks obrigatórios do ruleset:
 quality
 build
 ```
+
+O job `e2e` não precisa ser um terceiro contexto obrigatório porque `build` possui dependência explícita de `e2e`; se o E2E falhar ou for cancelado, `build` não conclui com sucesso.
 
 A configuração foi validada pela API do GitHub após a conclusão da #8.
 
@@ -218,7 +237,13 @@ Para os checks que precisam de PostgreSQL local, execute antes:
 pnpm db:up
 ```
 
-CI continua sendo autoridade de integração porque roda em ambiente limpo, com instalação frozen e PostgreSQL efêmero próprio.
+Quando a mudança toca fluxo browser-first coberto por Playwright, execute também:
+
+```bash
+pnpm test:e2e
+```
+
+CI continua sendo autoridade de integração porque roda em ambiente limpo, com instalação frozen, PostgreSQL efêmero próprio e Chromium controlado para os E2E.
 
 ## 13. Alterações de CI/configuração
 
@@ -227,11 +252,12 @@ Mudanças em `.github/workflows/**`, scripts de CI, `.nvmrc`, `packageManager`, 
 O auto review deve confirmar:
 
 - contextos `quality`/`build` não mudaram sem coordenação do ruleset;
+- dependência `quality → e2e → build` não foi enfraquecida silenciosamente;
 - permissões não aumentaram sem justificativa;
 - instalação continua frozen;
 - nenhuma secret foi adicionada ao caminho comum;
 - configuração sintética de CI continua não sensível;
-- banco CI continua isolado de Preview/Production;
+- bancos de CI/E2E continuam isolados de Preview/Production;
 - timeout e concurrency continuam adequados;
 - local e CI não divergiram silenciosamente;
 - action pinning continua verificável.
@@ -244,13 +270,13 @@ Não remover checks obrigatórios para contornar indisponibilidade transitória.
 
 Procedimento:
 
-1. identificar se é falha do código, banco efêmero, runner ou GitHub Actions;
+1. identificar se é falha do código, banco efêmero, runner, browser ou GitHub Actions;
 2. reexecutar apenas quando houver motivo para esperar resultado diferente;
 3. corrigir flaky test/configuração em vez de adicionar retry global;
 4. bypass é considerado emergência e não faz parte do fluxo normal; hoje o ruleset não possui bypass actors.
 
 ## 15. Evolução futura
 
-A baseline atual já inclui PostgreSQL/integration tests. Playwright/E2E completo, schemas de conteúdo e AI eval online entram conforme as issues correspondentes forem concluídas.
+A baseline atual já inclui PostgreSQL/integration tests, schemas/validação de conteúdo e Playwright/E2E para fluxos críticos. Novos E2E devem entrar conforme o risco do fluxo, sem transformar cada detalhe visual em teste caro.
 
-Novos jobs devem continuar separados entre gates rápidos/obrigatórios e pipelines mais caros ou condicionais. E2E pesado e AI eval online não devem ser adicionados ao job `quality` sem avaliar custo, determinismo e necessidade de secrets.
+AI eval online e outros pipelines dependentes de providers/secrets entram conforme as issues correspondentes forem concluídas. Novos jobs devem continuar separados entre gates rápidos/obrigatórios e pipelines mais caros ou condicionais.
