@@ -94,8 +94,12 @@ pnpm check:workspace   valida boundaries estruturais
 pnpm format            normaliza formatação com Prettier
 pnpm format:check      verifica formatação sem alterar arquivos
 pnpm check             gate agregado do repositório
-pnpm prod:status       mostra o estado fail-closed de produção
-pnpm prod:check        falha enquanto os blockers de produção existirem
+pnpm prod:status       mostra o contrato/status operacional de produção
+pnpm prod:check        executa preflight isolado sem mutar produção
+pnpm prod:migrate      aplica migrations de produção explicitamente
+pnpm prod:verify       valida readiness HTTPS de produção
+pnpm prod:backup       cria backup PostgreSQL explícito
+pnpm prod:restore-check -- <backup.dump>  restaura/valida backup em banco não produtivo
 ```
 
 ## Configuração de runtime
@@ -192,7 +196,7 @@ A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`
 
 ## Produção
 
-A topologia aprovada continua sendo:
+A topologia operacional é:
 
 ```text
 GitHub main
@@ -204,9 +208,11 @@ Next.js / LingoPilot
 Neon PostgreSQL
 ```
 
-Isso é **topologia alvo, não declaração de produção ativa**. A #59 estabeleceu um Production Contract intencionalmente `disabled`/fail-closed: hoje o repositório expõe `pnpm prod:status` e `pnpm prod:check`, mas Vercel, Neon, migrations de produção, backup/restore e health/readiness ainda precisam de implementação e validação operacional na #45.
+Essa topologia está ativa desde **2026-09-01**. A #63 implementou os comandos operacionais, backup/restore-check e health/readiness; a #64 ativou o Production Contract depois de validar Vercel, Neon, migration, readiness, backup e restore real; a #65 alinhou o manifesto ativo ao contrato do Dev Dashboard.
 
-Deploy futuro será Git-managed, migrations ficarão fora do build da Vercel e o projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+O deploy é `git-managed` pela `main`, migrations permanecem explícitas e fora do build da Vercel, Production usa a branch Neon `main` e Preview usa a branch Neon `preview` isolada. Configuração administrativa de migration/backup continua fora do runtime e fora do Git.
+
+O projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
 
 Auth não deve ser exposta a tráfego público antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
 
