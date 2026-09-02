@@ -14,7 +14,6 @@ export const serverConfig = parseServerEnvironment({
 });
 
 export const deploymentMetadata = Object.freeze({
-  version:
-    process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "local",
+  version: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
 });
