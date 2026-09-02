@@ -58,13 +58,11 @@ jobs:
           corepack enable
           corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
 
-      - name: Generate canonical lockfile
+      - name: Generate canonical lockfile diff
         shell: bash
         run: |
           pnpm install --lockfile-only --no-frozen-lockfile
-          echo LOCKFILE_B64_BEGIN
-          base64 -w 4000 pnpm-lock.yaml
-          echo LOCKFILE_B64_END
+          git diff -- pnpm-lock.yaml
           exit 1
 
       - name: Format check
