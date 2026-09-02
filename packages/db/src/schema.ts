@@ -41,7 +41,9 @@ export const users = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [check("users_id_not_blank", sql`length(btrim(${table.id})) > 0`)],
+  (table) => [
+    check("users_id_not_blank", sql`length(btrim(${table.id})) > 0`),
+  ],
 );
 
 export const authCredentials = pgTable(
