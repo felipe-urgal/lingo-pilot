@@ -41,9 +41,7 @@ export const users = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [
-    check("users_id_not_blank", sql`length(btrim(${table.id})) > 0`),
-  ],
+  (table) => [check("users_id_not_blank", sql`length(btrim(${table.id})) > 0`)],
 );
 
 export const authCredentials = pgTable(
@@ -107,10 +105,7 @@ export const authSessions = pgTable(
       .notNull(),
   },
   (table) => [
-    check(
-      "auth_sessions_id_not_blank",
-      sql`length(btrim(${table.id})) > 0`,
-    ),
+    check("auth_sessions_id_not_blank", sql`length(btrim(${table.id})) > 0`),
     check(
       "auth_sessions_token_hash_not_blank",
       sql`length(btrim(${table.tokenHash})) > 0`,
