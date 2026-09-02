@@ -33,9 +33,6 @@ export {
 } from "./model.ts";
 export { parseContentDocument } from "./schema.ts";
 export { validateContentGraph } from "./validation.ts";
-export {
-  validateContentInputs,
-  type ContentInput,
-} from "./validator.ts";
+export { validateContentInputs, type ContentInput } from "./validator.ts";
 
 export const packageBoundary = "content" as const;
