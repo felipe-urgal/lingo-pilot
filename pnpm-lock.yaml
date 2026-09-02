@@ -196,6 +196,13 @@ importers:
         version: 4.1.11(@types/node@26.3.0)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(tsx@4.23.13))
 
   packages/ui:
+    dependencies:
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
     devDependencies:
       '@lingo-pilot/config':
         specifier: workspace:*
