@@ -1,6 +1,6 @@
 # PostgreSQL e Drizzle — LingoPilot
 
-Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10.
+Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10 e estendida pela baseline de identidade/autorização da #11.
 
 ## 1. Responsabilidade
 
@@ -10,9 +10,10 @@ Este documento é normativo para a infraestrutura de persistência introduzida p
 - migrations versionadas do Drizzle;
 - criação de pool/conexão;
 - helper de transação;
+- repositories/helpers PostgreSQL;
 - utilidades de migration e teste de integração.
 
-Pacotes de domínio não importam Drizzle, `pg` ou `@lingo-pilot/db`. Repositórios PostgreSQL futuros implementam contratos definidos pelas camadas apropriadas, sem inverter essa dependência.
+Pacotes de domínio não importam Drizzle, `pg` ou `@lingo-pilot/db`. Repositórios PostgreSQL implementam contratos definidos pelas camadas apropriadas, sem inverter essa dependência.
 
 ## 2. Banco local isolado
 
@@ -54,7 +55,7 @@ pnpm dev
 
 `pnpm db:up` espera o healthcheck do PostgreSQL antes de retornar. `pnpm db:migrate` aplica apenas migrations versionadas. `pnpm db:smoke` abre uma conexão curta e confirma que a sessão está em UTC.
 
-Se `.env.local` já existia antes da issue #10, adicione as novas variáveis server-only seguindo `.env.example`; `pnpm env:init` continua não sobrescrevendo configuração existente.
+Se `.env.local` já existia antes da issue #10, adicione as variáveis server-only seguindo `.env.example`; `pnpm env:init` continua não sobrescrevendo configuração existente.
 
 ## 4. Variáveis
 
@@ -63,6 +64,8 @@ Se `.env.local` já existia antes da issue #10, adicione as novas variáveis ser
 `TEST_DATABASE_URL` existe somente para testes de integração. O parser exige um database name contendo `test`, aplica o endpoint local reservado em development/E2E e rejeita o mesmo banco usado por `DATABASE_URL`.
 
 Nenhuma dessas variáveis é pública. Nunca criar aliases `NEXT_PUBLIC_DATABASE_*`.
+
+A baseline de auth não adiciona secrets de provider nem novas variáveis de ambiente.
 
 ## 5. Schema e migrations
 
@@ -103,9 +106,11 @@ Fluxo para alterar schema:
 
 Nunca editar uma migration já aplicada para mudar seu significado. Correções entram em uma nova migration, salvo enquanto a migration ainda pertence a um PR não mergeado e não foi compartilhada como estado persistente.
 
-## 6. Migration foundation
+## 6. Histórico de migrations da Foundation
 
-A primeira migration cria apenas `app_metadata`, uma tabela técnica key/value usada para provar o pipeline de schema, migration e constraints sem antecipar entidades do Study Engine.
+### `0000_foundation_schema`
+
+A primeira migration cria somente `app_metadata`, uma tabela técnica key/value usada para provar o pipeline de schema, migration e constraints sem antecipar entidades do Study Engine.
 
 Ela possui:
 
@@ -114,7 +119,20 @@ Ela possui:
 - `created_at` e `updated_at` como `timestamptz`;
 - check constraint que rejeita chave em branco.
 
-Nenhuma tabela de learner, course, session, progress ou auth é criada pela Foundation.
+### `0001_identity_ownership_baseline`
+
+A #11 adiciona somente estruturas necessárias para identidade/sessão e prova de ownership:
+
+- `users` — identidade opaca mínima;
+- `auth_credentials` — email canônico único + password hash ligado ao usuário;
+- `auth_sessions` — sessão server-side com token hash, expiração e revogação;
+- `ownership_fixtures` — recurso técnico com `owner_id` para testar autorização A/B.
+
+Essa migration ainda não cria learner profile, course, study session, progress ou entidades pedagógicas. Essas estruturas pertencem às issues donas do domínio.
+
+`auth_credentials` e `auth_sessions` usam FK com `ON DELETE CASCADE` para `users`. A fixture de ownership exige owner existente. O workflow completo de exclusão de conta continua pertencendo à #43.
+
+Enquanto a `0001` permanecer apenas na branch/PR não mergeado da #11 e não for estado persistente compartilhado, seu conteúdo pode ser consolidado dentro do próprio PR conforme a exceção de migration pre-merge. Depois do merge/aplicação, mudanças entram sempre em migration nova.
 
 ## 7. IDs e timestamps
 
@@ -126,6 +144,8 @@ Convenções para schemas futuros:
 - timezone pedagógico do aluno é dado de domínio separado, não configuração da conexão;
 - defaults de banco não substituem relógio injetável em regras temporais de domínio.
 
+Na #11, IDs de usuário/sessão são opacos. Sessões persistem `token_hash`, nunca o token bruto do cookie.
+
 ## 8. Pool e transações
 
 `createDatabaseClient()` cria um `pg.Pool` e um cliente Drizzle sem conectar durante import/build. O pool usa limite explícito configurável e `UTC` como timezone de sessão.
@@ -134,7 +154,28 @@ Convenções para schemas futuros:
 
 Operações que precisam permanecer atomicamente consistentes devem usar esse boundary em vez de executar writes independentes.
 
-## 9. Testes de integração
+O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth e ownership nunca são importados pelo bundle cliente.
+
+## 9. Auth e ownership queries
+
+Helpers de auth em `packages/db/src/auth.ts`:
+
+- criam/consultam credencial por email canônico;
+- criam sessão com token hash;
+- resolvem apenas sessão não revogada e `expires_at > now`;
+- revogam sessão pelo hash do token.
+
+Helpers de ownership em `packages/db/src/ownership.ts` recebem `userId` resolvido no servidor. Leitura/escrita da fixture usam `resourceId + ownerId` na mesma cláusula `WHERE`.
+
+É proibido transformar o padrão em:
+
+1. buscar recurso apenas por ID;
+2. confiar em `ownerId` do payload;
+3. autorizar somente porque a UI escondeu uma ação.
+
+Contrato completo: `docs/AUTHENTICATION.md`.
+
+## 10. Testes de integração
 
 Com banco local ativo:
 
@@ -147,16 +188,18 @@ A suíte:
 1. valida `TEST_DATABASE_URL` antes de conectar;
 2. remove apenas os schemas `public` e `drizzle` do banco explicitamente marcado como teste;
 3. aplica migrations a partir de um estado vazio;
-4. verifica insert/read;
-5. verifica constraint;
-6. força erro dentro de transação e confirma rollback;
-7. confirma timezone UTC.
+4. verifica insert/read e constraints da Foundation;
+5. força erro dentro de transação e confirma rollback;
+6. valida email canônico/único de credencial;
+7. valida sessão ativa, expirada e revogada;
+8. prova que usuário B não lê nem altera recurso de A;
+9. confirma timezone UTC.
 
 O teste nunca recebe `DATABASE_URL` como destino de escrita.
 
 No CI, `CI / quality` sobe um PostgreSQL efêmero dedicado e executa a mesma suíte. Credenciais do workflow são sintéticas; nenhum secret real é necessário.
 
-## 10. Reset local
+## 11. Reset local
 
 Reset destrutivo do banco local:
 
@@ -172,14 +215,18 @@ Para apenas parar/remover o container e a rede preservando dados:
 pnpm db:down
 ```
 
-## 11. Seed
+## 12. Seed
 
 A Foundation não possui seed de domínio. Isso é deliberado: ainda não existem entidades pedagógicas implementadas para popular sem antecipar o modelo.
 
-O estado baseline é produzido somente pelas migrations. Quando uma issue dona de dados de desenvolvimento exigir seed, ela deve adicionar comando explícito, dados sintéticos/determinísticos e documentação de idempotência no mesmo PR.
+A #11 também não cria usuário real/default nem credencial hardcoded. Login opera sobre credenciais persistidas; signup/onboarding pertence à #17.
 
-## 12. Produção
+Quando uma issue dona de dados de desenvolvimento exigir seed, ela deve adicionar comando explícito, dados sintéticos/determinísticos e documentação de idempotência no mesmo PR.
+
+## 13. Produção
 
 Produção usa `DATABASE_URL` fornecida pelo provider server-side. Migrations permanecem fora do build/deploy automático da aplicação, conforme o contrato de produção.
 
 A conexão de produção não deve reutilizar credenciais locais/teste, e a aplicação não deve executar migration implicitamente ao iniciar ou importar módulos.
+
+Antes de tráfego público, auth precisa também de rate limit adequado à topologia serverless; não usar limiter local em memória como falsa garantia distribuída.
