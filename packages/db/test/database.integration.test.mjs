@@ -150,16 +150,32 @@ test("resolves only active non-revoked server sessions", async () => {
     expiresAt: new Date("2026-09-01T12:00:00.000Z"),
   });
 
-  const active = await findActiveAuthSessionByTokenHash(client.db, activeHash, now);
+  const active = await findActiveAuthSessionByTokenHash(
+    client.db,
+    activeHash,
+    now,
+  );
   assert.equal(active?.userId, userId);
 
-  const expired = await findActiveAuthSessionByTokenHash(client.db, expiredHash, now);
+  const expired = await findActiveAuthSessionByTokenHash(
+    client.db,
+    expiredHash,
+    now,
+  );
   assert.equal(expired, null);
 
-  const revoked = await revokeAuthSessionByTokenHash(client.db, activeHash, now);
+  const revoked = await revokeAuthSessionByTokenHash(
+    client.db,
+    activeHash,
+    now,
+  );
   assert.equal(revoked, true);
 
-  const afterRevoke = await findActiveAuthSessionByTokenHash(client.db, activeHash, now);
+  const afterRevoke = await findActiveAuthSessionByTokenHash(
+    client.db,
+    activeHash,
+    now,
+  );
   assert.equal(afterRevoke, null);
 });
 
@@ -177,10 +193,18 @@ test("ownership queries isolate resources between two users", async () => {
     value: "private-to-a",
   });
 
-  const ownerRead = await findOwnershipFixtureForUser(client.db, userAId, resourceAId);
+  const ownerRead = await findOwnershipFixtureForUser(
+    client.db,
+    userAId,
+    resourceAId,
+  );
   assert.equal(ownerRead?.value, "private-to-a");
 
-  const crossUserRead = await findOwnershipFixtureForUser(client.db, userBId, resourceAId);
+  const crossUserRead = await findOwnershipFixtureForUser(
+    client.db,
+    userBId,
+    resourceAId,
+  );
   assert.equal(crossUserRead, null);
 
   const crossUserWrite = await updateOwnershipFixtureForUser(
@@ -191,7 +215,11 @@ test("ownership queries isolate resources between two users", async () => {
   );
   assert.equal(crossUserWrite, null);
 
-  const afterCrossUserWrite = await findOwnershipFixtureForUser(client.db, userAId, resourceAId);
+  const afterCrossUserWrite = await findOwnershipFixtureForUser(
+    client.db,
+    userAId,
+    resourceAId,
+  );
   assert.equal(afterCrossUserWrite?.value, "private-to-a");
 
   const ownerWrite = await updateOwnershipFixtureForUser(

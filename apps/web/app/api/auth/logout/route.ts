@@ -13,12 +13,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  if (token) await authAdapter.revoke(token);
+
+  if (token) {
+    await authAdapter.revoke(token);
+  }
 
   const response = NextResponse.redirect(new URL("/login", request.url), 303);
   response.cookies.set(SESSION_COOKIE_NAME, "", {
     ...sessionCookieOptions(serverConfig.profile, 0),
     expires: new Date(0),
   });
+
   return response;
 }

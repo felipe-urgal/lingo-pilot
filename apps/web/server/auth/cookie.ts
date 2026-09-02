@@ -10,7 +10,10 @@ export interface SessionCookieOptions {
   readonly maxAge: number;
 }
 
-export function sessionCookieOptions(profile: RuntimeProfile, maxAge: number): SessionCookieOptions {
+export function sessionCookieOptions(
+  profile: RuntimeProfile,
+  maxAge: number,
+): SessionCookieOptions {
   return {
     httpOnly: true,
     sameSite: "lax",

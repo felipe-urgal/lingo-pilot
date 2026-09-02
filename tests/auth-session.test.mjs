@@ -35,7 +35,7 @@ test("hashes passwords with scrypt and verifies without storing plaintext", asyn
   const password = "correct horse battery staple";
   const encoded = await hashPassword(password);
 
-  assert.match(encoded, /^scrypt\$16384\$8\$1\$/);
+  assert.match(encoded, /^scrypt\$131072\$8\$1\$/);
   assert.equal(encoded.includes(password), false);
   assert.equal(await verifyPassword(password, encoded), true);
   assert.equal(await verifyPassword("wrong password", encoded), false);

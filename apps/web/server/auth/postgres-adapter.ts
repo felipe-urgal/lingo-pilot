@@ -31,11 +31,16 @@ export class PostgresAuthAdapter implements AuthAdapter {
   ): Promise<SessionGrant | null> {
     const email = normalizeEmail(credentials.email);
 
-    if (!email || !isValidLoginPassword(credentials.password)) return null;
+    if (!email || !isValidLoginPassword(credentials.password)) {
+      return null;
+    }
 
     const credential = await findAuthCredentialByEmail(this.database, email);
 
-    if (!credential || !(await verifyPassword(credentials.password, credential.passwordHash))) {
+    if (
+      !credential ||
+      !(await verifyPassword(credentials.password, credential.passwordHash))
+    ) {
       return null;
     }
 
@@ -49,10 +54,17 @@ export class PostgresAuthAdapter implements AuthAdapter {
       expiresAt,
     });
 
-    return { user: { id: credential.userId }, token, expiresAt };
+    return {
+      user: { id: credential.userId },
+      token,
+      expiresAt,
+    };
   }
 
-  async resolve(token: string, now = new Date()): Promise<AuthenticatedUser | null> {
+  async resolve(
+    token: string,
+    now = new Date(),
+  ): Promise<AuthenticatedUser | null> {
     if (!isSessionToken(token)) return null;
 
     const session = await findActiveAuthSessionByTokenHash(
@@ -66,7 +78,12 @@ export class PostgresAuthAdapter implements AuthAdapter {
 
   async revoke(token: string, now = new Date()): Promise<void> {
     if (!isSessionToken(token)) return;
-    await revokeAuthSessionByTokenHash(this.database, hashSessionToken(token), now);
+
+    await revokeAuthSessionByTokenHash(
+      this.database,
+      hashSessionToken(token),
+      now,
+    );
   }
 }
 

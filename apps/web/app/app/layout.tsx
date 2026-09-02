@@ -5,7 +5,9 @@ type ProtectedLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
-export default async function ProtectedLayout({ children }: ProtectedLayoutProps) {
+export default async function ProtectedLayout({
+  children,
+}: ProtectedLayoutProps) {
   await requireCurrentUser();
 
   return (

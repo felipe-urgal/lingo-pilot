@@ -19,7 +19,9 @@ export function getDatabaseClient(): DatabaseClient {
   if (!globalDatabase.lingoPilotDatabaseClient) {
     globalDatabase.lingoPilotDatabaseClient = createDatabaseClient(
       serverConfig.database.url,
-      { applicationName: "lingo-pilot-web" },
+      {
+        applicationName: "lingo-pilot-web",
+      },
     );
   }
 

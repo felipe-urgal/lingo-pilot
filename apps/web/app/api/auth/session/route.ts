@@ -6,6 +6,10 @@ import {
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const user = await resolveRequestUser(request);
-  if (!user) return unauthorizedResponse();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   return NextResponse.json({ userId: user.id });
 }

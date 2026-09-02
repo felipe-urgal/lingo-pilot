@@ -8,7 +8,11 @@ export function normalizeEmail(value: unknown): string | null {
 
   const email = value.trim().toLowerCase();
 
-  if (email.length === 0 || email.length > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.test(email)) {
+  if (
+    email.length === 0 ||
+    email.length > MAX_EMAIL_LENGTH ||
+    !EMAIL_PATTERN.test(email)
+  ) {
     return null;
   }
 
@@ -16,5 +20,9 @@ export function normalizeEmail(value: unknown): string | null {
 }
 
 export function isValidLoginPassword(value: unknown): value is string {
-  return typeof value === "string" && value.length >= MIN_PASSWORD_LENGTH && value.length <= MAX_PASSWORD_LENGTH;
+  return (
+    typeof value === "string" &&
+    value.length >= MIN_PASSWORD_LENGTH &&
+    value.length <= MAX_PASSWORD_LENGTH
+  );
 }

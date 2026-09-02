@@ -15,6 +15,7 @@ import { SESSION_TTL_SECONDS } from "../../../../server/auth/session-token";
 function loginRedirect(request: NextRequest, error?: string): NextResponse {
   const url = new URL("/login", request.url);
   if (error) url.searchParams.set("error", error);
+
   return NextResponse.redirect(url, 303);
 }
 
@@ -32,12 +33,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const grant = await authAdapter.authenticate({ email, password });
-  if (!grant) return loginRedirect(request, "invalid_credentials");
+
+  if (!grant) {
+    return loginRedirect(request, "invalid_credentials");
+  }
 
   const response = NextResponse.redirect(new URL("/app", request.url), 303);
   response.cookies.set(SESSION_COOKIE_NAME, grant.token, {
     ...sessionCookieOptions(serverConfig.profile, SESSION_TTL_SECONDS),
     expires: grant.expiresAt,
   });
+
   return response;
 }
