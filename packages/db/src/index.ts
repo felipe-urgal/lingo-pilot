@@ -9,6 +9,7 @@ export {
 } from "./client.ts";
 export { DEFAULT_MIGRATIONS_FOLDER, migrateDatabase } from "./migrations.ts";
 export {
+  createAuthAccount,
   createAuthCredential,
   createAuthSession,
   findActiveAuthSessionByTokenHash,
@@ -16,6 +17,7 @@ export {
   revokeAuthSessionByTokenHash,
   type AuthCredentialRecord,
   type AuthSessionRecord,
+  type CreateAuthAccountInput,
   type CreateAuthCredentialInput,
   type CreateAuthSessionInput,
 } from "./auth.ts";

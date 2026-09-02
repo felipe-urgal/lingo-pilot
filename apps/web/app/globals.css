@@ -70,6 +70,12 @@ h1 {
   width: 100%;
 }
 
+.auth-switch {
+  margin: var(--lp-space-5) 0 0;
+  color: var(--lp-color-text-muted);
+  text-align: center;
+}
+
 .app-shell {
   min-height: 100vh;
 }
@@ -114,6 +120,143 @@ h1 {
 .text-link {
   color: var(--lp-color-primary);
   font-weight: 700;
+}
+
+.onboarding-card,
+.today-card {
+  width: min(100%, 44rem);
+  padding: clamp(var(--lp-space-5), 5vw, var(--lp-space-10));
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-xl);
+  background: var(--lp-color-surface);
+  box-shadow: var(--lp-shadow-card);
+}
+
+.onboarding-form {
+  display: grid;
+  gap: var(--lp-space-5);
+  margin-top: var(--lp-space-6);
+}
+
+.onboarding-form section {
+  display: grid;
+  gap: var(--lp-space-4);
+}
+
+.onboarding-form section[hidden] {
+  display: none;
+}
+
+.onboarding-form h2,
+.onboarding-copy {
+  margin: 0;
+}
+
+.onboarding-copy,
+.placement-note span {
+  color: var(--lp-color-text-muted);
+  line-height: var(--lp-line-height-body);
+}
+
+.onboarding-progress {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-sm);
+  font-weight: 700;
+}
+
+.choice-group,
+.level-options {
+  display: grid;
+  gap: var(--lp-space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice-card,
+.level-options label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--lp-space-3);
+  padding: var(--lp-space-4);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-lg);
+  cursor: pointer;
+}
+
+.choice-card:has(input:checked),
+.level-options label:has(input:checked) {
+  border-color: var(--lp-color-primary);
+  box-shadow: 0 0 0 1px var(--lp-color-primary);
+}
+
+.choice-card input,
+.level-options input {
+  margin-top: 0.2rem;
+  accent-color: var(--lp-color-primary);
+}
+
+.choice-card span,
+.placement-note {
+  display: grid;
+  gap: var(--lp-space-1);
+}
+
+.choice-card small {
+  color: var(--lp-color-text-muted);
+  line-height: var(--lp-line-height-body);
+}
+
+.level-options legend {
+  margin-bottom: var(--lp-space-2);
+  font-weight: 700;
+}
+
+.placement-note {
+  padding: var(--lp-space-4);
+  border-radius: var(--lp-radius-lg);
+  background: var(--lp-color-surface-muted);
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--lp-space-3);
+}
+
+.journey-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--lp-space-3);
+  margin: var(--lp-space-6) 0;
+}
+
+.journey-summary div {
+  padding: var(--lp-space-4);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-lg);
+}
+
+.journey-summary dt {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-sm);
+}
+
+.journey-summary dd {
+  margin: var(--lp-space-2) 0 0;
+  font-weight: 700;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .design-system-page {
@@ -171,5 +314,22 @@ h1 {
 
   .app-content {
     padding: var(--lp-space-4);
+  }
+
+  .onboarding-card,
+  .today-card {
+    padding: var(--lp-space-5);
+  }
+
+  .journey-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-actions {
+    flex-direction: column-reverse;
+  }
+
+  .onboarding-actions .lp-button {
+    width: 100%;
   }
 }

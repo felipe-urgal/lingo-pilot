@@ -1,4 +1,5 @@
 export const errorCodes = {
+  authAccountUnavailable: "AUTH_ACCOUNT_UNAVAILABLE",
   authForbidden: "AUTH_FORBIDDEN",
   authInvalidCredentials: "AUTH_INVALID_CREDENTIALS",
   authUnauthorized: "AUTH_UNAUTHORIZED",
@@ -16,6 +17,11 @@ export type SafeHttpError = Readonly<{
 }>;
 
 const safeHttpErrors: Readonly<Record<ErrorCode, SafeHttpError>> = {
+  AUTH_ACCOUNT_UNAVAILABLE: {
+    code: "AUTH_ACCOUNT_UNAVAILABLE",
+    status: 409,
+    legacyError: "account_unavailable",
+  },
   AUTH_FORBIDDEN: {
     code: "AUTH_FORBIDDEN",
     status: 403,

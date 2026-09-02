@@ -5,6 +5,7 @@ export {
   type DatabaseClient,
 } from "./client.ts";
 export {
+  createAuthAccount,
   createAuthSession,
   findActiveAuthSessionByTokenHash,
   findAuthCredentialByEmail,

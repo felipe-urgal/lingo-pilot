@@ -47,6 +47,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           />
           <Button type="submit">Entrar</Button>
         </form>
+        <p className="auth-switch">
+          Primeira vez aqui? <a className="text-link" href="/signup">Criar conta</a>
+        </p>
       </section>
     </main>
   );

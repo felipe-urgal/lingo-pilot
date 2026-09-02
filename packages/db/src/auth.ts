@@ -1,9 +1,15 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
 import type { Database } from "./client.ts";
-import { authCredentials, authSessions } from "./schema.ts";
+import { authCredentials, authSessions, users } from "./schema.ts";
 
 export type AuthCredentialRecord = typeof authCredentials.$inferSelect;
 export type AuthSessionRecord = typeof authSessions.$inferSelect;
+
+export interface CreateAuthAccountInput {
+  readonly userId: string;
+  readonly email: string;
+  readonly passwordHash: string;
+}
 
 export interface CreateAuthCredentialInput {
   readonly userId: string;
@@ -16,6 +22,35 @@ export interface CreateAuthSessionInput {
   readonly userId: string;
   readonly tokenHash: string;
   readonly expiresAt: Date;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  );
+}
+
+export async function createAuthAccount(
+  database: Database,
+  input: CreateAuthAccountInput,
+): Promise<"created" | "conflict"> {
+  try {
+    await database.transaction(async (transaction) => {
+      await transaction.insert(users).values({ id: input.userId });
+      await transaction.insert(authCredentials).values({
+        userId: input.userId,
+        email: input.email,
+        passwordHash: input.passwordHash,
+      });
+    });
+    return "created";
+  } catch (error) {
+    if (isUniqueViolation(error)) return "conflict";
+    throw error;
+  }
 }
 
 export async function createAuthCredential(
