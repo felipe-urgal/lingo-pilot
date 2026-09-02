@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { IconButton } from "./button.tsx";
+import { IconButton } from "./button.js";
 
 export type DialogProps = {
   actions?: ReactNode;

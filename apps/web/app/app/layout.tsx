@@ -1,5 +1,5 @@
+import { Button } from "@lingo-pilot/ui";
 import type { ReactNode } from "react";
-import { Button } from "../../../../packages/ui/src/index.ts";
 import { requireCurrentUser } from "../../server/auth/current-user";
 
 type ProtectedLayoutProps = Readonly<{

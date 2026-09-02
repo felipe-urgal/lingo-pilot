@@ -1,5 +1,3 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
 import {
   Button,
   Dialog,
@@ -8,7 +6,9 @@ import {
   Progress,
   Select,
   Textarea,
-} from "../../../packages/ui/src/index.ts";
+} from "@lingo-pilot/ui";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 test("loading button prevents duplicate interaction", () => {
   render(<Button isLoading>Salvar</Button>);

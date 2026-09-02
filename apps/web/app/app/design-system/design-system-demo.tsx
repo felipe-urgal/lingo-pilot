@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Alert,
   Button,
@@ -11,7 +10,8 @@ import {
   Select,
   Sheet,
   Textarea,
-} from "../../../../../packages/ui/src/index.ts";
+} from "@lingo-pilot/ui";
+import { useState } from "react";
 
 function ActionExamples() {
   const [dialogOpen, setDialogOpen] = useState(false);

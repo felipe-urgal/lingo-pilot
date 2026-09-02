@@ -1,5 +1,5 @@
+import { Alert, Button, Input } from "@lingo-pilot/ui";
 import { redirect } from "next/navigation";
-import { Alert, Button, Input } from "../../../../packages/ui/src/index.ts";
 import { getCurrentUser } from "../../server/auth/current-user";
 
 type LoginPageProps = Readonly<{
