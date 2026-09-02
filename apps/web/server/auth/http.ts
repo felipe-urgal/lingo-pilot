@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import type { AuthenticatedUser } from "./contracts";
 import { SESSION_COOKIE_NAME } from "./cookie";
 import { authAdapter } from "./postgres-adapter";
+import { errorCodes } from "../observability/errors";
+import { createErrorResponse } from "../observability/request";
 
 export function isSameOriginRequest(
   request: NextRequest,
@@ -20,10 +22,10 @@ export async function resolveRequestUser(
   return authAdapter.resolve(token);
 }
 
-export function unauthorizedResponse(): NextResponse {
-  return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+export function unauthorizedResponse(requestId: string): NextResponse {
+  return createErrorResponse(errorCodes.authUnauthorized, requestId);
 }
 
-export function forbiddenResponse(): NextResponse {
-  return NextResponse.json({ error: "forbidden" }, { status: 403 });
+export function forbiddenResponse(requestId: string): NextResponse {
+  return createErrorResponse(errorCodes.authForbidden, requestId);
 }

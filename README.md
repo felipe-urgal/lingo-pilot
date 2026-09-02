@@ -8,7 +8,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na **Fase 0 — Foundation**. As issues #7–#12 e #16 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis e infraestrutura determinística de testes. A Foundation ainda **não está concluída**: design system (#13), observabilidade (#14) e schemas de conteúdo (#15) continuam no backlog.
+O repositório está na **Fase 0 — Foundation**. As issues #7–#14 e #16 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade e infraestrutura determinística de testes. A Foundation ainda **não está concluída**: schemas de conteúdo (#15) continuam no backlog.
 
 O projeto **não** implementa ainda o Study Engine, onboarding/signup público, conteúdo pedagógico real ou AI Tutor. A baseline de auth já possui login/logout sobre credenciais persistidas, sessão server-side e shell privado; criação pública de conta pertence à #17.
 
@@ -222,7 +222,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 
 ## Roadmap
 
-- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#12 e #16 concluídas.**
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#14 e #16 concluídas, #15 pendente.**
 - **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.

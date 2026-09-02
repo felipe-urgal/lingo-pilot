@@ -8,6 +8,8 @@
     "LINGO_TEST_MODE",
     "NEXT_PUBLIC_APP_URL",
     "NODE_ENV",
+    "VERCEL_DEPLOYMENT_ID",
+    "VERCEL_GIT_COMMIT_SHA",
     "VERCEL_URL"
   ],
   "tasks": {
