@@ -28,7 +28,7 @@ export class PostgresUserRepository implements UserRepository {
       .returning();
 
     if (!created) {
-      return err({ code: "already_exists" });
+      return err<UserRepositoryCreateError>({ code: "already_exists" });
     }
 
     return ok({

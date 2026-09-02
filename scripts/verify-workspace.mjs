@@ -90,7 +90,13 @@ async function verifyDomainSourceBoundary() {
 async function verifyApplicationSourceBoundary() {
   const applicationRoot = resolve("apps/web/server/application");
   const databaseRoot = resolve("packages/db");
-  const forbiddenPackages = ["next", "react", "react-dom", "drizzle-orm"];
+  const forbiddenPackages = [
+    "next",
+    "react",
+    "react-dom",
+    "drizzle-orm",
+    "@lingo-pilot/db",
+  ];
   const files = await listTypeScriptFiles(applicationRoot);
 
   for (const file of files) {

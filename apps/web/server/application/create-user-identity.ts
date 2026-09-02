@@ -32,7 +32,9 @@ export function createUserIdentity(
     const persisted = await dependencies.users.create(user);
 
     if (!persisted.ok) {
-      return err({ code: "identity_already_exists" });
+      return err<CreateUserIdentityError>({
+        code: "identity_already_exists",
+      });
     }
 
     return ok(persisted.value);
