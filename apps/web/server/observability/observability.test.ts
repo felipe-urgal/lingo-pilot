@@ -72,7 +72,7 @@ describe("observability baseline", () => {
     );
 
     expect(response.status).toBe(500);
-    expect(response.headers.get("x-request-id")).toBeNull();
+    expect(response.headers.get("x-request-id")).toBe("req-abcdefgh");
     expect(await response.json()).toEqual({
       error: "internal_error",
       code: "INTERNAL_UNEXPECTED",
