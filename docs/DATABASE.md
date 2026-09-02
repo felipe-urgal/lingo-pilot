@@ -156,6 +156,8 @@ Operações que precisam permanecer atomicamente consistentes devem usar esse bo
 
 O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth e ownership nunca são importados pelo bundle cliente.
 
+Código de delivery que precisa de persistência importa `packages/db/src/runtime.ts`, uma superfície deliberadamente sem `migrations.ts`. Migration tooling permanece exclusivo dos comandos/scripts operacionais e não deve entrar no grafo do bundle Next.js.
+
 ## 9. Auth e ownership queries
 
 Helpers de auth em `packages/db/src/auth.ts`:
