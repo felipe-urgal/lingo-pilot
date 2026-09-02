@@ -22,7 +22,7 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 | #8 CI quality gates and repository governance | Concluída | CI permanente e proteção da `main` |
 | #9 Local development environment and configuration contract | Concluída | Runtime config, `.env.local` raiz e profiles determinísticos |
 | #10 PostgreSQL, Drizzle schema and migration workflow | Concluída | PostgreSQL/Drizzle, migrations e integration baseline |
-| #11 Authentication and ownership authorization baseline | Aberta | Desbloqueada por #10 |
+| #11 Authentication and ownership authorization baseline | Em revisão | PR #67 com CI verde; evidência visual pendente antes do merge |
 | #12 Establish domain/application boundaries and repository contracts | Aberta | Desbloqueada por #7 e #10 |
 | #13 Design system tokens, primitives and application shell | Aberta | Desbloqueada por #7 |
 | #14 Structured logging, error taxonomy and observability baseline | Aberta | Desbloqueada por #7 e #9 |
@@ -37,23 +37,22 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 
 ### Segurança prioritária
 
-- #66 — **Em revisão**: atualiza Next.js `16.3.2` para `16.3.4`, acima do security floor `16.3.3`, mantendo `@next/eslint-plugin-next` e lockfile alinhados. Nenhuma nova feature da Foundation deve ultrapassar essa correção P0 antes do merge.
+- #66 atualiza Next.js `16.3.2` para a security release `16.3.3`, publicada para corrigir duas vulnerabilidades Critical. Por regra de execução do backlog, essa correção P0 deve ser tratada antes de iniciar nova feature da Foundation.
 
 ### Sequência atual recomendada
 
-Os fundamentos de bootstrap/configuração/persistência já foram entregues. A janela imediata da Foundation é:
+Os fundamentos de bootstrap/configuração/persistência já foram entregues e auth está em revisão final no PR #67. A prioridade após o merge é:
 
 ```text
-#66 Next.js security patch
+#66 Next.js security release
           ↓
-#11 auth
 #12 boundaries ─→ #16 test infrastructure
 #13 design system
 #14 observability
 #15 content schemas
 ```
 
-Depois da #66, #11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+Depois da #66, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -204,4 +203,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation já concluiu #7–#10. A prioridade imediata é concluir a correção de segurança **#66**. Depois dela, as próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
+A Foundation concluiu #7–#10 e a #11 está em revisão final no PR #67. Após o merge, a prioridade imediata é a correção de segurança **#66**. Depois dela, as próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
