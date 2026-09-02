@@ -2,7 +2,7 @@
 
 Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
 
-> **Estado de referência:** 2026-09-01. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
+> **Estado de referência:** 2026-09-02. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -22,7 +22,7 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 | #8 CI quality gates and repository governance | Concluída | CI permanente e proteção da `main` |
 | #9 Local development environment and configuration contract | Concluída | Runtime config, `.env.local` raiz e profiles determinísticos |
 | #10 PostgreSQL, Drizzle schema and migration workflow | Concluída | PostgreSQL/Drizzle, migrations e integration baseline |
-| #11 Authentication and ownership authorization baseline | Aberta | Desbloqueada por #10 |
+| #11 Authentication and ownership authorization baseline | Concluída | AuthAdapter, sessão server-side, shell protegido e ownership A/B |
 | #12 Establish domain/application boundaries and repository contracts | Aberta | Desbloqueada por #7 e #10 |
 | #13 Design system tokens, primitives and application shell | Aberta | Desbloqueada por #7 |
 | #14 Structured logging, error taxonomy and observability baseline | Aberta | Desbloqueada por #7 e #9 |
@@ -37,17 +37,16 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 
 ### Sequência atual recomendada
 
-Os fundamentos de bootstrap/configuração/persistência já foram entregues. A janela imediata da Foundation é:
+Os fundamentos de bootstrap/configuração/persistência/auth já foram entregues. A janela imediata da Foundation é:
 
 ```text
-#11 auth
 #12 boundaries ─→ #16 test infrastructure
 #13 design system
 #14 observability
 #15 content schemas
 ```
 
-#11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+#12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -198,4 +197,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation já concluiu #7–#10. As próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
+A Foundation já concluiu #7–#11. As próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
