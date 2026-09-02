@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { after, before, test } from "node:test";
 import { eq } from "drizzle-orm";
 import { parseTestDatabaseEnvironment } from "@lingo-pilot/config/runtime/environment";
+import { createUserIdentity } from "../../../apps/web/server/application/create-user-identity.ts";
 import {
   appMetadata,
   createAuthCredential,
@@ -16,8 +17,10 @@ import {
   migrateDatabase,
   revokeAuthSessionByTokenHash,
   updateOwnershipFixtureForUser,
+  users,
   withTransaction,
 } from "../src/index.ts";
+import { PostgresUserRepository } from "../src/repositories/postgres-user-repository.ts";
 
 const testDatabaseConfig = parseTestDatabaseEnvironment(process.env);
 const client = createDatabaseClient(testDatabaseConfig.url, {
@@ -229,6 +232,36 @@ test("ownership queries isolate resources between two users", async () => {
     "updated-by-a",
   );
   assert.equal(ownerWrite?.value, "updated-by-a");
+});
+
+test("application use case runs unchanged with PostgreSQL adapter", async () => {
+  const suffix = randomUUID();
+  const userId = `boundary-user-${suffix}`;
+  const now = new Date("2026-09-02T15:30:00.000Z");
+  const repository = new PostgresUserRepository(client.db);
+  const execute = createUserIdentity({
+    clock: { now: () => now },
+    idGenerator: { generate: () => userId },
+    users: repository,
+  });
+
+  const created = await execute();
+
+  assert.equal(created.ok, true);
+  assert.equal(created.value.id, userId);
+  assert.equal(created.value.createdAt.toISOString(), now.toISOString());
+
+  const persisted = await client.db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId));
+  assert.equal(persisted.length, 1);
+  assert.equal(persisted[0]?.createdAt.toISOString(), now.toISOString());
+
+  assert.deepEqual(await execute(), {
+    error: { code: "identity_already_exists" },
+    ok: false,
+  });
 });
 
 test("ownership fixtures require an existing owner", async () => {
