@@ -53,8 +53,10 @@ export function Input({
   ...props
 }: InputProps) {
   return (
-    <label className="lp-field" htmlFor={id}>
-      <span className="lp-field__label">{label}</span>
+    <div className="lp-field">
+      <label className="lp-field__label" htmlFor={id}>
+        {label}
+      </label>
       <input
         {...props}
         aria-describedby={describedBy(
@@ -68,7 +70,7 @@ export function Input({
         id={id}
       />
       <FieldMessages error={error} hint={hint} id={id} />
-    </label>
+    </div>
   );
 }
 
@@ -84,8 +86,10 @@ export function Textarea({
   ...props
 }: TextareaProps) {
   return (
-    <label className="lp-field" htmlFor={id}>
-      <span className="lp-field__label">{label}</span>
+    <div className="lp-field">
+      <label className="lp-field__label" htmlFor={id}>
+        {label}
+      </label>
       <textarea
         {...props}
         aria-describedby={describedBy(
@@ -99,7 +103,7 @@ export function Textarea({
         id={id}
       />
       <FieldMessages error={error} hint={hint} id={id} />
-    </label>
+    </div>
   );
 }
 
@@ -118,8 +122,10 @@ export function Select({
   ...props
 }: SelectProps) {
   return (
-    <label className="lp-field" htmlFor={id}>
-      <span className="lp-field__label">{label}</span>
+    <div className="lp-field">
+      <label className="lp-field__label" htmlFor={id}>
+        {label}
+      </label>
       <select
         {...props}
         aria-describedby={describedBy(
@@ -135,6 +141,6 @@ export function Select({
         {children}
       </select>
       <FieldMessages error={error} hint={hint} id={id} />
-    </label>
+    </div>
   );
 }
