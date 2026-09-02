@@ -35,18 +35,24 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 - #56 alinhou `next-env.d.ts` à política atual do Next.js e protegeu a árvore Git contra churn gerado;
 - #59 estabeleceu o Production Contract fail-closed consumido pelo Dev Dashboard, sem fingir que Vercel/Neon já estão operacionais.
 
+### Segurança prioritária
+
+- #66 atualiza Next.js `16.3.2` para a security release `16.3.3`, publicada para corrigir duas vulnerabilidades Critical. Por regra de execução do backlog, essa correção P0 deve ser tratada antes de iniciar nova feature da Foundation.
+
 ### Sequência atual recomendada
 
 Os fundamentos de bootstrap/configuração/persistência/auth já foram entregues. A janela imediata da Foundation é:
 
 ```text
+#66 Next.js security release
+          ↓
 #12 boundaries ─→ #16 test infrastructure
 #13 design system
 #14 observability
 #15 content schemas
 ```
 
-#12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+Depois da #66, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -197,4 +203,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation já concluiu #7–#11. As próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
+A Foundation já concluiu #7–#11. A prioridade imediata é a correção de segurança **#66**. Depois dela, as próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
