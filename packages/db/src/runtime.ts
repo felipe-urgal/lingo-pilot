@@ -10,6 +10,7 @@ export {
   findAuthCredentialByEmail,
   revokeAuthSessionByTokenHash,
 } from "./auth.ts";
+export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
 export {
   findOwnershipFixtureForUser,
   updateOwnershipFixtureForUser,

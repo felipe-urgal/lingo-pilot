@@ -28,10 +28,14 @@ export {
   type OwnershipFixtureRecord,
   type UserRecord,
 } from "./ownership.ts";
+export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
 export {
   appMetadata,
   authCredentials,
   authSessions,
+  enrollments,
+  languageProfiles,
+  learnerProfiles,
   ownershipFixtures,
   users,
 } from "./schema.ts";
