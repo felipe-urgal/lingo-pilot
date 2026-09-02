@@ -101,7 +101,7 @@ function requiredInteger(
     addIssue(context, valuePath, "SCHEMA_REQUIRED", "Field is required.");
     return null;
   }
-  if (!Number.isInteger(value) || typeof value !== "number") {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
     addIssue(context, valuePath, "SCHEMA_TYPE", "Expected an integer.");
     return null;
   }
@@ -285,12 +285,7 @@ function parseEntityBase(
   path: string,
 ): EntityBase | null {
   const id = requiredString(record, "id", context, path);
-  const schemaVersion = requiredInteger(
-    record,
-    "schemaVersion",
-    context,
-    path,
-  );
+  const schemaVersion = requiredInteger(record, "schemaVersion", context, path);
   const revision = requiredInteger(record, "revision", context, path);
   const status = requiredEnum<ContentStatus>(
     record,
@@ -301,10 +296,7 @@ function parseEntityBase(
   );
 
   if (id !== null) validateStableId(id, context, `${path}.id`);
-  if (
-    schemaVersion !== null &&
-    schemaVersion !== CONTENT_SCHEMA_VERSION
-  ) {
+  if (schemaVersion !== null && schemaVersion !== CONTENT_SCHEMA_VERSION) {
     addIssue(
       context,
       `${path}.schemaVersion`,
@@ -379,7 +371,12 @@ function parseContentBlocks(
     const text = requiredLocalizedText(record, "text", context, itemPath);
     let language: string | undefined;
     if (record.language !== undefined) {
-      const parsedLanguage = requiredLocale(record, "language", context, itemPath);
+      const parsedLanguage = requiredLocale(
+        record,
+        "language",
+        context,
+        itemPath,
+      );
       if (parsedLanguage !== null) language = parsedLanguage;
     }
     if (id !== null) validateStableId(id, context, `${itemPath}.id`);
@@ -406,13 +403,7 @@ function parseEvaluation(
   }
   const record = asRecord(value, context, path);
   if (record === null) return null;
-  const type = requiredEnum(
-    record,
-    "type",
-    evaluationTypes,
-    context,
-    path,
-  );
+  const type = requiredEnum(record, "type", evaluationTypes, context, path);
   const acceptedAnswers = optionalStringArray(
     record,
     "acceptedAnswers",
@@ -440,10 +431,25 @@ function parseCourse(
   base: EntityBase,
   context: ParseContext,
 ): Course | null {
-  const sourceLocale = requiredLocale(record, "sourceLocale", context, "$ ".trim());
-  const targetLocale = requiredLocale(record, "targetLocale", context, "$ ".trim());
+  const sourceLocale = requiredLocale(
+    record,
+    "sourceLocale",
+    context,
+    "$ ".trim(),
+  );
+  const targetLocale = requiredLocale(
+    record,
+    "targetLocale",
+    context,
+    "$ ".trim(),
+  );
   const title = requiredLocalizedText(record, "title", context, "$ ".trim());
-  const levelIds = requiredStringArray(record, "levelIds", context, "$ ".trim());
+  const levelIds = requiredStringArray(
+    record,
+    "levelIds",
+    context,
+    "$ ".trim(),
+  );
   if (
     sourceLocale === null ||
     targetLocale === null ||
@@ -485,7 +491,12 @@ function parseLevel(
   );
   const title = requiredLocalizedText(record, "title", context, "$ ".trim());
   const unitIds = requiredStringArray(record, "unitIds", context, "$");
-  if (courseId === null || cefr === null || title === null || unitIds === null) {
+  if (
+    courseId === null ||
+    cefr === null ||
+    title === null ||
+    unitIds === null
+  ) {
     return null;
   }
   return { ...base, kind: "level", courseId, cefr, title, unitIds };
