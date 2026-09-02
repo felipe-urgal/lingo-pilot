@@ -20,10 +20,12 @@
     "db:migrate": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/db db:migrate",
     "db:check": "pnpm --filter @lingo-pilot/db db:check",
     "db:smoke": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/db db:smoke",
-    "lint": "eslint scripts tests packages/config/runtime --max-warnings 0 && turbo run lint",
+    "lint": "eslint scripts tests vitest.config.ts playwright.config.ts packages/config/runtime --max-warnings 0 && turbo run lint",
     "typecheck": "node scripts/run-with-runtime-env.mjs turbo run typecheck",
-    "test:unit": "node --test tests/*.test.mjs && pnpm check:workspace",
+    "test:unit": "node --test tests/*.test.mjs && vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:integration": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/db test:integration",
+    "test:e2e": "node scripts/run-with-runtime-env.mjs node scripts/run-e2e.mjs",
     "test": "pnpm test:unit && pnpm test:integration",
     "content:validate": "pnpm --filter @lingo-pilot/content validate",
     "check:workspace": "node scripts/verify-workspace.mjs",
@@ -40,8 +42,11 @@
   },
   "devDependencies": {
     "@lingo-pilot/config": "workspace:*",
+    "@playwright/test": "1.62.1",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "10.9.1",
     "prettier": "3.9.6",
-    "turbo": "2.10.11"
+    "turbo": "2.10.11",
+    "vitest": "4.1.11"
   }
 }
