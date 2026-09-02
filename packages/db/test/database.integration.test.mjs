@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { after, before, test } from "node:test";
 import { eq } from "drizzle-orm";
 import { parseTestDatabaseEnvironment } from "@lingo-pilot/config/runtime/environment";
 import {
   appMetadata,
   createDatabaseClient,
+  createOwnershipFixture,
+  createUser,
+  findOwnershipFixtureForUser,
   migrateDatabase,
+  updateOwnershipFixtureForUser,
   withTransaction,
 } from "../src/index.ts";
 
@@ -34,9 +39,11 @@ after(async () => {
 
 test("migrates an empty PostgreSQL database and supports insert/read", async () => {
   const migrated = await client.pool.query(
-    "select to_regclass('public.app_metadata') as relation",
+    "select to_regclass('public.app_metadata') as metadata, to_regclass('public.users') as users, to_regclass('public.ownership_fixtures') as ownership_fixtures",
   );
-  assert.equal(migrated.rows[0]?.relation, "app_metadata");
+  assert.equal(migrated.rows[0]?.metadata, "app_metadata");
+  assert.equal(migrated.rows[0]?.users, "users");
+  assert.equal(migrated.rows[0]?.ownership_fixtures, "ownership_fixtures");
 
   await client.db.insert(appMetadata).values({
     key: "database-contract",
@@ -79,6 +86,68 @@ test("rolls back all writes when a transaction fails", async () => {
     .from(appMetadata)
     .where(eq(appMetadata.key, "rollback-probe"));
   assert.equal(rows.length, 0);
+});
+
+test("ownership queries isolate resources between two users", async () => {
+  const suffix = randomUUID();
+  const userAId = `user-a-${suffix}`;
+  const userBId = `user-b-${suffix}`;
+  const resourceAId = `resource-a-${suffix}`;
+
+  await createUser(client.db, userAId);
+  await createUser(client.db, userBId);
+  await createOwnershipFixture(client.db, {
+    id: resourceAId,
+    ownerId: userAId,
+    value: "private-to-a",
+  });
+
+  const ownerRead = await findOwnershipFixtureForUser(
+    client.db,
+    userAId,
+    resourceAId,
+  );
+  assert.equal(ownerRead?.value, "private-to-a");
+
+  const crossUserRead = await findOwnershipFixtureForUser(
+    client.db,
+    userBId,
+    resourceAId,
+  );
+  assert.equal(crossUserRead, null);
+
+  const crossUserWrite = await updateOwnershipFixtureForUser(
+    client.db,
+    userBId,
+    resourceAId,
+    "tampered-by-b",
+  );
+  assert.equal(crossUserWrite, null);
+
+  const afterCrossUserWrite = await findOwnershipFixtureForUser(
+    client.db,
+    userAId,
+    resourceAId,
+  );
+  assert.equal(afterCrossUserWrite?.value, "private-to-a");
+
+  const ownerWrite = await updateOwnershipFixtureForUser(
+    client.db,
+    userAId,
+    resourceAId,
+    "updated-by-a",
+  );
+  assert.equal(ownerWrite?.value, "updated-by-a");
+});
+
+test("ownership fixtures require an existing owner", async () => {
+  await assert.rejects(
+    createOwnershipFixture(client.db, {
+      id: `orphan-${randomUUID()}`,
+      ownerId: `missing-${randomUUID()}`,
+      value: "invalid",
+    }),
+  );
 });
 
 test("forces PostgreSQL sessions to UTC", async () => {

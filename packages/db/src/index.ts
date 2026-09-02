@@ -8,6 +8,15 @@ export {
   type DatabaseTransaction,
 } from "./client.ts";
 export { DEFAULT_MIGRATIONS_FOLDER, migrateDatabase } from "./migrations.ts";
-export { appMetadata } from "./schema.ts";
+export {
+  createOwnershipFixture,
+  createUser,
+  findOwnershipFixtureForUser,
+  updateOwnershipFixtureForUser,
+  type CreateOwnershipFixtureInput,
+  type OwnershipFixtureRecord,
+  type UserRecord,
+} from "./ownership.ts";
+export { appMetadata, ownershipFixtures, users } from "./schema.ts";
 
 export const packageBoundary = "db" as const;
