@@ -17,7 +17,7 @@ Stack inicial fixada:
 - Node.js `24.x`;
 - pnpm `10.34.5`;
 - Turborepo `2.10.11`;
-- Next.js `16.3.2`;
+- Next.js `16.3.4`;
 - React `19.2.8`;
 - TypeScript `7.0.2` com `strict`;
 - PostgreSQL `17` para desenvolvimento/integração;
