@@ -2,7 +2,7 @@
 
 Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
 
-> **Estado de referência:** 2026-09-01. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
+> **Estado de referência:** 2026-09-02. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -22,7 +22,7 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 | #8 CI quality gates and repository governance | Concluída | CI permanente e proteção da `main` |
 | #9 Local development environment and configuration contract | Concluída | Runtime config, `.env.local` raiz e profiles determinísticos |
 | #10 PostgreSQL, Drizzle schema and migration workflow | Concluída | PostgreSQL/Drizzle, migrations e integration baseline |
-| #11 Authentication and ownership authorization baseline | Aberta | Desbloqueada por #10 |
+| #11 Authentication and ownership authorization baseline | Concluída | Auth first-party PostgreSQL, sessão server-side, shell privado e ownership baseline |
 | #12 Establish domain/application boundaries and repository contracts | Aberta | Desbloqueada por #7 e #10 |
 | #13 Design system tokens, primitives and application shell | Aberta | Desbloqueada por #7 |
 | #14 Structured logging, error taxonomy and observability baseline | Aberta | Desbloqueada por #7 e #9 |
@@ -33,21 +33,26 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 
 - #54 corrigiu a propagação do `.env.local` raiz para build/runtime;
 - #56 alinhou `next-env.d.ts` à política atual do Next.js e protegeu a árvore Git contra churn gerado;
-- #59 estabeleceu o Production Contract fail-closed consumido pelo Dev Dashboard, sem fingir que Vercel/Neon já estão operacionais.
+- #59 estabeleceu o baseline fail-closed inicial do Production Contract;
+- #63 implementou comandos operacionais, backup/restore-check e health/readiness;
+- #64 ativou o Production Contract real com Vercel + Neon após validação operacional;
+- #65 alinhou o manifesto ativo ao vocabulário canônico do Dev Dashboard;
+- #66/#69 atualizaram Next.js para `16.3.4`, acima do security floor corrigido da linha 16.3.
+
+A capability de Production está ativa, mas isso não encerra o hardening operacional da #45 nem a Foundation de produto/engenharia.
 
 ### Sequência atual recomendada
 
-Os fundamentos de bootstrap/configuração/persistência já foram entregues. A janela imediata da Foundation é:
+Bootstrap, runtime, persistência e auth já foram entregues. As próximas frentes elegíveis são:
 
 ```text
-#11 auth
 #12 boundaries ─→ #16 test infrastructure
 #13 design system
 #14 observability
 #15 content schemas
 ```
 
-#11, #12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+#12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
 
 ## Fase 1 — Study Engine
 
@@ -164,7 +169,7 @@ O tutor V1 precisa de evals representativos de **A0, A1 e A2**; cobertura A0/A1 
 - #48 Content publication, revision rollout and rollback workflow
 - #50 Validate platform with B1 expansion and a second-language pilot
 
-A #59 já entregou somente o **baseline fail-closed** de produção. Ela não substitui a #45: Vercel, Neon, migrations de produção, backup/restore e health/readiness continuam bloqueados até implementação e validação reais.
+A produção operacional já foi ativada por #63–#65: Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e integração com o Dev Dashboard foram exercitados. A #45 continua aberta para o **hardening restante**, especialmente runbooks, incident response, critérios adicionais de recovery e evolução operacional conforme o produto passar a armazenar dados reais.
 
 ## Prioridades
 
@@ -198,4 +203,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation já concluiu #7–#10. As próximas issues elegíveis são **#11, #12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência.
+A Foundation concluiu #7–#11. As próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.

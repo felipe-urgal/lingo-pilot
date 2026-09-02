@@ -1,12 +1,12 @@
 # Deploy e operações de produção — LingoPilot
 
-> **Status:** contrato arquitetural inicial. A implementação operacional será entregue incrementalmente pelas issues de Foundation/Hardening, especialmente #8, #10, #14 e #45.
+> **Status:** contrato normativo com baseline operacional ativa desde 2026-09-01. Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e o Production Contract do Dev Dashboard já foram validados. O estado factual e as evidências ficam em `docs/PRODUCTION_STATUS.md`; a #45 continua responsável pelo hardening operacional e runbooks restantes.
 >
 > Este documento é **normativo** para decisões de produção. Se código, workflow ou manifesto de deployment divergir daqui, o mesmo PR deve atualizar este contrato ou registrar um ADR que explique a mudança.
 
 ## 1. Objetivo
 
-Definir desde o início como o LingoPilot será construído, promovido, migrado, verificado e recuperado em produção, evitando que o deploy vire uma coleção de comandos improvisados quando o produto já contiver dados reais de estudo.
+Definir como o LingoPilot é construído, promovido, migrado, verificado e recuperado em produção, evitando que o deploy vire uma coleção de comandos improvisados quando o produto contiver dados reais de estudo.
 
 O contrato foi desenhado a partir de padrões operacionais já usados em outros projetos do mesmo ambiente:
 
@@ -19,7 +19,7 @@ Esses projetos são referências de engenharia, não fontes de verdade do LingoP
 
 ## 2. Decisões iniciais
 
-A topologia inicial de produção será:
+A topologia de produção é:
 
 ```text
 Internet
@@ -85,16 +85,19 @@ Nunca reutilizar credenciais ou banco de produção localmente.
 
 ### 4.2 CI / Preview
 
-- dados sintéticos ou efêmeros;
+- dados sintéticos ou efêmeros em CI;
 - PostgreSQL isolado do ambiente de produção;
 - secrets de teste/preview separados;
-- Preview Vercel, quando habilitado, não recebe `DATABASE_URL` de produção;
+- deployments Preview da Vercel usam a branch Neon permanente `preview`, nunca a branch `main` de Production;
+- `VERCEL_URL` pode fornecer a origem pública automática de cada Preview quando `NEXT_PUBLIC_APP_URL` não estiver definida;
 - uma Preview incapaz de obter banco seguro deve falhar/operar com capacidade limitada, nunca apontar para produção como atalho.
 
 ### 4.3 Production
 
 - Vercel Production Environment;
-- Neon database/branch de produção dedicado;
+- Neon branch `main` dedicada a Production;
+- runtime usa conexão pooled apropriada ao ambiente serverless;
+- operações privilegiadas de migration/backup usam configuração direta separada do runtime;
 - secrets com escopo de produção;
 - storage privado de produção quando houver mídia;
 - observabilidade e retenção conforme documentos próprios.
@@ -119,7 +122,7 @@ Nomes concretos podem mudar na implementação, mas logs e diagnóstico devem pe
 - qual deployment o executa?;
 - quando foi promovido?;
 - qual revision de conteúdo/schema ele espera?;
-- houve migration associada?;
+- houve migration associada?
 
 Não usar somente número de versão manual como prova de revision.
 
@@ -243,22 +246,30 @@ O processo de migration deve retornar erro não-zero e mensagem sanitizada quand
 
 ## 9. Scripts operacionais canônicos
 
-Quando a implementação chegar ao estágio de produção, o repositório deve expor uma interface operacional estável. Alvo inicial:
+O repositório expõe a interface operacional estável abaixo:
 
 ```bash
+pnpm prod:status
 pnpm prod:check
 pnpm prod:migrate
 pnpm prod:verify
 pnpm prod:backup
+pnpm prod:restore-check -- <backup.dump>
 ```
 
-Opcionalmente podem existir comandos especializados (`prod:migrate:status`, `prod:logs`, etc.), mas os nomes canônicos acima devem encapsular detalhes do provider quando fizer sentido.
+Configuração administrativa real permanece fora do Git em:
+
+```text
+<Project.path>/.dev-dashboard/.env.production.local
+```
+
+### `prod:status`
+
+Somente leitura. Resume o contrato de Production e sua capacidade operacional sem revelar secrets.
 
 ### `prod:check`
 
-Somente preflight. Não muta produção.
-
-Deve validar os gates locais necessários para afirmar que a revision é promovível, sem fazer deploy, migration ou backup real.
+Preflight isolado. Não muta produção e usa `CHECK_DATABASE_URL` + `CHECK_TEST_DATABASE_URL` distintos; não recebe credenciais administrativas/provider nem faz fallback para o banco de Production.
 
 ### `prod:migrate`
 
@@ -267,55 +278,64 @@ Mutação de produção explícita.
 Deve:
 
 - exigir configuração de produção fora do Git;
-- validar que está apontando para o banco esperado sem imprimir segredo;
+- usar a conexão administrativa direta apropriada (`DATABASE_DIRECT_URL`);
+- validar a configuração sem imprimir segredo;
 - executar migrations versionadas;
 - falhar de forma clara em inconsistência;
 - nunca ser chamado automaticamente pelo `pnpm build`.
 
 ### `prod:verify`
 
-Somente leitura/smoke contra a URL de produção.
-
-Deve verificar pelo menos readiness e um fluxo público seguro. Conforme auth estiver disponível, pode validar um fluxo sintético controlado sem usar dados reais de usuário.
+Somente leitura/smoke contra `LINGO_PRODUCTION_READY_URL` HTTPS. A URL canônica atual é `https://lingo-pilot.vercel.app/api/health/ready`.
 
 ### `prod:backup`
 
-Cria backup/checkpoint explícito sem embutir credenciais no repositório.
+Cria backup PostgreSQL explícito sem embutir credenciais no repositório ou na linha de comando. O artefato local fica em caminho ignorado pelo Git.
 
-A implementação deve validar resultado e registrar metadata suficiente para posterior restore, sem logar connection string.
+### `prod:restore-check`
 
-Os scripts serão implementados nas issues apropriadas; este documento define o contrato, não finge que eles já existem.
+Restaura um backup em banco **não produtivo**, exige `RESTORE_CHECK_DATABASE_URL` e confirmação explícita `RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check`, recusa o mesmo endpoint de Production quando a URL de produção está disponível e valida o schema mínimo após o restore.
 
-## 10. Integração futura com Dev Dashboard
+Os comandos acima foram exercitados durante a ativação de produção de 2026-09-01. Novos comandos especializados só devem ser adicionados quando houver necessidade operacional clara.
 
-O LingoPilot deve ser compatível com o domínio de deployment do `dev-dashboard`.
+## 10. Integração com Dev Dashboard
 
-Estratégia prevista:
+O Production Contract está ativo em `.dev-dashboard/production.json` com:
 
 ```text
+production.enabled = true
 strategy = git-managed
 provider = vercel
 production branch = main
-external project = mapeamento explícito do projeto Vercel
+external.project = lingo-pilot
+health = https://lingo-pilot.vercel.app/api/health/ready
+```
+
+Políticas canônicas atuais:
+
+```text
+backup = required-before-migration
+migrations = before-deploy
+rollback = provider-only-when-schema-compatible
 ```
 
 Regras:
 
 - o Dev Dashboard pode observar provider/deployment/drift;
 - ele não deve inferir projeto Vercel pelo nome da pasta;
-- `prod:check`, `prod:migrate` e `prod:verify` permanecem operações locais explícitas;
+- `prod:check`, `prod:migrate`, `prod:verify`, `prod:backup` e `prod:restore-check` permanecem operações locais explícitas;
 - não criar um `prod:deploy` falso apenas para caber no contrato;
 - `READY` do provider não substitui `prod:verify`/readiness;
 - migration permanece separada da promoção Git/Vercel;
 - consulta de status não deve alterar repositório ou executar `git fetch` silenciosamente.
 
-O arquivo `.dev-dashboard/production.json` só deve ser habilitado quando os scripts e o fluxo reais existirem e tiverem sido testados. Não anunciar `production.enabled=true` antes da capacidade existir.
+A regra histórica continua válida: `production.enabled=true` só pode permanecer habilitado enquanto comandos, provider mapping e fluxo operacional corresponderem à realidade. Se uma regressão remover essa capacidade, o contrato deve voltar a falhar fechado até ser restaurado.
 
 ## 11. Health e readiness
 
-O LingoPilot deve separar processo/rota acessível de dependências críticas prontas.
+O LingoPilot separa processo/rota acessível de dependências críticas prontas.
 
-Contrato alvo:
+Contrato implementado:
 
 ```text
 GET /api/health/live
@@ -323,14 +343,10 @@ GET /api/health/live
 
 GET /api/health/ready
   → 200 quando o core está pronto
-  → 503 quando dependência crítica do core impede operação segura
+  → 503 quando PostgreSQL/schema crítico impede operação segura
 ```
 
-`ready` deve considerar, no mínimo:
-
-- configuração server-side crítica válida;
-- conectividade/consulta mínima ao PostgreSQL;
-- compatibilidade de schema esperada pela release.
+`ready` considera atualmente conexão PostgreSQL e presença do schema mínimo esperado (`app_metadata`), além da configuração necessária para o runtime iniciar.
 
 `ready` **não** deve ficar 503 apenas porque:
 
@@ -353,9 +369,9 @@ Após promoção:
 3. chamar `/api/health/ready`;
 4. validar shell/rota pública principal;
 5. validar headers/cache/security relevantes;
-6. validar autenticação com identidade sintética/controlada quando o fluxo existir;
+6. validar autenticação com identidade sintética/controlada quando o fluxo existir e estiver apto a tráfego público;
 7. validar uma leitura segura que envolva PostgreSQL;
-8. observar 5xx/erros estruturados por uma janela curta;
+8. observar 5xx/erros estruturados por uma janela apropriada;
 9. registrar deploy marker/revision.
 
 Falha do smoke exige investigação imediata e decisão entre rollback de aplicação e forward-fix.
@@ -365,7 +381,8 @@ Falha do smoke exige investigação imediata e decisão entre rollback de aplica
 ### 13.1 Regras
 
 - arquivos reais de `.env` não são versionados;
-- `.env.example` contém somente placeholders seguros;
+- `.env.example` documenta o contrato **local** e contém somente valores públicos seguros/credenciais locais sintéticas;
+- configuração operacional privilegiada de produção fica em `.dev-dashboard/.env.production.local`, ignorado pelo Git;
 - secrets de Production, Preview e CI são distintos;
 - segredo server-only nunca é exposto como variável pública do Next.js;
 - connection strings não entram em logs;
@@ -373,29 +390,43 @@ Falha do smoke exige investigação imediata e decisão entre rollback de aplica
 - rotação deve ser possível sem alterar código;
 - acesso humano ao banco usa credencial de menor privilégio compatível com a operação.
 
-### 13.2 Categorias esperadas
+### 13.2 Categorias atuais e futuras
 
-Com o avanço do projeto existirão, entre outras:
+Hoje existem categorias separadas para:
 
 - database/runtime connection;
-- database/migration credential quando separação de privilégio for adotada;
-- auth/session secrets/provider credentials;
+- database/migration/backup connection;
+- check databases isolados;
+- Vercel/provider operation quando necessária fora do runtime.
+
+Com o avanço do produto também existirão, conforme a issue dona da capacidade:
+
 - AI provider credentials;
 - storage credentials;
 - e-mail provider credentials;
 - observability credentials.
 
-Nenhuma delas pertence ao manifesto do Dev Dashboard.
+A baseline first-party de auth não adiciona secret de provider; sessão e credenciais são persistidas no PostgreSQL conforme `docs/AUTHENTICATION.md`.
+
+Nenhum secret pertence ao manifesto do Dev Dashboard.
 
 ## 14. PostgreSQL / Neon
 
-Produção usa PostgreSQL gerenciado no Neon na topologia inicial.
+Produção usa PostgreSQL gerenciado no Neon.
+
+Estado atual:
+
+- projeto operacional dedicado;
+- branch `main` para Production;
+- branch `preview` separada para deployments Preview;
+- runtime Production usa conexão pooled;
+- migration/backup usam conexão administrativa direta separada quando necessário.
 
 Regras:
 
 - TLS obrigatório conforme configuração do provider;
 - runtime usa conexão/pool apropriado a workloads serverless;
-- migrations podem usar configuração separada se o provider recomendar conexão direta;
+- migrations usam configuração separada do runtime quando necessário;
 - Preview/CI não reutiliza o database/branch de produção;
 - queries operacionais não expõem dados pessoais em logs;
 - índices e migrations continuam versionados no repositório;
@@ -405,12 +436,17 @@ Regras:
 
 “Provider possui backup” não é suficiente. Backup só conta quando existe procedimento de restore conhecido e testado.
 
-Baseline portátil:
+Baseline portátil implementada/exercitada:
 
-- dump PostgreSQL em formato apropriado (`pg_dump`/equivalente);
+- dump PostgreSQL em formato custom via `prod:backup`;
+- armazenamento local fora do repositório;
+- restore-check explícito em banco não produtivo;
+- validação pós-restore do schema mínimo.
+
+Conforme o produto passar a armazenar dados relevantes, a política deve evoluir para incluir:
+
 - metadata de data, database lógico, schema/revision e responsável/operação;
-- armazenamento fora do repositório;
-- cópia em domínio de falha diferente quando o produto possuir dados relevantes;
+- cópia em domínio de falha diferente;
 - criptografia e controle de acesso compatíveis com o conteúdo;
 - restore testado periodicamente em banco **não produtivo**.
 
@@ -512,7 +548,7 @@ Logs de produção são estruturados e sanitizados. Não registrar:
 - transcript/áudio;
 - prompt/resposta integral de IA por default.
 
-Alertas e dashboards completos entram conforme tráfego real justificar, mas identificação de versão e erro não pode esperar escala.
+Alertas e dashboards completos entram conforme tráfego real justificar, mas identificação de versão e erro não pode esperar escala. A #14 e o hardening restante da #45 devem completar o que ainda faltar para correlação operacional consistente.
 
 ## 20. Fluxo operacional padrão
 
@@ -556,29 +592,36 @@ Issue
 
 Não existe fluxo de uma etapa. Usar `expand → deploy → contract` em releases separadas e runbook próprio.
 
-## 21. Primeira colocação em produção
+## 21. Baseline de primeira colocação em produção
 
-Antes do primeiro deploy real, #45 (ou issues filhas) deve comprovar:
+A primeira ativação operacional foi concluída em 2026-09-01 e está detalhada em `docs/PRODUCTION_STATUS.md`.
 
-- [ ] Vercel project criado e mapeado explicitamente;
-- [ ] production branch configurada como `main`;
-- [ ] Neon production database criado;
-- [ ] Preview/CI isolados de production;
-- [ ] secrets configurados com escopo correto;
-- [ ] migrations do zero testadas;
-- [ ] `prod:check` implementado;
-- [ ] `prod:migrate` implementado;
-- [ ] `prod:verify` implementado;
-- [ ] backup criado e validado;
-- [ ] restore executado em database não produtivo;
-- [ ] health/live e health/ready implementados;
-- [ ] observabilidade identifica commit/deployment;
-- [ ] CI testa build de produção;
-- [ ] smoke pós-deploy documentado e executável;
-- [ ] rollback/forward-fix runbook existe;
-- [ ] secrets podem ser rotacionados;
-- [ ] política de auth/AI/storage failure está documentada;
-- [ ] manifesto do Dev Dashboard só é habilitado depois que os comandos existem.
+Entregue e validado:
+
+- [x] projeto Vercel criado e mapeado explicitamente;
+- [x] production branch configurada como `main`;
+- [x] Neon Production provisionado;
+- [x] Preview isolado em branch Neon separada e CI isolado de Production;
+- [x] configuração de runtime/operacional separada por escopo;
+- [x] migration versionada aplicada em Production;
+- [x] `prod:check` implementado e exercitado;
+- [x] `prod:migrate` implementado e exercitado;
+- [x] `prod:verify` implementado e readiness real validada;
+- [x] `prod:backup` implementado e backup real criado;
+- [x] `prod:restore-check` executado em banco Neon não produtivo;
+- [x] `/api/health/live` e `/api/health/ready` implementados;
+- [x] CI testa build de produção;
+- [x] Production Contract do Dev Dashboard habilitado somente após os comandos/fluxo existirem.
+
+Hardening ainda pertencente à #45/#14:
+
+- [ ] completar correlação estruturada de commit/deployment/incidente onde ainda faltar;
+- [ ] manter smoke/runbooks executáveis e atualizados;
+- [ ] formalizar procedimentos de rollback/forward-fix e migration failure;
+- [ ] formalizar rotação/least privilege e resposta a segredo comprometido;
+- [ ] definir cadência de restore exercise quando houver dados relevantes.
+
+A capability de Production ativa não deve ser confundida com conclusão de todo o hardening operacional.
 
 ## 22. Ações proibidas
 
@@ -597,7 +640,7 @@ Em produção, não:
 - editar migration já aplicada;
 - usar usuário superuser do PostgreSQL no runtime se privilégio menor for suficiente;
 - persistir áudio/transcript em log;
-- habilitar `production.enabled=true` no Dev Dashboard antes do contrato real estar implementado.
+- manter `production.enabled=true` se o contrato real deixar de existir ou não puder mais ser validado.
 
 ## 23. Evolução futura
 
@@ -613,9 +656,9 @@ A topologia Vercel + Neon é adequada ao monólito modular inicial. Mudança par
 
 A troca deve preservar os contratos de domínio e, quando estrutural, criar novo ADR.
 
-## 24. Runbooks previstos
+## 24. Runbooks de hardening
 
-Quando a operação real existir, criar em `docs/runbooks/` pelo menos:
+A operação real já existe; portanto a #45 deve completar em `docs/runbooks/`, no mínimo, os runbooks aplicáveis à capacidade atual:
 
 ```text
 deploy.md
@@ -624,10 +667,10 @@ backup-restore.md
 vercel-outage.md
 database-outage.md
 auth-outage.md
-ai-provider-outage.md
-storage-outage.md
 leaked-secret.md
 data-corruption.md
 ```
+
+Adicionar `ai-provider-outage.md` e `storage-outage.md` quando as respectivas capabilities entrarem no produto; não inventar provider inexistente apenas para preencher checklist.
 
 Runbook deve conter passos executáveis, critérios de decisão, sinais de sucesso/falha e escalonamento. Uma descrição genérica não conta como runbook.

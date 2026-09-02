@@ -16,6 +16,7 @@ A #7 fixou o bootstrap executável e o lockfile; as versões concretas em uso fi
 - **Validação:** schema validation explícita nas fronteiras;
 - **Banco:** PostgreSQL;
 - **ORM/query layer:** Drizzle ORM;
+- **Auth:** `AuthAdapter` server-side com sessão first-party PostgreSQL na baseline da #11, conforme ADR 0003;
 - **Testes unit/integration:** runner definido no bootstrap/test foundation;
 - **Componentes:** Testing Library quando a #16 consolidar a infraestrutura correspondente;
 - **E2E:** Playwright na #16;
@@ -24,7 +25,7 @@ A #7 fixou o bootstrap executável e o lockfile; as versões concretas em uso fi
 - **Storage:** interface S3-compatible para mídia;
 - **IA:** provider abstraction em `packages/ai`.
 
-Providers específicos de hosting, banco, storage e IA são decisões de infraestrutura e não podem vazar para o domínio.
+Providers específicos de hosting, banco, storage, auth e IA são decisões de infraestrutura e não podem vazar para o domínio.
 
 ## 3. Estrutura do monorepo
 
@@ -59,6 +60,7 @@ Não depende de:
 - React;
 - Next.js;
 - Drizzle;
+- SDK de auth;
 - SDK de IA;
 - storage provider;
 - analytics provider.
@@ -93,7 +95,8 @@ Schemas versionados e validação de:
 
 - schema físico;
 - migrations;
-- repositories PostgreSQL;
+- repositories/helpers PostgreSQL;
+- persistência técnica de identidade/sessão;
 - transaction helpers;
 - test database utilities.
 
@@ -114,6 +117,19 @@ Schemas versionados e validação de:
 - componentes de estudo compartilhados;
 - acessibilidade consistente.
 
+### `apps/web/server/auth`
+
+Delivery/infrastructure boundary da autenticação da aplicação:
+
+- `AuthAdapter`;
+- implementação PostgreSQL;
+- hashing/verificação de senha;
+- geração/resolução/revogação de sessão;
+- cookie e guards server-side;
+- respostas HTTP 401/403.
+
+Esses detalhes não pertencem ao domínio.
+
 ## 4. Módulos de domínio
 
 Limites iniciais:
@@ -133,7 +149,9 @@ AI Coaching
 
 Esses módulos não precisam ser deploys separados. São limites conceituais e de código.
 
-## 5. Fluxo de uma sessão
+`Identity` no domínio não significa conhecer cookie, senha, token ou SDK. A aplicação recebe uma identidade autenticada do adapter e usa o ID opaco para autorização e casos de uso.
+
+## 5. Fluxo de uma sessão de estudo
 
 ```text
 User opens Today
@@ -178,6 +196,44 @@ Handlers web não devem conter regras substanciais. Exemplos de application use 
 
 Cada use case recebe dependências por interface e retorna resultado tipado.
 
+### 6.1 Fluxo de autenticação
+
+```text
+POST /api/auth/login
+    ↓
+validate + normalize credentials
+    ↓
+AuthAdapter.authenticate()
+    ↓
+verify password hash
+    ↓
+persist opaque server session
+    ↓
+set HttpOnly cookie
+    ↓
+/app protected layout
+    ↓
+resolve authenticated user on server
+```
+
+Logout percorre o caminho inverso: resolve o token do cookie, revoga a sessão persistida e expira o cookie.
+
+Requests de recurso seguem:
+
+```text
+request
+   ↓
+resolve authenticated user
+   ↓
+repository query(resourceId + authenticated userId)
+   ↓
+allowed result | forbidden
+```
+
+Nunca derivar autorização de UI ou de `ownerId` enviado pelo cliente.
+
+Contrato detalhado: `docs/AUTHENTICATION.md`.
+
 ## 7. Persistência
 
 ### Princípios
@@ -189,6 +245,8 @@ Cada use case recebe dependências por interface e retorna resultado tipado.
 - soft delete apenas quando houver motivo real;
 - PII separada de dados pedagógicos quando útil;
 - content revisions imutáveis após publicação sempre que possível.
+
+Credenciais/sessões são dados de infraestrutura de Identity e ficam separados das entidades pedagógicas.
 
 ### Transações
 
@@ -213,6 +271,8 @@ Casos prioritários:
 - upload/finalização de speaking;
 - callbacks externos;
 - geração de sessão diária.
+
+Logout é seguro de repetir: uma sessão já revogada continua sem acesso.
 
 ## 9. Conteúdo como dados
 
@@ -273,19 +333,23 @@ Primeiras prioridades:
 - memoização local para conteúdo imutável quando necessário;
 - nenhum cache de progresso sem estratégia clara de invalidação.
 
+Identidade/sessão revogável não deve ser colocada em cache sem semântica explícita de revogação.
+
 ## 13. Segurança
 
 Toda leitura/escrita de recurso de usuário passa por autorização baseada em ownership.
 
 Não confiar em IDs enviados pelo cliente como prova de acesso.
 
-Fluxos com IA e mídia devem ser tratados como fronteiras externas.
+Fluxos com auth, IA e mídia devem ser tratados como fronteiras externas/de segurança.
+
+A baseline da #11 usa sessão opaca server-side. O token bruto não é persistido; senha usa hash lento com salt; logs não recebem cookie/token/password. Ver `SECURITY_PRIVACY.md`, `AUTHENTICATION.md` e ADR 0003.
 
 ## 14. Observabilidade
 
 Cada request/use case crítico deve permitir correlacionar:
 
-- request/session id;
+- request/session id técnico não reutilizado como credencial;
 - user id pseudonimizado quando necessário;
 - use case;
 - duração;
@@ -293,7 +357,7 @@ Cada request/use case crítico deve permitir correlacionar:
 - erro categorizado;
 - provider externo quando houver.
 
-Nunca logar resposta livre, transcript ou áudio por padrão.
+Nunca logar resposta livre, transcript, áudio, password, cookie ou token por padrão.
 
 ## 15. Performance
 
@@ -305,6 +369,8 @@ Prioridades:
 4. server rendering onde ajuda;
 5. JS no cliente somente quando necessário;
 6. lazy load de módulos pesados como recorder/tutor.
+
+Work factor de password hashing é deliberadamente caro e deve ser medido separadamente de queries comuns. Reduzi-lo por performance exige revisão de segurança.
 
 ## 16. Evolução futura
 
@@ -331,3 +397,5 @@ Criar ADR para:
 - novo provider com lock-in significativo;
 - armazenamento de áudio/PII com nova política;
 - algoritmo de SRS/mastery que altere significado de progresso.
+
+A baseline de autenticação da #11 está registrada em `docs/ADR/0003-first-party-auth-session.md`.

@@ -8,16 +8,16 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na **Fase 0 — Foundation**. As issues #7–#10 já concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local e foundation PostgreSQL/Drizzle. A Foundation ainda **não está concluída**: auth/ownership (#11), boundaries executáveis (#12), design system (#13), observabilidade (#14), schemas de conteúdo (#15) e infraestrutura completa de testes (#16) continuam no backlog.
+O repositório está na **Fase 0 — Foundation**. As issues #7–#11 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle e baseline de autenticação/autorização por ownership. A Foundation ainda **não está concluída**: boundaries executáveis (#12), design system (#13), observabilidade (#14), schemas de conteúdo (#15) e infraestrutura completa de testes (#16) continuam no backlog.
 
-O projeto **não** implementa ainda o Study Engine, autenticação funcional, conteúdo pedagógico real ou AI Tutor.
+O projeto **não** implementa ainda o Study Engine, onboarding/signup público, conteúdo pedagógico real ou AI Tutor. A baseline de auth já possui login/logout sobre credenciais persistidas, sessão server-side e shell privado; criação pública de conta pertence à #17.
 
 Stack inicial fixada:
 
 - Node.js `24.x`;
 - pnpm `10.34.5`;
 - Turborepo `2.10.11`;
-- Next.js `16.3.2`;
+- Next.js `16.3.4`;
 - React `19.2.8`;
 - TypeScript `7.0.2` com `strict`;
 - PostgreSQL `17` para desenvolvimento/integração;
@@ -94,8 +94,12 @@ pnpm check:workspace   valida boundaries estruturais
 pnpm format            normaliza formatação com Prettier
 pnpm format:check      verifica formatação sem alterar arquivos
 pnpm check             gate agregado do repositório
-pnpm prod:status       mostra o estado fail-closed de produção
-pnpm prod:check        falha enquanto os blockers de produção existirem
+pnpm prod:status       mostra o contrato/status operacional de produção
+pnpm prod:check        executa preflight isolado sem mutar produção
+pnpm prod:migrate      aplica migrations de produção explicitamente
+pnpm prod:verify       valida readiness HTTPS de produção
+pnpm prod:backup       cria backup PostgreSQL explícito
+pnpm prod:restore-check -- <backup.dump>  restaura/valida backup em banco não produtivo
 ```
 
 ## Configuração de runtime
@@ -111,11 +115,13 @@ apps/web/config/server.ts  -> configuração de servidor/runtime
 
 `DATABASE_URL` é server-only e obrigatória no runtime. Em desenvolvimento ela deve apontar para `127.0.0.1:5435`. `TEST_DATABASE_URL` é separada e só pode apontar para um banco explicitamente identificado como teste; a suíte de integração rejeita reutilização do banco de desenvolvimento.
 
+A baseline de autenticação não adiciona secret de provider. Credenciais e sessões são persistidas no PostgreSQL; o token bruto de sessão fica apenas no cookie `HttpOnly` e o banco armazena seu hash.
+
 A raiz do monorepo possui um carregador explícito de `.env.local` para comandos que iniciam subprocessos. Isso evita depender do diretório de trabalho de `apps/web` e garante que runtime, build e migrations usem o mesmo contrato sem duplicar arquivos de configuração.
 
 `next.config.ts` carrega a configuração de servidor para que configuração inválida interrompa `dev`/`build` cedo. Validar `DATABASE_URL` não abre conexão nem executa migration durante import/build.
 
-Contrato completo: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md). Operação do banco: [`docs/DATABASE.md`](docs/DATABASE.md).
+Contratos: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md), [`docs/DATABASE.md`](docs/DATABASE.md) e [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md).
 
 ## CI e governança
 
@@ -128,7 +134,7 @@ CI / quality
 CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
+`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade ficar verde e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
 
 Para reproduzir os gates que dependem de persistência localmente:
 
@@ -143,12 +149,12 @@ O contrato completo de branch protection, merge policy, segurança de Actions e 
 
 ```text
 apps/
-  web/                  aplicação Next.js
+  web/                  aplicação Next.js + delivery/auth server-side
 packages/
   domain/               regras de negócio puras
   learning/             planner, mastery, SRS e progressão
   content/              schemas e validação de conteúdo
-  db/                   persistência, schema e migrations
+  db/                   persistência, schema, migrations, auth/ownership data
   ai/                   providers, prompts, guardrails e eval contracts
   ui/                   primitives compartilhados
   config/               tooling + contrato tipado de configuração
@@ -158,7 +164,7 @@ tests/                  testes automatizados de Foundation
 docs/                   produto, arquitetura e operação
 ```
 
-Os packages nesta fase são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A primeira migration cria somente uma tabela técnica de metadata para provar o workflow de persistência sem antecipar o modelo do Study Engine.
+Os packages nesta fase são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria a metadata técnica da foundation; a #11 acrescenta identidade, credencial, sessão server-side e fixture de ownership sem antecipar o modelo pedagógico.
 
 ## Princípios do produto
 
@@ -184,11 +190,13 @@ Domain
 Infrastructure adapters
 ```
 
-A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) e [`docs/ADR/0001-initial-architecture.md`](docs/ADR/0001-initial-architecture.md).
+Autenticação segue a mesma direção: delivery resolve identidade via `AuthAdapter`; domínio não conhece cookie, senha, token ou provider. Ownership é aplicado no servidor nas queries de recurso.
+
+A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md), [`docs/ADR/0001-initial-architecture.md`](docs/ADR/0001-initial-architecture.md) e [`docs/ADR/0003-first-party-auth-session.md`](docs/ADR/0003-first-party-auth-session.md).
 
 ## Produção
 
-A topologia aprovada continua sendo:
+A topologia operacional é:
 
 ```text
 GitHub main
@@ -200,15 +208,19 @@ Next.js / LingoPilot
 Neon PostgreSQL
 ```
 
-Isso é **topologia alvo, não declaração de produção ativa**. A #59 estabeleceu um Production Contract intencionalmente `disabled`/fail-closed: hoje o repositório expõe `pnpm prod:status` e `pnpm prod:check`, mas Vercel, Neon, migrations de produção, backup/restore e health/readiness ainda precisam de implementação e validação operacional na #45.
+Essa topologia está ativa desde **2026-09-01**. A #63 implementou os comandos operacionais, backup/restore-check e health/readiness; a #64 ativou o Production Contract depois de validar Vercel, Neon, migration, readiness, backup e restore real; a #65 alinhou o manifesto ativo ao contrato do Dev Dashboard.
 
-Deploy futuro será Git-managed, migrations ficarão fora do build da Vercel e o projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+O deploy é `git-managed` pela `main`, migrations permanecem explícitas e fora do build da Vercel, Production usa a branch Neon `main` e Preview usa a branch Neon `preview` isolada. Configuração administrativa de migration/backup continua fora do runtime e fora do Git.
+
+O projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+
+Auth não deve ser exposta a tráfego público antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
 
 Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
 
 ## Roadmap
 
-- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#10 concluídas.**
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#11 concluídas.**
 - **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
@@ -228,6 +240,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
 - [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md) — configuração pública/server-only, profiles e evolução;
 - [`docs/DATABASE.md`](docs/DATABASE.md) — PostgreSQL, Drizzle, migrations, reset e testes de integração;
+- [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md) — identidade, sessão, login/logout e ownership;
 - [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
 
 **Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
@@ -239,6 +252,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Roadmap](docs/ROADMAP.md)
 - [Índice de issues](docs/ISSUE_INDEX.md)
 - [Arquitetura](docs/ARCHITECTURE.md)
+- [Autenticação e autorização](docs/AUTHENTICATION.md)
 - [Modelo de domínio](docs/DOMAIN_MODEL.md)
 - [Learning Engine](docs/LEARNING_ENGINE.md)
 - [Modelo de conteúdo](docs/CONTENT_MODEL.md)

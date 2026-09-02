@@ -59,6 +59,8 @@ Proibido confiar apenas em:
 - route param;
 - autenticação sem filtro por usuário.
 
+A baseline da #11 usa um `AuthAdapter` server-side com implementação PostgreSQL. O domínio não depende do mecanismo de sessão nem de SDK de auth. O contrato completo está em `AUTHENTICATION.md` e a decisão estrutural em `ADR/0003-first-party-auth-session.md`.
+
 ## 5. Sessão
 
 A implementação de auth deve usar cookies/headers seguros conforme arquitetura escolhida, com:
@@ -69,6 +71,22 @@ A implementação de auth deve usar cookies/headers seguros conforme arquitetura
 - expiração e revogação;
 - rotação conforme provider;
 - nenhuma credencial persistida em localStorage quando houver alternativa segura.
+
+### Baseline da #11
+
+A sessão inicial é opaca e server-side:
+
+- cookie `lingo_session` com `HttpOnly`, `SameSite=Lax`, `Path=/` e `Secure` em produção;
+- token aleatório de 32 bytes no cookie;
+- somente SHA-256 do token aleatório é persistido no banco;
+- TTL inicial de 30 dias;
+- `expires_at` e `revoked_at` são validados no servidor;
+- logout revoga a sessão persistida;
+- POSTs de login/logout exigem `Origin` igual ao origin canônico da aplicação.
+
+SHA-256 não é usado para senha. Senhas usam `scrypt` com salt aleatório e parâmetros registrados no hash. O baseline atual é `N=2^17`, `r=8`, `p=1`.
+
+Signup público, password reset, MFA e social login estão fora desta baseline e não devem ser improvisados em features consumidoras.
 
 ## 6. Input validation
 
@@ -82,6 +100,8 @@ Toda fronteira valida payload:
 - upload metadata.
 
 Validação de tipo não substitui autorização.
+
+No login, email é normalizado/canonicalizado e erros não distinguem conta inexistente de senha incorreta. Password/token nunca devem aparecer em mensagens de erro.
 
 ## 7. Upload de áudio
 
@@ -129,13 +149,16 @@ Nunca logar por default:
 - cookies;
 - authorization headers;
 - senhas;
+- password hashes;
+- hashes de sessão usados como credencial técnica;
+- payload completo de login;
 - texto completo de writing;
 - prompt do usuário contendo PII;
 - transcript completo;
 - áudio;
 - payload completo de providers.
 
-Logs podem usar IDs e categorias de erro.
+Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando um ID técnico for suficiente.
 
 ## 11. Secrets
 
@@ -154,6 +177,8 @@ Logs podem usar IDs e categorias de erro.
 - migrations revisadas;
 - queries sempre filtradas por ownership quando aplicável.
 
+Credenciais e sessões de auth ficam separadas dos recursos pedagógicos. FK para `users` pode propagar exclusão de credenciais/sessões; o workflow completo de account deletion continua pertencendo à #43.
+
 ## 13. Rate limits e abuso
 
 Priorizar limites em:
@@ -167,6 +192,8 @@ Priorizar limites em:
 
 Rate limit não substitui autorização.
 
+Para login, um limiter em memória por instância não é considerado garantia suficiente na topologia serverless alvo. Rate limit distribuído/adequado ao runtime é obrigatório antes de tráfego público; até lá, a produção permanece fail-closed pelo Production Contract.
+
 ## 14. Segurança de frontend
 
 - evitar `dangerouslySetInnerHTML` para conteúdo não confiável;
@@ -174,7 +201,8 @@ Rate limit não substitui autorização.
 - CSP quando arquitetura estabilizar;
 - dependências auditadas;
 - links externos seguros;
-- nenhuma chave secreta em bundle cliente.
+- nenhuma chave secreta em bundle cliente;
+- autenticação/autorização nunca depende apenas de esconder UI.
 
 ## 15. LGPD — princípios de produto
 
@@ -227,6 +255,8 @@ Para features críticas, responder no PR:
 - existe upload ou conteúdo executável?
 - que dado aparece em logs?
 - como é apagado?
+
+A #11 documenta suas respostas em `AUTHENTICATION.md`.
 
 ## 19. Incidentes
 
