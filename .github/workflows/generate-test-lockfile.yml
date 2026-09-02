@@ -3,7 +3,7 @@ name: Generate test lockfile
 on:
   push:
     branches:
-      - test/test-infrastructure
+      - test/foundation-test-infrastructure
 
 permissions:
   contents: write
