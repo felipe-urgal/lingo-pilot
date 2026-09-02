@@ -35,6 +35,14 @@ export default defineConfig({
           setupFiles: ["./test/setup.ts"],
         },
       },
+      {
+        test: {
+          environment: "node",
+          include: ["server/**/*.test.ts"],
+          name: "web-server",
+          root: "apps/web",
+        },
+      },
       ...nodePackageNames.map((packageName) => ({
         test: {
           environment: "node" as const,
