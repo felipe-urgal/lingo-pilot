@@ -11,22 +11,30 @@ export function createDatabaseTestHarness({
     maxConnections: 2,
   });
 
+  async function close() {
+    await client.close();
+  }
+
+  async function recreateSchemas() {
+    await client.pool.query("drop schema if exists drizzle cascade");
+    await client.pool.query("drop schema if exists public cascade");
+    await client.pool.query("create schema public");
+  }
+
+  async function migrate() {
+    await migrateDatabase(client.db);
+  }
+
+  async function reset() {
+    await recreateSchemas();
+    await migrate();
+  }
+
   return Object.freeze({
     client,
-    async close() {
-      await client.close();
-    },
-    async recreateSchemas() {
-      await client.pool.query("drop schema if exists drizzle cascade");
-      await client.pool.query("drop schema if exists public cascade");
-      await client.pool.query("create schema public");
-    },
-    async migrate() {
-      await migrateDatabase(client.db);
-    },
-    async reset() {
-      await this.recreateSchemas();
-      await this.migrate();
-    },
+    close,
+    migrate,
+    recreateSchemas,
+    reset,
   });
 }
