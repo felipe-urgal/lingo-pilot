@@ -22,7 +22,7 @@
     "db:smoke": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/db db:smoke",
     "lint": "eslint scripts tests vitest.config.ts playwright.config.ts packages/config/runtime --max-warnings 0 && turbo run lint",
     "typecheck": "node scripts/run-with-runtime-env.mjs turbo run typecheck",
-    "test:unit": "node --test tests/*.test.mjs && vitest run",
+    "test:unit": "node --test tests/*.test.mjs && pnpm check:workspace && vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/db test:integration",
     "test:e2e": "node scripts/run-with-runtime-env.mjs node scripts/run-e2e.mjs",
