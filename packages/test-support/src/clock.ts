@@ -15,7 +15,9 @@ export class FakeClock implements Clock {
 
   advanceBy(milliseconds: number): Date {
     if (!Number.isFinite(milliseconds)) {
-      throw new TypeError("Clock advance must be a finite number of milliseconds");
+      throw new TypeError(
+        "Clock advance must be a finite number of milliseconds",
+      );
     }
 
     this.current = new Date(this.current.getTime() + milliseconds);
