@@ -29,7 +29,7 @@ export function validateContentInputs(
 
   return {
     documents,
-    issues: issues.toSorted((left, right) => {
+    issues: [...issues].sort((left, right) => {
       const fileOrder = left.file.localeCompare(right.file);
       if (fileOrder !== 0) return fileOrder;
       const pathOrder = left.path.localeCompare(right.path);
