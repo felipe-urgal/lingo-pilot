@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert, Button, Input, Select } from "@lingo-pilot/ui";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState } from "react";
 import type {
   EntryPointLevel,
   PrimaryGoal,
@@ -42,12 +42,6 @@ export function OnboardingForm({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (initialTimezone) return;
-    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (detected) setTimezone(detected);
-  }, [initialTimezone]);
-
   function nextStep() {
     setStep((current) => Math.min(3, current + 1));
   }
@@ -56,7 +50,7 @@ export function OnboardingForm({
     setStep((current) => Math.max(1, current - 1));
   }
 
-  function handleSubmit(_event: FormEvent<HTMLFormElement>) {
+  function handleSubmit() {
     setIsSubmitting(true);
   }
 
