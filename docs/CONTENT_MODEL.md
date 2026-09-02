@@ -44,6 +44,8 @@ vocab.hello
 
 Não usar posição como único identificador, porque unidades podem ser reordenadas.
 
+A baseline executável usa `schemaVersion`, `revision` e `status` em cada documento de conteúdo. A versão inicial do contrato é `schemaVersion: 1`; mudanças incompatíveis devem introduzir uma nova versão em vez de reinterpretar silenciosamente documentos existentes.
+
 ## 4. Lesson schema conceitual
 
 ```ts
@@ -66,7 +68,7 @@ type Lesson = {
 }
 ```
 
-O schema real será definido no package `content` e validado em CI.
+O contrato executável fica em `packages/content/src/model.ts`; parsing de fronteira fica em `packages/content/src/schema.ts` e validação cruzada do grafo fica em `packages/content/src/validation.ts`. O package não depende de React ou de framework web.
 
 ## 5. Content blocks
 
@@ -137,6 +139,8 @@ speaking-prompt
 writing-prompt
 ```
 
+A baseline rejeita Activity sem avaliação, sem conceito ou sem vínculo com objetivo da Lesson. Avaliação determinística precisa declarar ao menos uma resposta aceita.
+
 ## 7. Conceito versus atividade
 
 Uma atividade não é o conceito. Várias atividades podem produzir evidência para o mesmo conceito em contextos diferentes.
@@ -177,6 +181,8 @@ Texto editorial pode ter:
 
 Mas estruturas que representam a frase estudada devem marcar explicitamente o idioma, não depender da locale da UI.
 
+A validação executável exige locales sintaticamente válidas e verifica a locale fonte do curso nas superfícies editoriais aplicáveis. VocabularyItem também precisa usar como idioma a locale alvo do curso.
+
 ## 10. Conteúdo publicado
 
 Quando uma revision é `published`:
@@ -187,15 +193,19 @@ Quando uma revision é `published`:
 - attempts continuam apontando para revision antiga;
 - scheduler pode usar nova revision para novas sessões conforme migration policy.
 
+Além disso, conteúdo `published` não pode depender de documento ainda `draft`/`review`; o validator rejeita essa dependência antes de merge/publicação.
+
 ## 11. Pipeline editorial inicial
 
-A V1 pode usar arquivos versionados no Git:
+A V1 usa **JSON versionado no Git** como formato inicial de autoria. A escolha prioriza parsing nativo, diff legível, edição simples e ausência de dependência extra de runtime.
+
+Estrutura esperada para conteúdo autorado:
 
 ```text
 content/
   courses/
     pt-BR_en/
-      course.yaml
+      course.json
       concepts/
       vocabulary/
       levels/
@@ -204,28 +214,37 @@ content/
         a2/
 ```
 
-JSON, YAML ou TypeScript data devem ser escolhidos no bootstrap com prioridade para:
-
-- validação;
-- diff legível;
-- edição simples;
-- toolchain estável.
+O CLI percorre arquivos `.json` recursivamente; a disposição interna pode evoluir sem alterar os contratos desde que as referências e invariantes permaneçam válidas.
 
 ## 12. CI de conteúdo
 
-CI deve validar:
+O comando oficial é:
 
-- schema;
-- IDs duplicados;
-- references quebradas;
+```bash
+pnpm content:validate
+```
+
+Ele executa o parser e o validator de grafo em `packages/content`, produzindo diagnósticos estáveis no formato:
+
+```text
+arquivo:path [REGRA] mensagem
+```
+
+A baseline valida:
+
+- schema e `schemaVersion` suportada;
+- IDs estáveis e duplicados;
+- references quebradas ou apontando para tipo incorreto;
+- ownership entre Course → Level → Unit → Lesson → Activity;
 - prerequisitos inexistentes;
-- cycles inválidos no currículo;
-- lesson sem objective;
-- activity sem concept/evaluation;
-- asset ausente;
+- cycles de pré-requisito em Lesson e Concept;
+- lesson publicada sem objective;
+- activity sem concept/evaluation/objective;
 - locale obrigatório ausente;
-- published content usando draft dependency;
-- duração/metadados dentro de limites razoáveis.
+- published content usando dependency não publicada;
+- limites básicos de metadata como dificuldade e duração positiva.
+
+Assets externos continuam fora desta baseline até o modelo correspondente existir. O workflow `CI / quality` executa `content:validate` e os testes do validator, portanto regressões nas invariantes bloqueiam merge.
 
 ## 13. Migração do pacote English Zero → A2
 

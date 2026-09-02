@@ -8,7 +8,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na **Fase 0 — Foundation**. As issues #7–#14 e #16 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade e infraestrutura determinística de testes. A Foundation ainda **não está concluída**: schemas de conteúdo (#15) continuam no backlog.
+O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
 O projeto **não** implementa ainda o Study Engine, onboarding/signup público, conteúdo pedagógico real ou AI Tutor. A baseline de auth já possui login/logout sobre credenciais persistidas, sessão server-side e shell privado; criação pública de conta pertence à #17.
 
@@ -91,7 +91,7 @@ pnpm test:coverage     gera coverage informativo do Vitest
 pnpm test:integration  executa integração via TEST_DATABASE_URL
 pnpm test:e2e          executa smoke Playwright isolado em 127.0.0.1:5401
 pnpm test              executa unit + integration
-pnpm content:validate  valida conteúdo
+pnpm content:validate  valida schemas e integridade do grafo de conteúdo JSON
 pnpm check:workspace   valida boundaries estruturais
 pnpm format            normaliza formatação com Prettier
 pnpm format:check      verifica formatação sem alterar arquivos
@@ -155,7 +155,7 @@ apps/
 packages/
   domain/               regras de negócio puras
   learning/             planner, mastery, SRS e progressão
-  content/              schemas e validação de conteúdo
+  content/              schemas versionados + parser/validação de conteúdo
   db/                   persistência, schema, migrations, auth/ownership data
   ai/                   providers, prompts, guardrails e eval contracts
   ui/                   primitives compartilhados
@@ -222,7 +222,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 
 ## Roadmap
 
-- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#14 e #16 concluídas, #15 pendente.**
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
 - **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
