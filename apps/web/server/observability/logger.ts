@@ -24,7 +24,8 @@ function formatPretty(
   message: string,
 ): string {
   const { timestamp, level, service, ...fields } = record;
-  const suffix = Object.keys(fields).length > 0 ? ` ${JSON.stringify(fields)}` : "";
+  const suffix =
+    Object.keys(fields).length > 0 ? ` ${JSON.stringify(fields)}` : "";
   return `${String(timestamp)} ${String(level).toUpperCase()} ${String(service)} ${message}${suffix}`;
 }
 
@@ -32,7 +33,11 @@ export function createLogger(options: LoggerOptions): Logger {
   const sink = options.sink ?? defaultSink;
   const baseFields = options.baseFields ?? {};
 
-  function emit(level: LogLevel, message: string, fields: LogFields = {}): void {
+  function emit(
+    level: LogLevel,
+    message: string,
+    fields: LogFields = {},
+  ): void {
     const safeFields = sanitizeLogFields({ ...baseFields, ...fields });
     const record = {
       timestamp: new Date().toISOString(),
@@ -54,6 +59,7 @@ export function createLogger(options: LoggerOptions): Logger {
     info: (message, fields) => emit("info", message, fields),
     warn: (message, fields) => emit("warn", message, fields),
     error: (message, fields) => emit("error", message, fields),
-    child: (fields) => createLogger({ ...options, baseFields: { ...baseFields, ...fields } }),
+    child: (fields) =>
+      createLogger({ ...options, baseFields: { ...baseFields, ...fields } }),
   };
 }
