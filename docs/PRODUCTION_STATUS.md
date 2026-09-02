@@ -37,6 +37,7 @@ Os comandos canônicos são:
 
 ```bash
 pnpm prod:status
+pnpm prod:prepare
 pnpm prod:check
 pnpm prod:migrate
 pnpm prod:verify
@@ -44,7 +45,9 @@ pnpm prod:backup
 pnpm prod:restore-check -- <backup.dump>
 ```
 
-`prod:check` usa somente `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL`, dois bancos de check distintos. Ele não carrega `.env.local` nem recebe credenciais administrativas/provider.
+`prod:prepare` é o hook de preparação local do LingoPilot. Ele executa `pnpm db:up`, garantindo que o PostgreSQL local definido pelo próprio projeto esteja disponível antes do `prod:check`. Essa decisão permanece no repositório consumidor; o Dev Dashboard conhece apenas o alias canônico `prod:prepare` e não interpreta Docker ou PostgreSQL.
+
+`prod:check` usa somente `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL`, dois bancos de check distintos. Ele não carrega `.env.local` nem recebe credenciais administrativas/provider. No fluxo do Dev Dashboard, `prod:prepare` e `prod:check` usam a fronteira local de check, não o ambiente local de produção.
 
 As operações reais usam configuração local separada:
 
@@ -98,6 +101,7 @@ strategy = git-managed
 provider = vercel
 branch = main
 external.project = lingo-pilot
+prepare = prod:prepare
 health = https://lingo-pilot.vercel.app/api/health/ready
 ```
 
