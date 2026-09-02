@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { serverConfig } from "../../../../config/server";
 import {
@@ -9,23 +10,24 @@ import {
   normalizeEmail,
 } from "../../../../server/auth/credentials";
 import { isSameOriginRequest } from "../../../../server/auth/http";
+import { hashPassword } from "../../../../server/auth/password";
 import { authAdapter } from "../../../../server/auth/postgres-adapter";
 import { SESSION_TTL_SECONDS } from "../../../../server/auth/session-token";
+import { createAuthAccount, getDatabase } from "../../../../server/database";
 import { errorCodes } from "../../../../server/observability/errors";
 import { createErrorResponse } from "../../../../server/observability/request";
 import { observeRequest } from "../../../../server/observability/runtime";
 
-function loginRedirect(error?: string): NextResponse {
-  const url = new URL("/login", serverConfig.public.appUrl);
+function signupRedirect(error?: string): NextResponse {
+  const url = new URL("/signup", serverConfig.public.appUrl);
   if (error) url.searchParams.set("error", error);
-
   return NextResponse.redirect(url, 303);
 }
 
 export function POST(request: NextRequest): Promise<NextResponse> {
   return observeRequest(
     request,
-    { route: "/api/auth/login", useCase: "auth.login" },
+    { route: "/api/auth/signup", useCase: "auth.signup" },
     async ({ logger, requestId }) => {
       if (!isSameOriginRequest(request, serverConfig.public.appUrl)) {
         return createErrorResponse(errorCodes.authForbidden, requestId);
@@ -36,22 +38,31 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       const password = formData.get("password");
 
       if (!email || !isValidLoginPassword(password)) {
-        logger.info("auth.login.rejected", {
-          errorCode: errorCodes.authInvalidCredentials,
+        logger.info("auth.signup.rejected", {
+          errorCode: errorCodes.requestInvalidInput,
           result: "rejected",
         });
-        return loginRedirect("invalid_credentials");
+        return signupRedirect("invalid_input");
+      }
+
+      const passwordHash = await hashPassword(password);
+      const registration = await createAuthAccount(getDatabase(), {
+        userId: randomUUID(),
+        email,
+        passwordHash,
+      });
+
+      if (registration === "conflict") {
+        logger.info("auth.signup.rejected", {
+          errorCode: errorCodes.authAccountUnavailable,
+          result: "rejected",
+        });
+        return signupRedirect("account_unavailable");
       }
 
       const grant = await authAdapter.authenticate({ email, password });
-
-      if (!grant) {
-        logger.info("auth.login.rejected", {
-          errorCode: errorCodes.authInvalidCredentials,
-          result: "rejected",
-        });
-        return loginRedirect("invalid_credentials");
-      }
+      if (!grant)
+        throw new Error("Newly registered account could not authenticate");
 
       const response = NextResponse.redirect(
         new URL("/app", serverConfig.public.appUrl),
@@ -61,7 +72,6 @@ export function POST(request: NextRequest): Promise<NextResponse> {
         ...sessionCookieOptions(serverConfig.profile, SESSION_TTL_SECONDS),
         expires: grant.expiresAt,
       });
-
       return response;
     },
   );

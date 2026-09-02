@@ -1,6 +1,6 @@
 # PostgreSQL e Drizzle — LingoPilot
 
-Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10 e estendida pela baseline de identidade/autorização da #11.
+Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11 e pela jornada inicial do aluno da #17.
 
 ## 1. Responsabilidade
 
@@ -65,7 +65,7 @@ Se `.env.local` já existia antes da issue #10, adicione as variáveis server-on
 
 Nenhuma dessas variáveis é pública. Nunca criar aliases `NEXT_PUBLIC_DATABASE_*`.
 
-A baseline de auth não adiciona secrets de provider nem novas variáveis de ambiente.
+A baseline de auth e o onboarding da #17 não adicionam secrets de provider nem novas variáveis de ambiente.
 
 ## 5. Schema e migrations
 
@@ -106,7 +106,7 @@ Fluxo para alterar schema:
 
 Nunca editar uma migration já aplicada para mudar seu significado. Correções entram em uma nova migration, salvo enquanto a migration ainda pertence a um PR não mergeado e não foi compartilhada como estado persistente.
 
-## 6. Histórico de migrations da Foundation
+## 6. Histórico de migrations
 
 ### `0000_foundation_schema`
 
@@ -128,11 +128,31 @@ A #11 adiciona somente estruturas necessárias para identidade/sessão e prova d
 - `auth_sessions` — sessão server-side com token hash, expiração e revogação;
 - `ownership_fixtures` — recurso técnico com `owner_id` para testar autorização A/B.
 
-Essa migration ainda não cria learner profile, course, study session, progress ou entidades pedagógicas. Essas estruturas pertencem às issues donas do domínio.
+Naquele estágio, a migration ainda não criava learner profile, course, study session, progress ou entidades pedagógicas; essas estruturas permaneceram reservadas às issues donas do domínio.
 
 `auth_credentials` e `auth_sessions` usam FK com `ON DELETE CASCADE` para `users`. A fixture de ownership exige owner existente. O workflow completo de exclusão de conta continua pertencendo à #43.
 
-Enquanto a `0001` permanecer apenas na branch/PR não mergeado da #11 e não for estado persistente compartilhado, seu conteúdo pode ser consolidado dentro do próprio PR conforme a exceção de migration pre-merge. Depois do merge/aplicação, mudanças entram sempre em migration nova.
+### `0002_learner_journey`
+
+A #17 introduz a persistência mínima da jornada inicial:
+
+- `learner_profiles` — preferências globais por usuário, incluindo locale, timezone, meta diária e objetivo opcional;
+- `language_profiles` — jornada pt-BR → en com nível inicial e estado ativo;
+- `enrollments` — vínculo entre a jornada e o curso, com `entry_point_level` e `placement_source`.
+
+As constraints preservam as invariantes da V1:
+
+- um único `LearnerProfile` por `User`;
+- um único `LanguageProfile` por `user + source_language + target_language`;
+- um único `Enrollment` por `LanguageProfile + Course`;
+- níveis iniciais limitados a A0/A1/A2;
+- `placement_source=zero` somente com A0;
+- `placement_source=manual` somente com A1/A2;
+- FKs com `ON DELETE CASCADE` para impedir jornadas órfãs.
+
+A operação de onboarding grava `LearnerProfile`, `LanguageProfile` e `Enrollment` dentro de uma única transação. Os conflitos de unicidade são tratados de forma idempotente: retry/refresh não cria uma segunda jornada equivalente nem uma segunda matrícula. Reentradas preservam o placement original e atualizam apenas preferências permitidas.
+
+Essa migration não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` ou completion para conteúdo anterior. Placement manual altera elegibilidade futura, não evidência pedagógica.
 
 ## 7. IDs e timestamps
 
@@ -144,7 +164,7 @@ Convenções para schemas futuros:
 - timezone pedagógico do aluno é dado de domínio separado, não configuração da conexão;
 - defaults de banco não substituem relógio injetável em regras temporais de domínio.
 
-Na #11, IDs de usuário/sessão são opacos. Sessões persistem `token_hash`, nunca o token bruto do cookie.
+IDs de usuário/sessão são opacos. Sessões persistem `token_hash`, nunca o token bruto do cookie. `LanguageProfile` e `Enrollment` também usam IDs opacos gerados pela aplicação; unicidade semântica é protegida separadamente pelas constraints compostas da migration `0002`.
 
 ## 8. Pool e transações
 
@@ -152,13 +172,13 @@ Na #11, IDs de usuário/sessão são opacos. Sessões persistem `token_hash`, nu
 
 `withTransaction(database, operation)` fornece a fronteira transacional injetável. Use cases/repositories futuros podem receber `Database` ou `DatabaseTransaction` sem acessar `process.env` nem criar conexão internamente.
 
-Operações que precisam permanecer atomicamente consistentes devem usar esse boundary em vez de executar writes independentes.
+Operações que precisam permanecer atomicamente consistentes devem usar esse boundary em vez de executar writes independentes. O repository da jornada inicial da #17 usa a própria transação do cliente Drizzle para manter `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes.
 
 O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth e ownership nunca são importados pelo bundle cliente.
 
 Código de delivery que precisa de persistência importa `packages/db/src/runtime.ts`, uma superfície deliberadamente sem `migrations.ts`. Migration tooling permanece exclusivo dos comandos/scripts operacionais e não deve entrar no grafo do bundle Next.js.
 
-## 9. Auth e ownership queries
+## 9. Auth, ownership e jornada do aluno
 
 Helpers de auth em `packages/db/src/auth.ts`:
 
@@ -169,13 +189,15 @@ Helpers de auth em `packages/db/src/auth.ts`:
 
 Helpers de ownership em `packages/db/src/ownership.ts` recebem `userId` resolvido no servidor. Leitura/escrita da fixture usam `resourceId + ownerId` na mesma cláusula `WHERE`.
 
+O repository PostgreSQL da jornada recebe o `userId` autenticado pelo use case/delivery e consulta `LearnerProfile`/`LanguageProfile` pela identidade do servidor; o cliente não fornece `ownerId` como prova de acesso. A matrícula é alcançada pelo `LanguageProfile` pertencente ao usuário.
+
 É proibido transformar o padrão em:
 
-1. buscar recurso apenas por ID;
-2. confiar em `ownerId` do payload;
+1. buscar recurso pedagógico apenas por ID sem ownership;
+2. confiar em `ownerId`/`userId` do payload como autorização;
 3. autorizar somente porque a UI escondeu uma ação.
 
-Contrato completo: `docs/AUTHENTICATION.md`.
+Contratos completos: `docs/AUTHENTICATION.md` e `docs/DOMAIN_MODEL.md`.
 
 ## 10. Testes de integração
 
@@ -195,7 +217,8 @@ A suíte:
 6. valida email canônico/único de credencial;
 7. valida sessão ativa, expirada e revogada;
 8. prova que usuário B não lê nem altera recurso de A;
-9. confirma timezone UTC.
+9. valida criação transacional/idempotente da jornada inicial e suas constraints de placement;
+10. confirma timezone UTC.
 
 O teste nunca recebe `DATABASE_URL` como destino de escrita.
 
@@ -217,13 +240,11 @@ Para apenas parar/remover o container e a rede preservando dados:
 pnpm db:down
 ```
 
-## 12. Seed
+## 12. Seed e criação de conta
 
-A Foundation não possui seed de domínio. Isso é deliberado: ainda não existem entidades pedagógicas implementadas para popular sem antecipar o modelo.
+O projeto não depende de seed de domínio para criar contas ou jornadas reais de desenvolvimento. A #17 adiciona signup first-party que reutiliza o hashing/persistência da baseline de auth e cria a jornada somente quando o usuário conclui o onboarding.
 
-A #11 também não cria usuário real/default nem credencial hardcoded. Login opera sobre credenciais persistidas; signup/onboarding pertence à #17.
-
-Quando uma issue dona de dados de desenvolvimento exigir seed, ela deve adicionar comando explícito, dados sintéticos/determinísticos e documentação de idempotência no mesmo PR.
+Fixtures e factories automatizadas continuam usando somente dados sintéticos/determinísticos. Quando uma issue dona de conteúdo/dados de desenvolvimento exigir seed, ela deve adicionar comando explícito e documentação de idempotência no mesmo PR.
 
 ## 13. Produção
 
@@ -231,4 +252,4 @@ Produção usa `DATABASE_URL` fornecida pelo provider server-side. Migrations pe
 
 A conexão de produção não deve reutilizar credenciais locais/teste, e a aplicação não deve executar migration implicitamente ao iniciar ou importar módulos.
 
-Antes de tráfego público, auth precisa também de rate limit adequado à topologia serverless; não usar limiter local em memória como falsa garantia distribuída.
+Antes de tráfego público, auth/signup precisam também de rate limit adequado à topologia serverless; não usar limiter local em memória como falsa garantia distribuída.

@@ -12,5 +12,23 @@ export type {
   UserRepository,
   UserRepositoryCreateError,
 } from "./identity/user-repository.ts";
+export {
+  entryPointLevels,
+  placementSources,
+  primaryGoals,
+  type Enrollment,
+  type EnrollmentStatus,
+  type EntryPointLevel,
+  type LanguageProfile,
+  type LearnerJourney,
+  type LearnerProfile,
+  type LearnerStatus,
+  type PlacementSource,
+  type PrimaryGoal,
+} from "./learner/learner-journey.ts";
+export type {
+  LearnerJourneyRepository,
+  SaveInitialLearnerJourneyInput,
+} from "./learner/learner-journey-repository.ts";
 
 export const packageBoundary = "domain" as const;

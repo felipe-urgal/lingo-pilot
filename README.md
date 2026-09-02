@@ -10,7 +10,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
-O projeto **não** implementa ainda o Study Engine, onboarding/signup público, conteúdo pedagógico real ou AI Tutor. A baseline de auth já possui login/logout sobre credenciais persistidas, sessão server-side e shell privado; criação pública de conta pertence à #17.
+A **Fase 1 — Study Engine** começou pela #17: criação de conta first-party, `LearnerProfile`, `LanguageProfile`, `Enrollment`, onboarding A0/A1/A2 e um Today shell mínimo já formam a primeira vertical de acesso. A próxima atividade elegível é a #18, responsável pelo catálogo de curso e pela elegibilidade curricular. Lesson Player, exercícios, SRS, planner, progresso completo, conteúdo pedagógico real e AI Tutor continuam fora deste recorte.
 
 Stack inicial fixada:
 
@@ -136,13 +136,14 @@ CI / quality
 CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. `CI / build` roda somente depois do gate de qualidade ficar verde e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
+`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. O job `CI / e2e` executa os fluxos Playwright críticos antes do build. `CI / build` roda somente depois dos gates anteriores ficarem verdes e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
 
 Para reproduzir os gates que dependem de persistência localmente:
 
 ```bash
 pnpm db:up
 pnpm check
+pnpm test:e2e
 ```
 
 O contrato completo de branch protection, merge policy, segurança de Actions e evolução dos checks está em [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md).
@@ -151,22 +152,40 @@ O contrato completo de branch protection, merge policy, segurança de Actions e 
 
 ```text
 apps/
-  web/                  aplicação Next.js + delivery/auth server-side
+  web/                  aplicação Next.js + delivery/auth/onboarding server-side
 packages/
-  domain/               regras de negócio puras
+  domain/               regras de negócio puras + contratos da jornada do aluno
   learning/             planner, mastery, SRS e progressão
   content/              schemas versionados + parser/validação de conteúdo
-  db/                   persistência, schema, migrations, auth/ownership data
+  db/                   persistência, migrations, auth/ownership + learner journey
   ai/                   providers, prompts, guardrails e eval contracts
   ui/                   primitives compartilhados
   config/               tooling + contrato tipado de configuração
   test-support/         suporte determinístico de testes
 scripts/                checks e operações locais do repositório
-tests/                  testes automatizados de Foundation
+tests/                  testes automatizados de Foundation e fluxos E2E da Fase 1
 docs/                   produto, arquitetura e operação
 ```
 
-Os packages nesta fase são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria a metadata técnica da foundation; a #11 acrescenta identidade, credencial, sessão server-side e fixture de ownership sem antecipar o modelo pedagógico.
+Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria a metadata técnica da foundation; a `0001` acrescenta identidade, credencial, sessão server-side e fixture de ownership; a `0002` adiciona `LearnerProfile`, `LanguageProfile` e `Enrollment` sem antecipar progresso, mastery ou StudySession.
+
+## Primeiro acesso e onboarding
+
+O fluxo implementado pela #17 é:
+
+```text
+/signup
+  ↓
+conta + sessão
+  ↓
+/app/onboarding
+  ↓
+LearnerProfile + LanguageProfile + Enrollment
+  ↓
+/app/today
+```
+
+A entrada pode ser A0 (`placementSource=zero`) ou A1/A2 (`placementSource=manual`). A escolha manual serve apenas para posicionar a trilha: ela não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício. Retry/refresh não cria uma segunda jornada equivalente, e edição posterior preserva o ponto de entrada enquanto altera apenas preferências globais.
 
 ## Princípios do produto
 
@@ -192,7 +211,7 @@ Domain
 Infrastructure adapters
 ```
 
-Autenticação segue a mesma direção: delivery resolve identidade via `AuthAdapter`; domínio não conhece cookie, senha, token ou provider. Ownership é aplicado no servidor nas queries de recurso.
+Autenticação segue a mesma direção: delivery resolve identidade via `AuthAdapter`; domínio não conhece cookie, senha, token ou provider. Ownership e jornada do aluno são aplicados no servidor nas queries de recurso.
 
 A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md), [`docs/ADR/0001-initial-architecture.md`](docs/ADR/0001-initial-architecture.md) e [`docs/ADR/0003-first-party-auth-session.md`](docs/ADR/0003-first-party-auth-session.md).
 
@@ -216,14 +235,14 @@ O deploy é `git-managed` pela `main`, migrations permanecem explícitas e fora 
 
 O projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
 
-Auth não deve ser exposta a tráfego público antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
+Auth/signup não deve receber tráfego público amplo antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
 
 Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
 
 ## Roadmap
 
 - **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
-- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **Iniciada; #17 entregue e #18 é a próxima atividade.**
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
 - **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.

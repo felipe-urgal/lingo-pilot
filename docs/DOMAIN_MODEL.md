@@ -23,11 +23,17 @@ Campos conceituais:
 
 Configura preferências globais da experiência de aprendizado para um usuário.
 
+Campos V1 implementados pela #17:
+
 - `userId`
-- `interfaceLocale`
-- `timezone`
-- `dailyGoalMinutes`
-- preferências de áudio/speaking
+- `interfaceLocale` — atualmente `pt-BR`;
+- `timezone` — IANA timezone do aluno;
+- `dailyGoalMinutes`;
+- `primaryGoal` opcional e estruturado (`conversation`, `travel`, `work`, `study`, `other`);
+- `createdAt`;
+- `updatedAt`.
+
+Preferências de áudio/speaking podem entrar quando as skills correspondentes existirem.
 
 `LearnerProfile` não representa uma jornada de idioma específica.
 
@@ -35,7 +41,7 @@ Configura preferências globais da experiência de aprendizado para um usuário.
 
 Representa uma jornada idioma fonte → idioma alvo.
 
-Campos conceituais:
+Campos V1:
 
 - `id`
 - `userId`
@@ -45,8 +51,11 @@ Campos conceituais:
 - `currentEstimatedLevel`
 - `status`
 - `createdAt`
+- `updatedAt`
 
-Um usuário poderá ter múltiplos `LanguageProfile`s no futuro.
+Na primeira vertical, `sourceLanguage=pt-BR`, `targetLanguage=en` e `startingLevel` aceita A0/A1/A2. `currentEstimatedLevel` começa `null`: selecionar A1/A2 manualmente não é uma estimativa de domínio.
+
+Um usuário poderá ter múltiplos `LanguageProfile`s no futuro. Na V1, a persistência garante unicidade para a combinação `userId + sourceLanguage + targetLanguage`.
 
 **Regra de ownership pedagógico:** progresso, sessões, attempts, review e mastery pertencem a uma jornada identificável por `LanguageProfile`, direta ou indiretamente através de `Enrollment`. Não anexar todo o histórico pedagógico apenas ao `User`.
 
@@ -56,11 +65,13 @@ Um usuário poderá ter múltiplos `LanguageProfile`s no futuro.
 
 Curso publicável, por exemplo `pt-BR → en`.
 
+Na #17, o onboarding referencia o identificador estável `course.en.ptbr.v1` somente para estabelecer a matrícula inicial. O catálogo/registry orientado por dados e a elegibilidade curricular pertencem à #18; UI não deve assumir que esse identificador é o catálogo inteiro.
+
 ### Enrollment
 
 Representa a matrícula de um `LanguageProfile` em um `Course`.
 
-Campos conceituais:
+Campos V1:
 
 - `id`
 - `languageProfileId`
@@ -69,6 +80,7 @@ Campos conceituais:
 - `placementSource`
 - `status`
 - `enrolledAt`
+- `updatedAt`
 
 Valores iniciais de `placementSource`:
 
@@ -89,7 +101,7 @@ Conteúdo anterior ao entry point pode ser considerado **placement-waived** pelo
 - não marca `MasteryState` como dominado;
 - deve permanecer auditável como motivo de elegibilidade.
 
-Para a V1 deve existir no máximo um `Enrollment` ativo por `LanguageProfile + Course`.
+Para a V1 existe no máximo um `Enrollment` por `LanguageProfile + Course`, protegido por constraint de unicidade. O estado inicial suportado é `active`.
 
 ### Level
 
@@ -277,6 +289,8 @@ Tipos:
 
 Deve registrar motivo de seleção suficiente para debug e analytics, incluindo quando elegibilidade decorreu de entry point/placement.
 
+O `/app/today` criado na #17 é somente um shell de confirmação da jornada; ele ainda não cria `StudySession` nem `SessionItem`. Esse modelo começa nas issues donas do Study Engine.
+
 ## 9. Review
 
 ### MemoryItem
@@ -369,10 +383,10 @@ Deve registrar:
 
 ## 13. Onboarding transaction
 
-A conclusão inicial do onboarding deve criar/garantir de forma idempotente:
+A #17 implementa um application use case único de onboarding que cria/garante de forma idempotente:
 
 ```text
-User
+User (já autenticado)
   ↓
 LearnerProfile
   ↓
@@ -381,20 +395,17 @@ LanguageProfile
 Enrollment → Course
 ```
 
-A operação deve ser transacional quando persistida no mesmo banco. Retry/refresh não pode criar duas jornadas ou duas matrículas ativas equivalentes.
+`LearnerProfile + LanguageProfile + Enrollment` são persistidos em uma única transação PostgreSQL. Retry/refresh não cria duas jornadas ou duas matrículas equivalentes.
 
-Use cases conceituais esperados:
+A reentrada do onboarding atualiza somente preferências globais (`interfaceLocale`, `timezone`, `dailyGoalMinutes`, `primaryGoal`) e preserva `startingLevel`, `entryPointLevel` e `placementSource` já persistidos. Mudar placement depois da criação passa a exigir uma regra de produto explícita em issue própria; não é efeito colateral de editar preferências.
 
-- `CreateOrUpdateLearnerProfile`
-- `CreateLanguageProfile`
-- `EnrollLanguageProfileInCourse`
-- ou um application use case de onboarding que orquestre os três preservando seus limites.
+O use case pertence à camada application e depende de `LearnerJourneyRepository`, relógio e gerador de IDs por contratos. Next.js e Drizzle permanecem adapters externos.
 
 ## 14. Invariantes importantes
 
 1. Um `LanguageProfile` pertence a um único `User`.
 2. Um `Enrollment` pertence a um único `LanguageProfile` e um único `Course`.
-3. Para a V1, não existem dois enrollments ativos para o mesmo `LanguageProfile + Course`.
+3. Para a V1, não existem dois enrollments para o mesmo `LanguageProfile + Course`.
 4. Um Attempt pertence ao `LanguageProfile` que executou a Activity.
 5. Um usuário não pode acessar dados pedagógicos de outro usuário.
 6. Uma Activity apresentada referencia uma `ContentRevision` específica.
@@ -407,6 +418,7 @@ Use cases conceituais esperados:
 13. Timezone influencia “dia de estudo”, mas timestamps persistidos permanecem UTC.
 14. Exclusão de conta deve respeitar política de retenção definida.
 15. Onboarding reentrante deve preservar unicidade de `LanguageProfile`/`Enrollment` pretendidos.
+16. `startingLevel`/`entryPointLevel` manual não preenche `currentEstimatedLevel` e não produz evidência pedagógica.
 
 ## 15. Vocabulário proibido/ambíguo
 
@@ -422,4 +434,13 @@ Evitar nomes genéricos sem definição:
 
 ## 16. Modelo físico
 
-O modelo físico será definido em migrations e `packages/db`. Ele pode normalizar ou materializar informações por performance, mas não deve apagar as distinções conceituais deste documento sem decisão explícita.
+O primeiro recorte físico da jornada foi implementado pela migration `0002_learner_journey` em `packages/db`:
+
+```text
+users
+  └─ learner_profiles
+  └─ language_profiles
+       └─ enrollments
+```
+
+O schema usa FKs, checks e constraints de unicidade para reforçar locale suportado, faixa da meta diária, níveis A0/A1/A2, coerência entre `entryPointLevel` e `placementSource` e idempotência da jornada. Entidades futuras de currículo, sessão, attempt, review e mastery continuam pertencendo às issues específicas e não devem ser antecipadas nessa migration.

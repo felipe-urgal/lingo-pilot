@@ -59,9 +59,9 @@ Proibido confiar apenas em:
 - route param;
 - autenticação sem filtro por usuário.
 
-A baseline da #11 usa um `AuthAdapter` server-side com implementação PostgreSQL. O domínio não depende do mecanismo de sessão nem de SDK de auth. O contrato completo está em `AUTHENTICATION.md` e a decisão estrutural em `ADR/0003-first-party-auth-session.md`.
+A baseline da #11 usa um `AuthAdapter` server-side com implementação PostgreSQL. O domínio não depende do mecanismo de sessão nem de SDK de auth. A #17 estende essa baseline com criação de conta first-party e onboarding autenticado, reutilizando os mesmos contratos de credencial, sessão, origin e ownership. O contrato completo está em `AUTHENTICATION.md` e a decisão estrutural em `ADR/0003-first-party-auth-session.md`.
 
-## 5. Sessão
+## 5. Sessão e primeiro acesso
 
 A implementação de auth deve usar cookies/headers seguros conforme arquitetura escolhida, com:
 
@@ -86,7 +86,22 @@ A sessão inicial é opaca e server-side:
 
 SHA-256 não é usado para senha. Senhas usam `scrypt` com salt aleatório e parâmetros registrados no hash. O baseline atual é `N=2^17`, `r=8`, `p=1`.
 
-Signup público, password reset, MFA e social login estão fora desta baseline e não devem ser improvisados em features consumidoras.
+Password reset, MFA e social login continuam fora desta baseline e não devem ser improvisados em features consumidoras.
+
+### Extensão da #17
+
+A #17 é a feature dona do primeiro acesso e adiciona signup first-party deliberadamente, sem provider novo e sem criar uma segunda estratégia de sessão:
+
+- `/signup` aceita somente email + senha segundo as regras já usadas pelo login;
+- criação de `users + auth_credentials` ocorre em uma única transação;
+- conflito de email retorna mensagem genérica e não confirma existência de conta;
+- senha continua existindo apenas durante a request e somente seu hash `scrypt` é persistido;
+- após criar a conta, o mesmo `AuthAdapter` autentica e emite a sessão server-side normal;
+- POST de signup e POST de onboarding exigem `Origin` igual ao origin canônico;
+- redirects de auth/onboarding usam a origem canônica configurada, preservando o cookie host-only;
+- onboarding persiste apenas preferências/jornada necessárias e não recebe senha novamente.
+
+Essa extensão não cria nova categoria de PII além das já previstas neste documento: identidade/email, timezone e configurações de perfil. A liberação para exposição pública ampla continua condicionada a rate limit adequado à topologia serverless.
 
 ## 6. Input validation
 
@@ -101,7 +116,7 @@ Toda fronteira valida payload:
 
 Validação de tipo não substitui autorização.
 
-No login, email é normalizado/canonicalizado e erros não distinguem conta inexistente de senha incorreta. Password/token nunca devem aparecer em mensagens de erro.
+No login/signup, email é normalizado/canonicalizado e mensagens de erro não devem revelar credencial ou confirmar desnecessariamente a existência da conta. Password/token nunca devem aparecer em mensagens de erro.
 
 ## 7. Upload de áudio
 
@@ -151,14 +166,14 @@ Nunca logar por default:
 - senhas;
 - password hashes;
 - hashes de sessão usados como credencial técnica;
-- payload completo de login;
+- payload completo de login/signup/onboarding;
 - texto completo de writing;
 - prompt do usuário contendo PII;
 - transcript completo;
 - áudio;
 - payload completo de providers.
 
-Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando um ID técnico for suficiente.
+Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando um ID técnico for suficiente. A conclusão do onboarding pode registrar somente escolhas categóricas estruturadas necessárias para operação/analytics, como entry point, `placementSource` e objetivo, sem email ou payload completo.
 
 ## 11. Secrets
 
@@ -177,13 +192,14 @@ Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando 
 - migrations revisadas;
 - queries sempre filtradas por ownership quando aplicável.
 
-Credenciais e sessões de auth ficam separadas dos recursos pedagógicos. FK para `users` pode propagar exclusão de credenciais/sessões; o workflow completo de account deletion continua pertencendo à #43.
+Credenciais e sessões de auth ficam separadas dos recursos pedagógicos. FK para `users` propaga exclusão de credenciais/sessões e, a partir da #17, também dos perfis/jornada inicial vinculados. O workflow completo de account deletion continua pertencendo à #43.
 
 ## 13. Rate limits e abuso
 
 Priorizar limites em:
 
 - login;
+- signup;
 - recuperação de conta;
 - endpoints de IA;
 - upload/transcrição;
@@ -192,7 +208,7 @@ Priorizar limites em:
 
 Rate limit não substitui autorização.
 
-Para login, um limiter em memória por instância não é considerado garantia suficiente na topologia serverless alvo. Rate limit distribuído/adequado ao runtime é obrigatório antes de tráfego público; até lá, a produção permanece fail-closed pelo Production Contract.
+Para login/signup, um limiter em memória por instância não é considerado garantia suficiente na topologia serverless alvo. Rate limit distribuído/adequado ao runtime é obrigatório antes de exposição pública ampla. Até essa liberação, a existência técnica das rotas de primeiro acesso não deve ser tratada como autorização para divulgação/abertura do produto a tráfego irrestrito.
 
 ## 14. Segurança de frontend
 
@@ -256,7 +272,7 @@ Para features críticas, responder no PR:
 - que dado aparece em logs?
 - como é apagado?
 
-A #11 documenta suas respostas em `AUTHENTICATION.md`.
+A #11 documenta a baseline de auth em `AUTHENTICATION.md`; a #17 estende o mesmo documento com signup, onboarding, ownership da jornada e minimização de logs.
 
 ## 19. Incidentes
 

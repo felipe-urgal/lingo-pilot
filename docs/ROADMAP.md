@@ -2,7 +2,7 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
-> **Estado de execução em 2026-09-02:** a Fase 0 está em andamento. #7, #8, #9, #10 e #11 foram concluídas; #12–#15 estão abertas e elegíveis conforme suas dependências; #16 continua dependente de #12. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
+> **Estado de execução em 2026-09-02:** a Fase 0 está concluída (#7–#16). A Fase 1 iniciou com a #17, que entregou learner profile, jornada inicial, onboarding A0/A1/A2 e Today shell mínimo. A próxima issue elegível é a #18. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
 
 ## Fase 0 — Foundation
 
@@ -18,17 +18,14 @@ Concluído:
 - CI permanente e governança da `main` (#8);
 - contrato de ambiente/runtime local (#9);
 - PostgreSQL, Drizzle, migrations e integration baseline (#10);
-- autenticação first-party, sessão server-side e ownership authorization baseline (#11).
-
-Em aberto:
-
+- autenticação first-party, sessão server-side e ownership authorization baseline (#11);
 - boundaries de domínio/aplicação executáveis (#12);
 - design system e app shell (#13);
 - observabilidade/error taxonomy (#14);
 - schemas e pipeline de conteúdo (#15);
-- infraestrutura completa de testes, incluindo Playwright/fake clock/factories (#16), após #12.
+- infraestrutura completa de testes, incluindo Playwright/fake clock/factories (#16).
 
-As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados. O baseline fail-closed de produção da #59 evoluiu em #63–#65 para uma capability operacional ativa com Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e integração com o Dev Dashboard. Isso melhora a operação do repositório, mas **não** significa que a Fase 0 inteira ou o hardening operacional da #45 estejam concluídos.
+As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados. O baseline fail-closed de produção da #59 evoluiu em #63–#65 para uma capability operacional ativa com Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e integração com o Dev Dashboard. Isso melhora a operação do repositório, mas **não** encerra o hardening operacional da #45.
 
 ### Entregas
 
@@ -42,7 +39,7 @@ As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados. O
 - estrutura de domínio e repositories;
 - logging/observability baseline;
 - conteúdo estruturado e validado;
-- seeds sintéticos;
+- seeds sintéticos quando necessários;
 - arquitetura de testes;
 - documentação e ADRs.
 
@@ -51,11 +48,11 @@ As correções #54 e #56 consolidaram o contrato de ambiente/arquivos gerados. O
 - `main` reproduzível do zero;
 - CI executa typecheck, lint e testes;
 - ambiente local sobe com instruções claras;
-- uma migration de exemplo e um teste de integração passam;
+- migrations e testes de integração passam;
 - design tokens básicos existem;
 - nenhuma regra de negócio crítica está acoplada a Next.js/ORM.
 
-A fase só deve ser marcada como concluída quando todos os exit criteria aplicáveis forem validados, não apenas porque as primeiras issues foram encerradas.
+A Fase 0 encerrou com esses critérios validados. Evoluções operacionais e de segurança continuam nas issues donas, especialmente #45.
 
 ---
 
@@ -67,17 +64,25 @@ Entregar o loop central do produto: entrar, receber plano de hoje, aprender, pra
 
 ### Épico 1.1 — Perfil, jornada e onboarding
 
-- conta e sessão;
+**Status: concluído pela #17.**
+
+Entregue:
+
+- criação de conta e sessão first-party para primeiro acesso;
 - `LearnerProfile` para preferências globais;
 - `LanguageProfile` para a jornada idioma fonte → idioma alvo;
-- meta diária;
+- locale, timezone, meta diária e objetivo principal opcional;
 - entrada V1: começar do zero ou escolher um ponto de entrada A1/A2 para falso iniciante;
 - `Enrollment` ligando `LanguageProfile` ao curso;
-- criação idempotente/transacional da jornada inicial.
+- criação idempotente/transacional da jornada inicial;
+- redirecionamento a um Today shell mínimo após onboarding;
+- edição posterior de preferências sem resetar o placement inicial.
 
-A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio. Conteúdo anterior pode ser dispensado para elegibilidade da trilha, mas não gera `Attempt`, `ReviewEvent` ou `MasteryState` fictício. Um diagnóstico adaptativo completo continua posterior.
+A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio. Conteúdo anterior pode ser dispensado para elegibilidade da trilha, mas não gera `Attempt`, `ReviewEvent`, `ConceptEvidence` ou `MasteryState` fictício. Um diagnóstico adaptativo completo continua posterior.
 
 ### Épico 1.2 — Currículo e conteúdo
+
+**Próxima frente: #18.**
 
 - Course / Level / Unit / Lesson / Activity;
 - content revision;
@@ -338,11 +343,13 @@ Runtime config + DB              ✅ #9/#10
   ↓
 Auth                             ✅ #11
   ↓
-Domain Skeleton                  ← próximo bloco da Foundation
+Domain Skeleton                  ✅ #12
   ↓
-Design/Observability/Content/Test foundations
+Design/Observability/Content/Test foundations ✅ #13–#16
   ↓
-Onboarding + LanguageProfile + Enrollment
+Onboarding + LanguageProfile + Enrollment      ✅ #17
+  ↓
+Course catalog + curriculum eligibility        ← próximo: #18
   ↓
 Lesson + Exercise Engine
   ↓

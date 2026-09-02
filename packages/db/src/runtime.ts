@@ -5,11 +5,13 @@ export {
   type DatabaseClient,
 } from "./client.ts";
 export {
+  createAuthAccount,
   createAuthSession,
   findActiveAuthSessionByTokenHash,
   findAuthCredentialByEmail,
   revokeAuthSessionByTokenHash,
 } from "./auth.ts";
+export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
 export {
   findOwnershipFixtureForUser,
   updateOwnershipFixtureForUser,

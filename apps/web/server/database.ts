@@ -1,4 +1,5 @@
 import {
+  createAuthAccount,
   createAuthSession,
   createDatabaseClient,
   findActiveAuthSessionByTokenHash,
@@ -33,6 +34,7 @@ export function getDatabase(): Database {
 }
 
 export {
+  createAuthAccount,
   createAuthSession,
   findActiveAuthSessionByTokenHash,
   findAuthCredentialByEmail,

@@ -14,7 +14,7 @@
     "db:smoke": "node scripts/smoke.mjs",
     "lint": "eslint drizzle.config.ts scripts src test --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test:integration": "node --test test/*.test.mjs"
+    "test:integration": "node --test --test-concurrency=1 test/*.test.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
