@@ -4,7 +4,7 @@ export {
   type ButtonProps,
   type ButtonVariant,
   type IconButtonProps,
-} from "./button.js";
+} from "./button";
 export {
   Input,
   Select,
@@ -12,14 +12,14 @@ export {
   type InputProps,
   type SelectProps,
   type TextareaProps,
-} from "./field.js";
+} from "./field";
 export {
   Alert,
   Progress,
   type AlertProps,
   type AlertVariant,
   type ProgressProps,
-} from "./feedback.js";
-export { Dialog, Sheet, type DialogProps, type SheetProps } from "./dialog.js";
+} from "./feedback";
+export { Dialog, Sheet, type DialogProps, type SheetProps } from "./dialog";
 
 export const packageBoundary = "ui" as const;
