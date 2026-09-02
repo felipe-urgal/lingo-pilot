@@ -101,11 +101,7 @@ function recordCompletion(
   durationMs: number,
 ): void {
   const result =
-    statusCode >= 500
-      ? "error"
-      : statusCode >= 400
-        ? "rejected"
-        : "success";
+    statusCode >= 500 ? "error" : statusCode >= 400 ? "rejected" : "success";
   logger.info("request.completed", { durationMs, result, statusCode });
   telemetry.recordMetric({
     name: "http.request.count",
