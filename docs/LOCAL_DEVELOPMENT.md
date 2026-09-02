@@ -203,9 +203,7 @@ Regras:
 
 ## 9. E2E
 
-O Playwright deve usar a aplicação em `5401` por configuração explícita.
-
-O bootstrap já expõe `pnpm dev:e2e` em `5401` e o runtime profile correspondente; Playwright e a infraestrutura completa de E2E continuam responsabilidade da #16.
+O Playwright usa a aplicação em `5401` por configuração explícita. `pnpm test:e2e` valida `TEST_DATABASE_URL`, recria/migra somente o banco de teste e inicia `pnpm dev:e2e` com `reuseExistingServer` desabilitado. O processo de desenvolvimento em `5400` pode permanecer ativo durante a suíte.
 
 O E2E não deve:
 
@@ -256,7 +254,7 @@ Não reservar intervalos inteiros nem criar variáveis “para usar depois”.
 - **#8:** CI permanente e proteção da `main`.
 - **#9:** contrato central de configuração, `env:init`, `env:check`, profiles e validação startup/build.
 - **#10:** PostgreSQL/Drizzle/migrations e porta host 5435.
-- **#16:** Playwright, isolamento E2E e suporte determinístico de testes.
+- **#16:** Vitest/Testing Library, Playwright em `5401`, isolamento E2E, harness PostgreSQL e suporte determinístico de testes.
 
 ## 13. Regra para agentes de IA
 

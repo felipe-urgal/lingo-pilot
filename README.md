@@ -8,7 +8,7 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 ## Estado atual
 
-O repositório está na **Fase 0 — Foundation**. As issues #7–#11 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle e baseline de autenticação/autorização por ownership. A Foundation ainda **não está concluída**: boundaries executáveis (#12), design system (#13), observabilidade (#14), schemas de conteúdo (#15) e infraestrutura completa de testes (#16) continuam no backlog.
+O repositório está na **Fase 0 — Foundation**. As issues #7–#12 e #16 concluíram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis e infraestrutura determinística de testes. A Foundation ainda **não está concluída**: design system (#13), observabilidade (#14) e schemas de conteúdo (#15) continuam no backlog.
 
 O projeto **não** implementa ainda o Study Engine, onboarding/signup público, conteúdo pedagógico real ou AI Tutor. A baseline de auth já possui login/logout sobre credenciais persistidas, sessão server-side e shell privado; criação pública de conta pertence à #17.
 
@@ -86,8 +86,10 @@ pnpm db:check          valida o histórico de migrations
 pnpm db:smoke          testa conexão curta e timezone UTC
 pnpm lint              valida scripts, testes, app e packages
 pnpm typecheck         executa TypeScript strict
-pnpm test:unit         executa testes unitários/estruturais
+pnpm test:unit         executa unitários/estruturais via node:test + Vitest
+pnpm test:coverage     gera coverage informativo do Vitest
 pnpm test:integration  executa integração via TEST_DATABASE_URL
+pnpm test:e2e          executa smoke Playwright isolado em 127.0.0.1:5401
 pnpm test              executa unit + integration
 pnpm content:validate  valida conteúdo
 pnpm check:workspace   valida boundaries estruturais
@@ -220,7 +222,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 
 ## Roadmap
 
-- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#11 concluídas.**
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Em andamento; #7–#12 e #16 concluídas.**
 - **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso.
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.

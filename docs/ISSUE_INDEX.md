@@ -23,11 +23,11 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 | #9 Local development environment and configuration contract | Concluída | Runtime config, `.env.local` raiz e profiles determinísticos |
 | #10 PostgreSQL, Drizzle schema and migration workflow | Concluída | PostgreSQL/Drizzle, migrations e integration baseline |
 | #11 Authentication and ownership authorization baseline | Concluída | Auth first-party PostgreSQL, sessão server-side, shell privado e ownership baseline |
-| #12 Establish domain/application boundaries and repository contracts | Aberta | Desbloqueada por #7 e #10 |
+| #12 Establish domain/application boundaries and repository contracts | Concluída | Boundaries executáveis, ports e Result/erros tipados |
 | #13 Design system tokens, primitives and application shell | Aberta | Desbloqueada por #7 |
 | #14 Structured logging, error taxonomy and observability baseline | Aberta | Desbloqueada por #7 e #9 |
 | #15 Versioned content schemas and validation pipeline | Aberta | Desbloqueada por #7 e #8 |
-| #16 Test infrastructure, factories and deterministic clock | Bloqueada | Depende de #12 além de #7/#10 |
+| #16 Test infrastructure, factories and deterministic clock | Concluída | Vitest, Testing Library, Playwright, test-support e harness PostgreSQL isolado |
 
 ### Manutenção concluída durante a Foundation
 
@@ -43,16 +43,15 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 
 ### Sequência atual recomendada
 
-Bootstrap, runtime, persistência e auth já foram entregues. As próximas frentes elegíveis são:
+Bootstrap, runtime, persistência, auth, boundaries e infraestrutura de testes já foram entregues. As próximas frentes elegíveis são:
 
 ```text
-#12 boundaries ─→ #16 test infrastructure
 #13 design system
 #14 observability
 #15 content schemas
 ```
 
-#12, #13, #14 e #15 podem avançar conforme capacidade e dependências próprias. #16 permanece dependente de #12.
+#13, #14 e #15 podem avançar conforme capacidade e dependências próprias.
 
 ## Fase 1 — Study Engine
 
@@ -203,4 +202,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu #7–#11. As próximas issues elegíveis são **#12, #13, #14 e #15**; a **#16** entra após #12 satisfazer sua dependência. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu #7–#12 e #16. As próximas issues elegíveis são **#13, #14 e #15**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
