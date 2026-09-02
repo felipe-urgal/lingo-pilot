@@ -8,6 +8,7 @@
     "documentation": "docs/PRODUCTION_STATUS.md",
     "commands": {
       "status": "prod:status",
+      "prepare": "prod:prepare",
       "check": "prod:check",
       "migrate": "prod:migrate",
       "verify": "prod:verify",

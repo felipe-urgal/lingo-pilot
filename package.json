@@ -29,6 +29,7 @@
     "check:workspace": "node scripts/verify-workspace.mjs",
     "check": "pnpm format:check && pnpm env:check && pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm db:check && pnpm build",
     "prod:status": "node scripts/production-status.mjs",
+    "prod:prepare": "pnpm db:up",
     "prod:check": "node scripts/prod-check.mjs",
     "prod:migrate": "node scripts/migrate-production.mjs",
     "prod:verify": "node scripts/verify-production.mjs",
