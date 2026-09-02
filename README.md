@@ -236,3 +236,57 @@ O deploy é `git-managed` pela `main`, migrations permanecem explícitas e fora 
 O projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
 
 Auth/signup não deve receber tráfego público amplo antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
+
+Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
+
+## Roadmap
+
+- **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **Iniciada; #17 entregue e #18 é a próxima atividade.**
+- **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
+- **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
+- **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.
+- **Fase 5 — Language Platform:** novos níveis/idiomas e generalização após validação do produto.
+
+Veja [`docs/ROADMAP.md`](docs/ROADMAP.md) e [`docs/ISSUE_INDEX.md`](docs/ISSUE_INDEX.md).
+
+## Desenvolvimento
+
+Antes de alterar código, leia obrigatoriamente:
+
+- [`AGENTS.md`](AGENTS.md) — contrato operacional para agentes de IA e desenvolvedores;
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow de contribuição;
+- [`docs/DEVELOPMENT_WORKFLOW.md`](docs/DEVELOPMENT_WORKFLOW.md) — processo de desenvolvimento e revisão;
+- [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos de conclusão;
+- [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
+- [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md) — configuração pública/server-only, profiles e evolução;
+- [`docs/DATABASE.md`](docs/DATABASE.md) — PostgreSQL, Drizzle, migrations, reset e testes de integração;
+- [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md) — identidade, sessão, login/logout e ownership;
+- [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
+
+**Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
+
+## Documentação principal
+
+- [Visão do produto](docs/VISION.md)
+- [Product Requirements](docs/PRODUCT_REQUIREMENTS.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Índice de issues](docs/ISSUE_INDEX.md)
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [Autenticação e autorização](docs/AUTHENTICATION.md)
+- [Modelo de domínio](docs/DOMAIN_MODEL.md)
+- [Learning Engine](docs/LEARNING_ENGINE.md)
+- [Modelo de conteúdo](docs/CONTENT_MODEL.md)
+- [UX e Design](docs/UX_AND_DESIGN.md)
+- [Tutor de IA](docs/AI_TUTOR.md)
+- [Segurança e privacidade](docs/SECURITY_PRIVACY.md)
+- [Estratégia de qualidade](docs/QUALITY_STRATEGY.md)
+- [Configuração de runtime](docs/RUNTIME_CONFIGURATION.md)
+- [PostgreSQL e Drizzle](docs/DATABASE.md)
+- [Arquivos gerados](docs/GENERATED_FILES.md)
+- [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
+- [Observabilidade](docs/OBSERVABILITY.md)
+- [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
+- [Status de produção](docs/PRODUCTION_STATUS.md)
+- [Workflow de desenvolvimento](docs/DEVELOPMENT_WORKFLOW.md)
+- [Definition of Done](docs/DEFINITION_OF_DONE.md)
