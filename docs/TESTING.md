@@ -99,7 +99,7 @@ A Foundation não impõe porcentagem global arbitrária. Coverage serve para loc
 Pull requests executam:
 
 - `CI / quality`: lint, typecheck, unit/integration e demais gates de qualidade;
-- `CI / e2e`: Chromium + smoke Playwright contra PostgreSQL isolado;
+- `CI / e2e`: instala Chromium e executa smoke Playwright contra PostgreSQL isolado;
 - `CI / build`: só inicia depois de `quality` e `e2e` concluírem com sucesso.
 
 Essa separação mantém o feedback de unit/integration rápido e torna o smoke de navegador um gate explícito sem misturar suas dependências com os testes puros.
