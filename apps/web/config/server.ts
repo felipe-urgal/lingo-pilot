@@ -12,3 +12,9 @@ export const serverConfig = parseServerEnvironment({
   NEXT_PUBLIC_APP_URL: appUrl,
   NODE_ENV: process.env.NODE_ENV,
 });
+
+export const deploymentMetadata = Object.freeze({
+  version:
+    process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "local",
+  deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+});
