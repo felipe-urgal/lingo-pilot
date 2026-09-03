@@ -7,7 +7,9 @@ export default function TodayLoading() {
     >
       <p className="eyebrow">Hoje</p>
       <h1 id="today-loading-title">Preparando sua próxima ação...</h1>
-      <p className="description">Carregando sua sessão e o conteúdo elegível.</p>
+      <p className="description">
+        Carregando sua sessão e o conteúdo elegível.
+      </p>
     </section>
   );
 }
