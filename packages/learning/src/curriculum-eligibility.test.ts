@@ -96,8 +96,8 @@ describe("curriculum eligibility", () => {
       {
         lessonId: "lesson.a0.01",
         status: "completed",
-        contentSchemaVersion: 1,
-        contentRevision: 1,
+        schemaVersion: 1,
+        revision: 1,
       },
     ]);
     expect(after[1]).toMatchObject({
@@ -142,8 +142,8 @@ describe("curriculum eligibility", () => {
       {
         lessonId: "lesson.a0.01",
         status: "in_progress",
-        contentSchemaVersion: 1,
-        contentRevision: 0,
+        schemaVersion: 1,
+        revision: 0,
       },
     ]);
 
