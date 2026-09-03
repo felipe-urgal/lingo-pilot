@@ -54,7 +54,9 @@ export function createStartLessonPlayer(
       input.journey.enrollment.id,
       input.sessionId,
     );
-    const item = session?.items.find((candidate) => candidate.id === input.itemId);
+    const item = session?.items.find(
+      (candidate) => candidate.id === input.itemId,
+    );
     if (!session || !item || item.kind !== "lesson") {
       return { ok: false, reason: "invalid-reference" };
     }
@@ -63,7 +65,11 @@ export function createStartLessonPlayer(
     }
 
     const lesson = dependencies.catalog.lessonById.get(item.resourceId);
-    if (!lesson || lesson.status !== "published" || lesson.blocks.length === 0) {
+    if (
+      !lesson ||
+      lesson.status !== "published" ||
+      lesson.blocks.length === 0
+    ) {
       return { ok: false, reason: "content-unavailable" };
     }
     if (
