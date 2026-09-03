@@ -2,7 +2,7 @@
 
 Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
 
-> **Estado de referência:** 2026-09-02. O status abaixo reflete as issues do GitHub nessa data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
+> **Estado de referência:** 2026-09-03. O status abaixo reflete as issues do GitHub e o trabalho em review nesta data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -43,19 +43,21 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 
 ### Sequência atual recomendada
 
-A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding; a próxima frente elegível passa a ser:
+A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding. As issues #18, #19 e #20 formam agora uma única vertical coesa em review, porque catálogo/elegibilidade alimenta a sessão diária e o Lesson Player consome exatamente o item/revision planejado.
+
+Após o merge desse conjunto, a próxima frente elegível passa a ser:
 
 ```text
-#18 course catalog, enrollment and curriculum eligibility
+#21 Exercise Engine for deterministic activity types
 ```
 
 ## Fase 1 — Study Engine
 
 - #17 Learner profile and onboarding flow — **Concluída**
-- #18 Course catalog, enrollment and curriculum eligibility — **Próxima**
-- #19 StudySession data model and Today experience shell
-- #20 Lesson Player with structured pedagogical blocks
-- #21 Exercise Engine for deterministic activity types
+- #18 Course catalog, enrollment and curriculum eligibility — **Em review no PR da vertical #18–#20**
+- #19 StudySession data model and Today experience shell — **Em review no PR da vertical #18–#20**
+- #20 Lesson Player with structured pedagogical blocks — **Em review no PR da vertical #18–#20**
+- #21 Exercise Engine for deterministic activity types — **Próxima após merge de #18–#20**
 - #22 Transactional attempt submission and feedback pipeline
 - #23 Spaced repetition engine and review queue
 - #24 Concept evidence and mastery model v1
@@ -82,6 +84,30 @@ Today shell
 
 A persistência inicial é transacional/idempotente. `placementSource=manual` para A1/A2 só posiciona a trilha: não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
 
+### Vertical em review — #18 + #19 + #20
+
+```text
+catálogo autorado e validado
+        ↓
+curriculum eligibility
+        ↓
+StudySession diária persistida
+        ↓
+Today: começar / continuar
+        ↓
+Lesson Player por ContentBlock
+        ↓
+posição persistida + conclusão explícita
+```
+
+O recorte mantém as responsabilidades separadas:
+
+- #18 define catálogo, prerequisites, placement waiver e revision de conteúdo;
+- #19 persiste a sessão diária por `Enrollment + localStudyDate`, com item ordenado, reason code e idempotência concorrente;
+- #20 renderiza somente conteúdo validado, revalida ownership/elegibilidade/revision no servidor e só conclui a lesson por ação explícita.
+
+O conteúdo incluído nesta vertical é deliberadamente um **bootstrap técnico A0** para exercitar os contratos. A migração/revisão editorial do curso real continua pertencendo a #28 e #29.
+
 ### Estratégia de entrega
 
 A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar os fundamentos de integridade. O dogfood A0 é **gate intermediário**, não autorização para considerar a Fase 1 concluída sem A1/A2.
@@ -89,15 +115,19 @@ A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar 
 ```text
 profile + LanguageProfile + Enrollment       ✅ #17
       ↓
-course + eligibility                         ← #18
+course + eligibility                         review #18
       ↓
-lesson → exercise → attempt
-      ↓             ↓
-     content       SRS → mastery
-      ↓                    ↓
-Today/session ─────────→ planner
-      ↓                    ↓
-resume ───────────────→ progress
+Today/session                                review #19
+      ↓
+Lesson Player                                review #20
+      ↓
+exercise → attempt
+      ↓          ↓
+    content   SRS → mastery
+      ↓                 ↓
+Today/session ───────→ planner
+      ↓                 ↓
+resume ────────────→ progress
       ↓
 A0 dogfood
       ↓
@@ -216,4 +246,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. A próxima issue elegível é **#18 — Course catalog, enrollment and curriculum eligibility**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. As issues **#18, #19 e #20** estão agrupadas na vertical atualmente em review. Após o merge, a próxima issue elegível será **#21 — Exercise Engine for deterministic activity types**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
