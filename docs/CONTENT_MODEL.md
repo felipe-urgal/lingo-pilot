@@ -70,6 +70,8 @@ type Lesson = {
 
 O contrato executável fica em `packages/content/src/model.ts`; parsing de fronteira fica em `packages/content/src/schema.ts` e validação cruzada do grafo fica em `packages/content/src/validation.ts`. O package não depende de React ou de framework web.
 
+A #18 acrescenta `createCurriculumCatalog`: depois que documentos passam pelo validator, o catálogo resolve `Course → Level → Unit → Lesson` por IDs estáveis e expõe índices de leitura. A UI recebe esse catálogo validado; ela não reconstrói a hierarquia por nomes, posição ou constantes locais.
+
 ## 5. Content blocks
 
 Tipos iniciais:
@@ -110,6 +112,10 @@ Imagem ou áudio com metadata acessível.
 
 Pergunta curta antes de avançar.
 
+O Lesson Player da #20 possui renderer explícito para todos os tipos acima. O discriminator continua vindo do conteúdo validado; um tipo desconhecido não é renderizado como markup arbitrário. O player mostra um fallback seguro e registra somente `blockId/blockType` para diagnóstico.
+
+A posição do aluno é persistida como índice de bloco da revision efetivamente apresentada. `schemaVersion + revision` da lesson planejada precisam continuar iguais às do catálogo antes de start/resume; mismatch preserva o progresso e bloqueia interpretação silenciosa do conteúdo novo.
+
 ## 6. Activity schema
 
 Toda Activity deve declarar:
@@ -140,6 +146,8 @@ writing-prompt
 ```
 
 A baseline rejeita Activity sem avaliação, sem conceito ou sem vínculo com objetivo da Lesson. Avaliação determinística precisa declarar ao menos uma resposta aceita.
+
+A #20 não executa Activity: o player cobre a sequência de `ContentBlock`. Renderer/evaluator de exercícios começa na #21 para não misturar progressão de tela com regra de avaliação.
 
 ## 7. Conceito versus atividade
 
@@ -191,30 +199,46 @@ Quando uma revision é `published`:
 - correções tipográficas sem impacto podem seguir política definida;
 - mudança pedagógica cria nova revision;
 - attempts continuam apontando para revision antiga;
+- StudySession/LessonProgress preservam a revision planejada/iniciada;
 - scheduler pode usar nova revision para novas sessões conforme migration policy.
 
 Além disso, conteúdo `published` não pode depender de documento ainda `draft`/`review`; o validator rejeita essa dependência antes de merge/publicação.
+
+Uma lesson em andamento cuja revision publicada mudou não é migrada implicitamente pela UI. A foundation retorna estado de incompatibilidade e preserva a referência antiga até existir política explícita de forward-fix/migração.
 
 ## 11. Pipeline editorial inicial
 
 A V1 usa **JSON versionado no Git** como formato inicial de autoria. A escolha prioriza parsing nativo, diff legível, edição simples e ausência de dependência extra de runtime.
 
-Estrutura esperada para conteúdo autorado:
+Estrutura executável atual:
 
 ```text
 content/
   courses/
     pt-BR_en/
       course.json
-      concepts/
-      vocabulary/
       levels/
         a0/
+          level.json
+          unit.json
+          lesson-orientation.json
         a1/
+          level.json
+          unit.json
         a2/
+          level.json
+          unit.json
 ```
 
+O catálogo bootstrap das #18–#20 possui Course/Level/Unit para A0/A1/A2 e **uma única lesson de orientação do produto em A0**. Ela existe para provar eligibility → Today → Lesson Player e explicar a própria mecânica da aula. Não deve ser interpretada como migração editorial do curso English Zero → A2.
+
+A1/A2 permanecem sem lessons autoradas neste bootstrap. O empty state de Today é o comportamento esperado para um entry point sem conteúdo publicado, em vez de fabricar lesson pedagógica para preencher a tela.
+
+Conforme a migração editorial avançar, subdiretórios `concepts/`, `vocabulary/` e mais lessons/activities entram na mesma árvore e passam pelo mesmo validator/catálogo, sem segundo formato paralelo.
+
 O CLI percorre arquivos `.json` recursivamente; a disposição interna pode evoluir sem alterar os contratos desde que as referências e invariantes permaneçam válidas.
+
+No runtime web, `apps/web/server/content/runtime.ts` importa os documentos autorados conhecidos, executa `validateContentInputs` e só então constrói o catálogo. Falha de validação interrompe o carregamento; conteúdo inválido não é promovido silenciosamente para UI.
 
 ## 12. CI de conteúdo
 
@@ -248,7 +272,7 @@ Assets externos continuam fora desta baseline até o modelo correspondente exist
 
 ## 13. Migração do pacote English Zero → A2
 
-A migração deve acontecer em etapas:
+A migração editorial continua separada do catálogo bootstrap e deve acontecer em etapas:
 
 1. inventariar 183 aulas e materiais auxiliares;
 2. mapear cada aula para Unit/Lesson;
@@ -261,7 +285,7 @@ A migração deve acontecer em etapas:
 9. publicar inicialmente A0 piloto;
 10. expandir A1/A2 após feedback.
 
-Não importar automaticamente como “produção” sem revisão editorial.
+Não importar automaticamente como “produção” sem revisão editorial. A existência de `content/courses/pt-BR_en` no repositório não altera essa regra: neste recorte ele contém somente o bootstrap estrutural declarado acima.
 
 ## 14. Conteúdo gerado por IA
 
@@ -282,11 +306,12 @@ Conteúdo gerado para uma sessão pode ser efêmero. Conteúdo promovido ao curr
 - áudio deve oferecer transcript quando pedagogicamente permitido após tentativa;
 - exercícios não podem depender apenas de arrastar se houver alternativa de teclado;
 - exemplos devem ser legíveis em mobile;
-- feedback deve funcionar com leitor de tela.
+- feedback deve funcionar com leitor de tela;
+- blocos estruturados devem manter heading/label e ordem de foco previsíveis no Lesson Player.
 
 ## 16. Qualidade editorial
 
-Cada lesson publicada deve responder:
+Cada lesson pedagógica publicada deve responder:
 
 - O que o aluno deve conseguir fazer ao final?
 - Que conhecimento novo foi introduzido?
@@ -297,6 +322,8 @@ Cada lesson publicada deve responder:
 - O erro comum é relevante?
 - Há excesso de informação para uma sessão?
 - O conteúdo respeita variante definida?
+
+A lesson bootstrap de orientação é conteúdo de produto, não substitui esse checklist para as lessons editoriais do curso.
 
 ## 17. Futuro CMS
 
