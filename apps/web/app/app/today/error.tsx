@@ -23,8 +23,8 @@ export default function TodayError({
       <p className="eyebrow">Hoje</p>
       <h1 id="today-error-title">Não foi possível carregar sua sessão.</h1>
       <p className="description">
-        Sua matrícula e seu progresso foram preservados. Você pode tentar carregar
-        novamente.
+        Sua matrícula e seu progresso foram preservados. Você pode tentar
+        carregar novamente.
       </p>
       <Button type="button" onClick={reset}>
         Tentar novamente
