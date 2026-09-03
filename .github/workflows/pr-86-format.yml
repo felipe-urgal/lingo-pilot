@@ -1,0 +1,51 @@
+name: PR 86 formatter
+
+on:
+  push:
+    branches:
+      - feature/21-24-practice-learning-loop
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feature/21-24-practice-learning-loop
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          check-latest: false
+          package-manager-cache: true
+
+      - name: Enable repository package manager
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format repository
+        run: |
+          pnpm format
+          pnpm format:check
+
+      - name: Commit formatting and remove helper
+        shell: bash
+        run: |
+          git rm .github/workflows/pr-86-format.yml
+          git add -A
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "style: format practice learning loop"
+          git push origin HEAD:feature/21-24-practice-learning-loop
