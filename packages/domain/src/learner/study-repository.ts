@@ -50,9 +50,7 @@ export interface CompleteLessonInput {
 }
 
 export type StudyMutationFailure =
-  | "not-found"
-  | "invalid-state"
-  | "revision-conflict";
+  "not-found" | "invalid-state" | "revision-conflict";
 
 export type StudyMutationResult<TValue> =
   | Readonly<{ ok: true; value: TValue }>
