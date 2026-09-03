@@ -116,10 +116,7 @@ async function findOwnedItem(
   const [row] = await database
     .select({ item: sessionItems, session: studySessions })
     .from(sessionItems)
-    .innerJoin(
-      studySessions,
-      eq(studySessions.id, sessionItems.studySessionId),
-    )
+    .innerJoin(studySessions, eq(studySessions.id, sessionItems.studySessionId))
     .where(
       and(
         eq(sessionItems.id, itemId),
