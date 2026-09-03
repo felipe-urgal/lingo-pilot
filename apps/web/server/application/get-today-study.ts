@@ -38,7 +38,18 @@ function lessonForSession(
   session: StudySession,
 ): Lesson | null {
   const item = session.items.find((candidate) => candidate.kind === "lesson");
-  return item ? (catalog.lessonById.get(item.resourceId) ?? null) : null;
+  if (!item) return null;
+
+  const lesson = catalog.lessonById.get(item.resourceId);
+  if (
+    !lesson ||
+    lesson.status !== "published" ||
+    lesson.schemaVersion !== item.schemaVersion ||
+    lesson.revision !== item.revision
+  ) {
+    return null;
+  }
+  return lesson;
 }
 
 function storedEligibilityReason(
