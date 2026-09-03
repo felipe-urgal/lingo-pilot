@@ -79,10 +79,10 @@ The published lesson revision is not rewritten by this change.
 The server:
 
 1. loads the authenticated learner journey;
-2. validates identifiers and the operation key;
-3. loads the published authored Activity;
+2. checks whether the operation key already produced an Attempt and returns it idempotently when applicable;
+3. validates identifiers and loads the published authored Activity;
 4. reloads the StudySession owned by the learner;
-5. verifies that the supplied SessionItem belongs to the Activity lesson;
+5. requires the StudySession and SessionItem to still be `in_progress` and verifies the SessionItem/lesson relationship;
 6. evaluates the answer with the deterministic engine;
 7. derives evidence kind and initial review grade;
 8. persists the transaction through `PracticeRepository`.
@@ -97,11 +97,11 @@ The transaction creates, as one atomic operation:
 
 A failure during mastery projection rolls back the whole transaction.
 
-### Idempotency
+### Idempotency and retry policy
 
-`ActivityAttempt` is unique by `(enrollmentId, operationKey)`. A retry returns the already persisted attempt and does not increment progress or add evidence again.
+`ActivityAttempt` is unique by `(enrollmentId, operationKey)`. A retry returns the already persisted attempt before mutable session state is re-evaluated, so a network retry cannot create duplicate progress/evidence or fail merely because the first request already changed state.
 
-Multiple legitimate attempts use different operation keys and remain separate immutable history.
+Multiple legitimate attempts use different operation keys and remain separate immutable history. Each Activity owns a configured `maxAttempts`; the repository serializes submissions by Enrollment + Activity before reading `ActivityProgress`, so concurrent requests cannot exceed that limit.
 
 ## 5. Review scheduling
 
@@ -131,13 +131,13 @@ The learner is not required to rate their own memory using these internal labels
 - scheduler version;
 - last update timestamp.
 
-The due query is bounded to at most 100 rows and ordered deterministically by `dueAt`, then `id`.
+The due query is bounded to at most 100 rows, ordered deterministically by `dueAt`, then `id`, and supports deterministic offset pagination.
 
 `/app/review` consumes this queue and shows one due item at a time. After a submission, the server re-evaluates the answer, derives the grade, computes the new schedule and persists an immutable `ReviewEvent` plus delayed-review evidence.
 
 Review update uses compare-and-set on `expectedReviewCount`. A stale concurrent request returns `stale-review` instead of advancing the same MemoryItem twice.
 
-Review retry is idempotent through `(enrollmentId, operationKey)`.
+Review retry is idempotent through `(enrollmentId, operationKey)` and is resolved before the mutable due-state check. `ReviewEvent → MemoryItem` uses `ON DELETE RESTRICT`, so deleting current scheduling state cannot erase historical review events.
 
 ## 7. Mastery V1
 
@@ -185,7 +185,8 @@ Important constraints/indexes:
 - non-negative hint/review counters;
 - due queue index `(enrollment_id, due_at, id)`;
 - evidence history index `(enrollment_id, concept_id, occurred_at)`;
-- weak-concept projection index.
+- weak-concept projection index;
+- restrictive ReviewEvent → MemoryItem deletion semantics to preserve pedagogical history.
 
 Ownership is always scoped through `Enrollment`. A supplied SessionItem is revalidated by joining its StudySession back to the same enrollment.
 
@@ -212,9 +213,9 @@ Routes:
 
 Both require same-origin POSTs and an authenticated learner journey.
 
-The Activity route additionally reopens the persisted StudySession and confirms the supplied SessionItem/lesson relationship before writing an Attempt.
+The Activity route accepts a new Attempt only while the owned StudySession and SessionItem are still in progress, and confirms the supplied SessionItem/lesson relationship before writing. A duplicate operation key returns its original Attempt idempotently even if the first successful request already changed mutable state.
 
-The Review route does not trust a client-provided grade. It accepts only a due MemoryItem owned by the learner and derives the grade from the server evaluation.
+The Review route does not trust a client-provided grade. It accepts only a due MemoryItem owned by the learner and derives the grade from the server evaluation; retries with an already-persisted operation key return the original ReviewEvent.
 
 ## 11. Observability and privacy
 
@@ -240,12 +241,12 @@ Rejected submissions record a typed reason. **Full textual learner answers are n
 
 Pure learning tests cover:
 
-- single/multiple choice;
+- every supported deterministic activity discriminator;
 - duplicate selections;
 - Unicode/case/whitespace normalization;
 - accent preservation;
 - word-order/matching;
-- invalid answer shape;
+- invalid answer shape and unknown activity safe failure;
 - deterministic review sequences;
 - result-to-grade mapping;
 - one guided success not producing high mastery;
@@ -253,17 +254,20 @@ Pure learning tests cover:
 - recent errors lowering mastery;
 - mastery recomputation.
 
+Component tests cover all deterministic renderers and the keyboard-first word-order/matching alternatives.
+
 PostgreSQL integration tests cover:
 
 - idempotent Attempt retry;
 - ActivityProgress/evidence/mastery creation;
-- due queue retrieval;
+- configured retry limit without extra Attempt/evidence;
+- deterministic due queue pagination;
 - idempotent Review retry;
 - stale review compare-and-set;
 - transaction rollback when mastery projection fails;
 - cross-enrollment SessionItem rejection without resource leakage.
 
-Application/UI behavior is additionally exercised by typecheck/build and route/component tests added with this vertical.
+Playwright covers onboarding → Today → resumable Lesson Player → deterministic Activity submission/feedback in a 390×844 viewport → explicit lesson completion.
 
 ## 13. Known boundaries
 
