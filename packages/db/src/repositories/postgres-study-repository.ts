@@ -24,19 +24,34 @@ function progressFromRow(
   row: typeof lessonProgress.$inferSelect,
 ): LessonProgress {
   return {
-    ...row,
+    enrollmentId: row.enrollmentId,
+    lessonId: row.lessonId,
+    schemaVersion: row.contentSchemaVersion,
+    revision: row.contentRevision,
     status: row.status as LessonProgress["status"],
+    currentBlockIndex: row.currentBlockIndex,
+    startedAt: row.startedAt,
+    completedAt: row.completedAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 function itemFromRow(row: typeof sessionItems.$inferSelect): SessionItem {
   return {
-    ...row,
+    id: row.id,
+    studySessionId: row.studySessionId,
+    position: row.position,
     kind: "lesson",
+    resourceId: row.resourceId,
+    schemaVersion: row.contentSchemaVersion,
+    revision: row.contentRevision,
     reasonCode: row.reasonCode as SessionItem["reasonCode"],
     eligibilityReason:
       row.eligibilityReason as SessionItem["eligibilityReason"],
+    estimatedMinutes: row.estimatedMinutes,
     status: row.status as SessionItem["status"],
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
