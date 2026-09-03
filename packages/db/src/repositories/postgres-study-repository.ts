@@ -329,6 +329,7 @@ export class PostgresStudyRepository implements StudyRepository {
           eq(lessonProgress.status, "in_progress"),
           eq(lessonProgress.contentSchemaVersion, input.contentSchemaVersion),
           eq(lessonProgress.contentRevision, input.contentRevision),
+          eq(lessonProgress.currentBlockIndex, input.expectedBlockIndex),
         ),
       )
       .returning();
