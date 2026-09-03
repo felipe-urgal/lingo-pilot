@@ -1,0 +1,13 @@
+{
+  "kind": "level",
+  "id": "level.a1",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "courseId": "course.en.ptbr.v1",
+  "cefr": "A1",
+  "title": {
+    "pt-BR": "Iniciante"
+  },
+  "unitIds": ["unit.a1.bootstrap"]
+}

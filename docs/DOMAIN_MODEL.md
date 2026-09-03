@@ -65,7 +65,9 @@ Um usuário poderá ter múltiplos `LanguageProfile`s no futuro. Na V1, a persis
 
 Curso publicável, por exemplo `pt-BR → en`.
 
-Na #17, o onboarding referencia o identificador estável `course.en.ptbr.v1` somente para estabelecer a matrícula inicial. O catálogo/registry orientado por dados e a elegibilidade curricular pertencem à #18; UI não deve assumir que esse identificador é o catálogo inteiro.
+A #18 introduz o registry orientado por dados para `course.en.ptbr.v1`: a aplicação monta o catálogo a partir dos documentos versionados em `content/` depois de executar o mesmo parser/validator usado pelo pipeline editorial. UI não hardcodeia a hierarquia Course → Level → Unit → Lesson.
+
+O catálogo bootstrap deste recorte contém a estrutura A0/A1/A2 e uma única lesson de orientação do produto em A0. Isso exercita os contratos de elegibilidade/Today/Lesson Player sem representar a migração editorial do curso A0→A2, que continua pertencendo às issues de conteúdo.
 
 ### Enrollment
 
@@ -99,7 +101,8 @@ Conteúdo anterior ao entry point pode ser considerado **placement-waived** pelo
 - não cria `ReviewEvent`;
 - não cria `ConceptEvidence` positivo;
 - não marca `MasteryState` como dominado;
-- deve permanecer auditável como motivo de elegibilidade.
+- não cria `LessonProgress.completed`;
+- permanece auditável como motivo de elegibilidade.
 
 Para a V1 existe no máximo um `Enrollment` por `LanguageProfile + Course`, protegido por constraint de unicidade. O estado inicial suportado é `active`.
 
@@ -115,6 +118,8 @@ Conjunto coerente de objetivos.
 
 Unidade instrucional que introduz e pratica conceitos definidos.
 
+A lesson usada em uma sessão é identificada por `id + schemaVersion + revision`; sessão/progresso não devem reinterpretar silenciosamente uma revision nova como se fosse a mesma experiência já iniciada.
+
 ### LearningObjective
 
 Resultado observável esperado após uma lesson ou unit.
@@ -125,11 +130,11 @@ Exemplo: “produzir frases afirmativas simples com `be` para identidade”.
 
 Relação explícita de elegibilidade entre conteúdos/conceitos.
 
-A elegibilidade precisa distinguir:
+A elegibilidade distingue:
 
-- prerequisite satisfeito por progresso real;
-- prerequisite dispensado pelo `Enrollment.entryPointLevel`;
-- prerequisite ainda não satisfeito.
+- prerequisite satisfeito por progresso real (`progress-satisfied`);
+- prerequisite dispensado pelo `Enrollment.entryPointLevel` (`placement-waived`);
+- prerequisite ainda não satisfeito (`prerequisite-missing`).
 
 Dispensa por placement nunca deve ser transformada silenciosamente em evidência de aprendizado.
 
@@ -178,27 +183,31 @@ Entidade editorial lógica.
 
 Snapshot versionado e publicável de um ContentItem.
 
-Estados sugeridos:
+Estados:
 
 ```text
 draft → review → published → retired
 ```
 
-Uma tentativa do aluno deve referenciar a revisão efetivamente apresentada.
+Sessões e progresso de lesson devem referenciar a revision efetivamente apresentada. Attempts, quando existirem, seguem o mesmo princípio.
 
 ### ContentBlock
 
 Bloco renderizável dentro de lesson/readings/dialogues.
 
-Exemplos:
+Tipos executáveis iniciais:
 
 - explanation;
-- example;
 - rule;
-- common error;
-- callout;
+- example;
+- comparison;
+- common-error;
+- vocabulary;
+- pronunciation;
 - media;
 - checkpoint.
+
+O Lesson Player da #20 renderiza esses tipos pelo discriminator validado. Um tipo desconhecido não é interpretado como HTML/texto arbitrário: a UI mostra fallback seguro e registra somente metadata técnica do bloco/tipo para diagnóstico.
 
 ## 6. Activity & Attempt
 
@@ -215,6 +224,8 @@ Possui:
 - modalidade;
 - difficulty metadata;
 - revision.
+
+O engine executável de Activity começa na #21; o Lesson Player da #20 cobre `ContentBlock`, não tenta antecipar avaliação de exercícios.
 
 ### Attempt
 
@@ -237,59 +248,69 @@ Tentativas não devem ser sobrescritas para “guardar só a última”.
 
 ### LessonProgress
 
-Estado derivado/persistido de uma lesson para um `Enrollment`.
+Estado persistido de uma lesson para um `Enrollment`.
 
-- `enrollmentId`
-- `lessonId`
-- `contentRevisionId`
-- `status`
+Campos implementados nas #18–#20:
 
-Estados possíveis:
+- `enrollmentId`;
+- `lessonId`;
+- `schemaVersion`;
+- `revision`;
+- `status` (`in_progress | completed`);
+- `currentBlockIndex`;
+- `startedAt`;
+- `completedAt`;
+- `updatedAt`.
 
-```text
-locked
-available
-in_progress
-completed
-```
+`locked`, `available` e `waived` são resultados de elegibilidade calculados, não estados persistidos como falso progresso. A persistência começa quando uma lesson é realmente iniciada.
 
-Completion deve depender de regras explícitas, não só de abrir a última tela.
+Completion depende de ação explícita no último passo do Lesson Player. Abrir/recarregar a última tela não conclui a lesson. A posição é gravada por transição compare-and-set: o POST informa o índice esperado e o repository só avança/retrocede se esse índice ainda for o persistido, evitando salto por submit duplicado.
 
-Uma lesson anterior ao entry point pode ser dispensada para elegibilidade sem receber estado `completed`; a origem dessa dispensa pertence ao `Enrollment`/resultado de elegibilidade, não a um completion falso.
+Se uma lesson `in_progress` passar a apontar para outra `schemaVersion/revision`, a retomada é bloqueada como `revision-mismatch/revision-conflict`. O histórico permanece preservado para uma política explícita de migration/forward-fix.
+
+Uma lesson anterior ao entry point pode ser dispensada para elegibilidade sem receber estado `completed`; a origem dessa dispensa pertence ao resultado de elegibilidade/SessionItem, não a um completion falso.
 
 ## 8. Study Session
 
 ### StudySession
 
-Sessão planejada para uma jornada matriculada em uma janela de estudo.
+Sessão planejada para um `Enrollment` em uma data civil de estudo.
 
-- `id`
-- `languageProfileId`
-- `enrollmentId`
-- `plannedAt`
-- `localStudyDate`
-- `goalMinutes`
-- `plannerVersion`
-- `status`
+Campos implementados na #19:
+
+- `id`;
+- `enrollmentId`;
+- `localStudyDate`;
+- `plannerVersion`;
+- `status` (`planned | in_progress | completed | abandoned`);
+- `createdAt`;
+- `startedAt`;
+- `completedAt`;
+- `updatedAt`;
+- `items` ordenados.
+
+`localStudyDate` é calculado a partir do instante UTC + timezone do `LearnerProfile`; timestamps permanecem UTC. A V1 protege `Enrollment + localStudyDate` por unicidade, portanto dois refreshes/dispositivos convergem para a mesma sessão diária.
+
+O planner atual é deliberadamente mínimo e versionado como `today-shell-v1`: seleciona uma lesson `in_progress` para retomada ou a próxima lesson elegível. O algoritmo completo de prioridade/review/tempo continua na #25.
 
 ### SessionItem
 
 Item ordenado da sessão.
 
-Tipos:
+A foundation atual suporta `kind=lesson` e registra:
 
-- learn;
-- review;
-- retrieval;
-- listening;
-- speaking;
-- reading;
-- writing;
-- checkpoint.
+- `resourceId`;
+- `schemaVersion + revision` do conteúdo planejado;
+- `position`;
+- `reasonCode` (`NEW_ELIGIBLE_LESSON | RESUME_IN_PROGRESS`);
+- `eligibilityReason` (`progress-satisfied | placement-waived | resume-in-progress`);
+- `estimatedMinutes`;
+- `status`;
+- timestamps.
 
-Deve registrar motivo de seleção suficiente para debug e analytics, incluindo quando elegibilidade decorreu de entry point/placement.
+Novos tipos — review, retrieval, listening, speaking, reading, writing, checkpoint — entram quando os respectivos engines existirem; não criar itens fictícios para antecipar roadmap.
 
-O `/app/today` criado na #17 é somente um shell de confirmação da jornada; ele ainda não cria `StudySession` nem `SessionItem`. Esse modelo começa nas issues donas do Study Engine.
+`/app/today` materializa ou relê a sessão diária e apresenta uma ação principal `Começar estudo`/`Continuar estudo`. O CTA não aceita `lessonId` arbitrário como autorização: o servidor relê sessão/item sob o `Enrollment` autenticado e revalida conteúdo/revision/elegibilidade antes do start.
 
 ## 9. Review
 
@@ -408,7 +429,7 @@ O use case pertence à camada application e depende de `LearnerJourneyRepository
 3. Para a V1, não existem dois enrollments para o mesmo `LanguageProfile + Course`.
 4. Um Attempt pertence ao `LanguageProfile` que executou a Activity.
 5. Um usuário não pode acessar dados pedagógicos de outro usuário.
-6. Uma Activity apresentada referencia uma `ContentRevision` específica.
+6. Conteúdo apresentado referencia uma `ContentRevision` específica.
 7. Conteúdo publicado não muda semanticamente em lugar; cria nova revision.
 8. `ReviewEvent` não é atualizado retroativamente.
 9. `SessionItem` concluído não pode gerar duplicidade de progresso após retry.
@@ -419,6 +440,11 @@ O use case pertence à camada application e depende de `LearnerJourneyRepository
 14. Exclusão de conta deve respeitar política de retenção definida.
 15. Onboarding reentrante deve preservar unicidade de `LanguageProfile`/`Enrollment` pretendidos.
 16. `startingLevel`/`entryPointLevel` manual não preenche `currentEstimatedLevel` e não produz evidência pedagógica.
+17. Uma `StudySession` diária é única por `Enrollment + localStudyDate` na V1.
+18. Uma lesson iniciada é retomada apenas contra a mesma `schemaVersion/revision` persistida.
+19. Abrir o último bloco não conclui a lesson; completion exige transição explícita.
+20. Navegação stale/duplicada não pode saltar mais de um bloco.
+21. `sessionId`, `itemId` e `lessonId` do browser não substituem ownership server-side por Enrollment.
 
 ## 15. Vocabulário proibido/ambíguo
 
@@ -434,13 +460,18 @@ Evitar nomes genéricos sem definição:
 
 ## 16. Modelo físico
 
-O primeiro recorte físico da jornada foi implementado pela migration `0002_learner_journey` em `packages/db`:
+A persistência atual da jornada e da primeira vertical de estudo é:
 
 ```text
 users
   └─ learner_profiles
   └─ language_profiles
        └─ enrollments
+            ├─ lesson_progress
+            └─ study_sessions
+                 └─ session_items
 ```
 
-O schema usa FKs, checks e constraints de unicidade para reforçar locale suportado, faixa da meta diária, níveis A0/A1/A2, coerência entre `entryPointLevel` e `placementSource` e idempotência da jornada. Entidades futuras de currículo, sessão, attempt, review e mastery continuam pertencendo às issues específicas e não devem ser antecipadas nessa migration.
+A migration `0002_learner_journey` cria profiles/enrollment. A `0003_study_sessions` adiciona `lesson_progress`, `study_sessions` e `session_items`, com FKs, checks e constraints de unicidade para proteger ownership, data local, revision, estado, ordem e idempotência.
+
+Course/Level/Unit/Lesson continuam como conteúdo versionado no Git e não são duplicados como tabelas de catálogo nesta foundation. Attempts, ReviewEvent, MemoryItem, MasteryState e demais estruturas pedagógicas continuam pertencendo às issues específicas.

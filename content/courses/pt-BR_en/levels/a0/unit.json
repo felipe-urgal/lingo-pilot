@@ -1,0 +1,12 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.bootstrap",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Primeiros passos"
+  },
+  "lessonIds": ["lesson.a0.bootstrap.orientation"]
+}

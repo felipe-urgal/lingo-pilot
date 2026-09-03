@@ -1,0 +1,13 @@
+{
+  "kind": "level",
+  "id": "level.a0",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "courseId": "course.en.ptbr.v1",
+  "cefr": "A0",
+  "title": {
+    "pt-BR": "Começando do zero"
+  },
+  "unitIds": ["unit.a0.bootstrap"]
+}

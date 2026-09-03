@@ -1,0 +1,13 @@
+{
+  "kind": "level",
+  "id": "level.a2",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "courseId": "course.en.ptbr.v1",
+  "cefr": "A2",
+  "title": {
+    "pt-BR": "Básico"
+  },
+  "unitIds": ["unit.a2.bootstrap"]
+}

@@ -22,9 +22,29 @@ Attempts / Review Events
 Evidence → Mastery / SRS updates
 ```
 
+### Baseline executável das #18–#20
+
+A primeira vertical implementa somente a parte necessária para ir de matrícula até uma lesson estruturada:
+
+```text
+Enrollment
+   ↓
+Curriculum Catalog + Eligibility
+   ↓
+Today planner v1
+   ↓
+StudySession + SessionItem
+   ↓
+Lesson Player
+   ↓
+LessonProgress
+```
+
+Ainda não existem neste recorte Review Scheduler, Mastery Model, Attempts, SRS ou planner completo. Esses componentes continuam nas issues próprias; o código atual não fabrica evidência para preencher essas lacunas.
+
 ## 3. Daily Session Planner
 
-### Entradas
+### Entradas-alvo
 
 - meta diária em minutos;
 - timezone e data local;
@@ -41,7 +61,19 @@ Evidence → Mastery / SRS updates
 
 `StudySession` com lista ordenada de `SessionItem` e metadata de seleção.
 
-### Ordem de prioridade inicial
+### Planner V1 executável
+
+O recorte da #19 usa `plannerVersion=today-shell-v1`. Ele deliberadamente não implementa a prioridade completa abaixo. Para a primeira vertical ele faz apenas:
+
+1. calcular `localStudyDate` no timezone do aluno;
+2. reler a sessão já persistida para `Enrollment + localStudyDate`, se existir;
+3. caso não exista, priorizar uma lesson `in_progress`;
+4. senão selecionar a primeira lesson `available` do catálogo validado;
+5. persistir a sessão e o item com reason/revision antes de apresentar o CTA.
+
+A constraint de unicidade no banco garante que requests concorrentes para a mesma data local convergem para a mesma `StudySession`.
+
+### Ordem de prioridade alvo da #25
 
 1. recuperar sessão em andamento;
 2. reviews muito vencidos;
@@ -51,11 +83,11 @@ Evidence → Mastery / SRS updates
 6. skill practice necessária;
 7. reviews ainda dentro da janela, se houver orçamento.
 
-A prioridade exata será calibrada com dados, mas deve existir como função versionada e testável.
+A prioridade completa será calibrada com dados e deve permanecer função versionada/testável.
 
 ## 4. Orçamento de tempo
 
-O planner não deve preencher indefinidamente uma sessão.
+O planner completo não deve preencher indefinidamente uma sessão.
 
 Exemplo de meta de 30 minutos:
 
@@ -65,30 +97,71 @@ Exemplo de meta de 30 minutos:
 5–10 min  skill/retrieval
 ```
 
-Regras:
+Regras-alvo:
 
 - backlog de review não deve consumir automaticamente 100% da sessão por vários dias;
 - reviews críticos têm prioridade, mas o sistema aplica limite de carga;
 - conteúdo novo pode ser suspenso quando a dívida de revisão exceder um threshold;
 - duração é estimativa, não promessa exata.
 
+O `today-shell-v1` ainda usa apenas `estimatedMinutes` da lesson selecionada; não distribui orçamento entre categorias.
+
 ## 5. Elegibilidade curricular
+
+A #18 introduz `evaluateCurriculum`, uma regra pura/testável sobre catálogo, Enrollment e `LessonProgress`.
 
 Uma lesson pode ser elegível quando:
 
-- enrollment ativo;
-- pré-requisitos concluídos;
-- conceitos-base com mastery mínimo quando a regra exigir;
-- lesson anterior da sequência concluída, salvo branch curricular explícito;
-- nenhum bloqueio editorial.
+- enrollment está ativo;
+- o conteúdo está `published`;
+- pré-requisitos explícitos foram concluídos;
+- ou pré-requisitos anteriores ao `entryPointLevel` foram dispensados por placement;
+- não existe `LessonProgress in_progress` apontando para revision incompatível.
 
-Não inferir pré-requisito apenas por posição visual; armazenar regra explícita quando necessária.
+Resultados de disponibilidade iniciais:
 
-## 6. Progressão
+```text
+locked
+available
+in_progress
+completed
+waived
+```
+
+Motivos auditáveis:
+
+```text
+progress-satisfied
+placement-waived
+prerequisite-missing
+content-unavailable
+enrollment-inactive
+resume-in-progress
+already-completed
+revision-mismatch
+```
+
+Não inferir pré-requisito apenas por posição visual. `placement-waived` permite navegação para o nível escolhido sem criar completion, Attempt, ReviewEvent, ConceptEvidence ou MasteryState fictícios.
+
+`canStartLesson` é reavaliado no servidor antes do start. Saber ou alterar um `lessonId` no browser não desbloqueia conteúdo locked.
+
+## 6. Progressão e Lesson Player
 
 Conclusão de lesson e desbloqueio são conceitos diferentes.
 
-Uma lesson pode estar concluída, mas a próxima atividade de checkpoint pode exigir desempenho mínimo.
+O Lesson Player da #20:
+
+- carrega somente lesson `published` do catálogo já validado;
+- exige que `StudySession`, `SessionItem` e Enrollment pertençam à jornada autenticada;
+- exige `schemaVersion + revision` iguais às planejadas;
+- cria/retoma `LessonProgress` somente após start válido;
+- persiste `currentBlockIndex`;
+- permite voltar/avançar um passo por transição;
+- exige ação explícita `Concluir aula` no último bloco.
+
+Abrir ou recarregar o último bloco não conclui nada. Se a revision mudar enquanto a lesson está em andamento, a retomada é bloqueada e o progresso anterior permanece preservado para uma decisão explícita de migração.
+
+Submit de navegação usa compare-and-set sobre `expectedBlockIndex`; um request duplicado/stale não pode avançar duas vezes.
 
 A V1 deve manter progressão compreensível e evitar algoritmos opacos para liberar conteúdo.
 
@@ -219,26 +292,35 @@ O mesmo conceito pode ter evidências diferentes por modalidade. Mastery global 
 
 ## 13. Sessão persistida
 
-Ao criar a sessão, persistir:
+A foundation atual persiste:
 
 - `plannerVersion`;
-- inputs resumidos;
-- itens selecionados;
-- reason code por item;
+- `localStudyDate`;
+- item selecionado e ordem;
+- `reasonCode`;
+- `eligibilityReason`;
 - estimativa de duração;
-- ordem inicial.
+- `schemaVersion + revision` do conteúdo;
+- status/timestamps da sessão e item.
 
-Isso permite responder “por que esse item apareceu?” sem tentar reconstruir decisão com dados já alterados.
+Isso permite responder “por que esse item apareceu?” e impede reconstruir silenciosamente uma sessão com conteúdo/regras que já mudaram.
+
+Inputs resumidos mais ricos do planner entram quando #25 realmente usar reviews, mastery, dívida e preferências na seleção.
 
 ## 14. Reason codes
 
-Exemplos:
+Implementados na primeira vertical:
 
 ```text
 RESUME_IN_PROGRESS
+NEW_ELIGIBLE_LESSON
+```
+
+Reservados para evolução quando existirem os respectivos inputs:
+
+```text
 OVERDUE_REVIEW
 WEAK_CONCEPT
-NEW_ELIGIBLE_LESSON
 SKILL_BALANCE
 RECENT_ERROR_REINFORCEMENT
 UNIT_CHECKPOINT
@@ -248,39 +330,60 @@ Reason codes devem ser estáveis para analytics.
 
 ## 15. Casos de borda
 
-O planner precisa cobrir:
+A foundation das #18–#20 já cobre ou trata explicitamente:
 
 - primeiro dia sem histórico;
 - zero conteúdo novo elegível;
-- centenas de reviews atrasados;
-- sessão abandonada ontem;
-- timezone alterado;
+- sessão existente na mesma data local;
 - dois dispositivos abrindo Today simultaneamente;
+- timezone boundaries;
+- lesson revisionada/indisponível enquanto em andamento;
+- refresh no meio da lesson;
+- refresh no último bloco sem completion;
+- POST duplicado/stale de navegação;
+- acesso a session/item de outro Enrollment.
+
+Continuam para o planner/engines seguintes:
+
+- centenas de reviews atrasados;
+- sessão abandonada ontem e policy de retomada cross-day;
 - usuário completando sessão após meia-noite local;
-- lesson retirada enquanto estava em andamento;
-- conteúdo revisionado;
-- modo speaking indisponível;
-- IA indisponível.
+- modalidades indisponíveis;
+- IA indisponível;
+- balancing entre review/conteúdo novo/skills.
 
 ## 16. Concorrência
 
-Gerar `StudySession` para uma mesma data local deve ser idempotente conforme regra do produto.
+Gerar `StudySession` para uma mesma data local é idempotente por constraint `Enrollment + localStudyDate` e criação transacional.
 
-Não criar duas sessões independentes por duplo clique/refresh.
+Start e completion são protegidos por ownership, estado e revision. Navegação de bloco exige `expectedBlockIndex`, evitando que requests duplicados avancem mais de uma posição.
 
-Submit de SessionItem também deve ser idempotente.
+Futuros SessionItems/Attempts devem preservar o mesmo princípio: retry não pode produzir progresso pedagógico duplicado.
 
 ## 17. Testes essenciais
 
+Cobertos nesta foundation:
+
+- unlock por progresso real;
+- placement A0/A1/A2 e conteúdo waived;
+- lesson locked não inicia por ID manual;
+- revision mismatch;
+- timezone boundary;
+- geração concorrente de sessão;
+- isolamento de progresso entre enrollments;
+- resume de lesson;
+- completion explícita;
+- submit duplicado de navegação;
+- renderer/fallback dos ContentBlocks;
+- E2E onboarding → Today → Lesson Player → completion.
+
+Continuam essenciais conforme os próximos engines entrarem:
+
 - prioridade de review vencido;
 - suspensão de conteúdo novo sob dívida extrema;
-- retomada de session;
-- desbloqueio de lesson;
 - limite de minutos;
 - equilíbrio de modalidades;
-- mesma entrada + mesma versão → mesmo plano;
-- timezone boundaries;
-- idempotência;
+- mesma entrada + mesma versão → mesmo plano completo;
 - sequences de mastery;
 - sequences do SRS;
 - comportamento após erro recorrente.
@@ -293,3 +396,5 @@ Qualquer mudança de fórmula que altere decisões reais precisa:
 2. testes comparativos;
 3. análise de migration/recalculation;
 4. registro em ADR quando alterar significado de progresso.
+
+O mesmo vale para semântica de eligibility, plannerVersion e migration de `LessonProgress` entre revisions publicadas.
