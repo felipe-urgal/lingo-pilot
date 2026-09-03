@@ -32,7 +32,9 @@ export function createCurriculumCatalog(
   documents: readonly ContentDocument[],
   courseId: string,
 ): CurriculumCatalog {
-  const documentsById = new Map(documents.map((document) => [document.id, document]));
+  const documentsById = new Map(
+    documents.map((document) => [document.id, document]),
+  );
   const course = requireDocument(documentsById, courseId, "course");
   const levels = course.levelIds.map((id) =>
     requireDocument(documentsById, id, "level"),
