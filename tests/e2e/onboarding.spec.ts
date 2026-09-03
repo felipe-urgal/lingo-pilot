@@ -12,7 +12,9 @@ async function signup(page, email: string, password: string) {
   await expect(page).toHaveURL(/\/app\/onboarding$/);
 }
 
-test("signup/login -> onboarding A0 -> Today shell", async ({ page }) => {
+test("signup/login -> onboarding A0 -> Today -> resumable lesson -> completed session", async ({
+  page,
+}) => {
   const email = uniqueEmail("a0");
   const password = "correct-horse-17";
   await signup(page, email, password);
@@ -34,8 +36,27 @@ test("signup/login -> onboarding A0 -> Today shell", async ({ page }) => {
   await page.getByRole("button", { name: "Começar minha jornada" }).click();
 
   await expect(page).toHaveURL(/\/app\/today$/);
-  await expect(page.getByText("A0 · do zero")).toBeVisible();
-  await expect(page.getByText("20 minutos")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Sua próxima ação está pronta." }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Como funciona uma aula" })).toBeVisible();
+  await page.getByRole("button", { name: "Começar estudo" }).click();
+
+  await expect(page).toHaveURL(/\/app\/lesson\/lesson\.a0\.bootstrap\.orientation/);
+  await expect(page.getByRole("heading", { name: "Como funciona uma aula" })).toBeVisible();
+  await expect(page.getByText("Passo 1 de 2")).toBeVisible();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByText("Passo 2 de 2")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText("Passo 2 de 2")).toBeVisible();
+  await expect(page.getByText("Estudo de hoje concluído.")).toHaveCount(0);
+  await page.getByRole("button", { name: "Concluir aula" }).click();
+
+  await expect(page).toHaveURL(/\/app\/today$/);
+  await expect(
+    page.getByRole("heading", { name: "Estudo de hoje concluído." }),
+  ).toBeVisible();
 });
 
 test("false beginner can choose A2 manual entry without fabricated completion UI", async ({
@@ -50,6 +71,10 @@ test("false beginner can choose A2 manual entry without fabricated completion UI
   await page.getByRole("button", { name: "Começar minha jornada" }).click();
 
   await expect(page).toHaveURL(/\/app\/today$/);
-  await expect(page.getByText("A2 · escolha manual")).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Sua próxima aula ainda não está disponível.",
+    }),
+  ).toBeVisible();
   await expect(page.getByText(/concluíd|dominad/i)).toHaveCount(0);
 });

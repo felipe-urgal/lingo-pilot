@@ -100,7 +100,7 @@ test("creates only one daily session under concurrent generation", async () => {
   assert.equal(counts.rows[0]?.items, 1);
 });
 
-test("persists start and resume position against the authored revision", async () => {
+test("persists safe resume position and explicit completion against the authored revision", async () => {
   const enrollmentId = await createEnrollment();
   const repository = new PostgresStudyRepository(client.db);
   const session = await repository.ensureDailySession(
@@ -125,9 +125,61 @@ test("persists start and resume position against the authored revision", async (
     lessonId: item.resourceId,
     contentSchemaVersion: item.schemaVersion,
     contentRevision: item.revision,
+    expectedBlockIndex: 0,
     currentBlockIndex: 1,
     now: new Date("2026-09-03T12:32:00.000Z"),
   });
   assert.equal(saved.ok, true);
   if (saved.ok) assert.equal(saved.value.currentBlockIndex, 1);
+
+  const duplicate = await repository.saveLessonPosition({
+    enrollmentId,
+    lessonId: item.resourceId,
+    contentSchemaVersion: item.schemaVersion,
+    contentRevision: item.revision,
+    expectedBlockIndex: 0,
+    currentBlockIndex: 1,
+    now: new Date("2026-09-03T12:32:01.000Z"),
+  });
+  assert.deepEqual(duplicate, { ok: false, reason: "invalid-state" });
+
+  const completed = await repository.completeLesson({
+    enrollmentId,
+    sessionId: session.id,
+    itemId: item.id,
+    lessonId: item.resourceId,
+    contentSchemaVersion: item.schemaVersion,
+    contentRevision: item.revision,
+    now: new Date("2026-09-03T12:33:00.000Z"),
+  });
+  assert.equal(completed.ok, true);
+  if (completed.ok) assert.equal(completed.value.status, "completed");
+
+  const progress = await repository.listLessonProgress(enrollmentId);
+  assert.equal(progress[0]?.status, "completed");
+  assert.equal(progress[0]?.revision, 1);
+});
+
+test("isolates progress for two enrollments studying the same curriculum", async () => {
+  const firstEnrollment = await createEnrollment();
+  const secondEnrollment = await createEnrollment();
+  const repository = new PostgresStudyRepository(client.db);
+  const session = await repository.ensureDailySession(
+    sessionInput(firstEnrollment, randomUUID()),
+  );
+  const item = session.items[0];
+  assert.ok(item);
+
+  await repository.startSessionItem({
+    enrollmentId: firstEnrollment,
+    sessionId: session.id,
+    itemId: item.id,
+    lessonId: item.resourceId,
+    contentSchemaVersion: item.schemaVersion,
+    contentRevision: item.revision,
+    now: new Date("2026-09-03T12:35:00.000Z"),
+  });
+
+  assert.equal((await repository.listLessonProgress(firstEnrollment)).length, 1);
+  assert.equal((await repository.listLessonProgress(secondEnrollment)).length, 0);
 });
