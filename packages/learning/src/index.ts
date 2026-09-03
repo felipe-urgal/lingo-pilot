@@ -11,5 +11,6 @@ export {
   type LessonProgressSnapshot,
   type LessonProgressStatus,
 } from "./curriculum-eligibility.ts";
+export { localStudyDate } from "./local-study-date.ts";
 
 export const packageBoundary = "learning" as const;

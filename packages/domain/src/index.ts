@@ -30,5 +30,26 @@ export type {
   LearnerJourneyRepository,
   SaveInitialLearnerJourneyInput,
 } from "./learner/learner-journey-repository.ts";
+export type {
+  CompleteLessonInput,
+  EnsureDailySessionInput,
+  SaveLessonPositionInput,
+  StartSessionItemInput,
+  StudyMutationFailure,
+  StudyMutationResult,
+  StudyRepository,
+} from "./learner/study-repository.ts";
+export type {
+  ContentRevisionRef,
+  LessonProgress,
+  LessonProgressStatus,
+  SessionItem,
+  SessionItemKind,
+  SessionItemStatus,
+  SessionReasonCode,
+  StoredEligibilityReason,
+  StudySession,
+  StudySessionStatus,
+} from "./learner/study-session.ts";
 
 export const packageBoundary = "domain" as const;

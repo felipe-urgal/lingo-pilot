@@ -1,56 +1,94 @@
+import { Button } from "@lingo-pilot/ui";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
+import { getTodayStudy } from "../../../server/study/runtime";
 
-const goalLabels = {
-  conversation: "Conversação",
-  travel: "Viagens",
-  work: "Trabalho",
-  study: "Estudos",
-  other: "Outro",
-} as const;
+function EmptyToday() {
+  return (
+    <>
+      <p className="eyebrow">Hoje</p>
+      <h1 id="today-title">Sua próxima aula ainda não está disponível.</h1>
+      <p className="description">
+        Sua matrícula e seu ponto de entrada estão preservados. Assim que houver
+        conteúdo publicado e elegível para este nível, ele aparecerá aqui sem
+        precisar refazer o onboarding.
+      </p>
+    </>
+  );
+}
+
+function CompletedToday() {
+  return (
+    <>
+      <p className="eyebrow">Hoje</p>
+      <h1 id="today-title">Estudo de hoje concluído.</h1>
+      <p className="description">
+        Sua sessão ficou registrada. A próxima sessão será planejada na sua
+        próxima data local de estudo.
+      </p>
+    </>
+  );
+}
 
 export default async function TodayPage() {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
   if (!journey) redirect("/app/onboarding");
 
-  const manualPlacement = journey.enrollment.placementSource === "manual";
+  const today = await getTodayStudy()(journey);
+  if (!today.session) {
+    return (
+      <section className="today-card" aria-labelledby="today-title">
+        <EmptyToday />
+        <a className="text-link" href="/app/onboarding?edit=1">
+          Ajustar preferências
+        </a>
+      </section>
+    );
+  }
+  if (today.session.status === "completed") {
+    return (
+      <section className="today-card" aria-labelledby="today-title">
+        <CompletedToday />
+      </section>
+    );
+  }
+
+  const item = today.session.items[0];
+  if (!item || !today.lesson) {
+    return (
+      <section className="today-card" aria-labelledby="today-title">
+        <p className="eyebrow">Hoje</p>
+        <h1 id="today-title">Não foi possível carregar sua sessão.</h1>
+        <p className="description">
+          O plano está preservado, mas o conteúdo associado não está disponível
+          nesta revisão. Tente novamente depois de uma atualização do conteúdo.
+        </p>
+      </section>
+    );
+  }
+
+  const isContinuing = today.session.status === "in_progress";
 
   return (
     <section className="today-card" aria-labelledby="today-title">
-      <p className="eyebrow">Hoje</p>
-      <h1 id="today-title">Sua jornada está pronta.</h1>
-      <p className="description">
-        A próxima etapa do Study Engine vai transformar esta matrícula em uma
-        sessão diária. Por enquanto, seu ponto de entrada e sua rotina já estão
-        persistidos.
-      </p>
-      <dl className="journey-summary">
-        <div>
-          <dt>Jornada</dt>
-          <dd>Português (Brasil) → Inglês</dd>
-        </div>
-        <div>
-          <dt>Ponto de entrada</dt>
-          <dd>
-            {journey.enrollment.entryPointLevel}
-            {manualPlacement ? " · escolha manual" : " · do zero"}
-          </dd>
-        </div>
-        <div>
-          <dt>Meta diária</dt>
-          <dd>{journey.learnerProfile.dailyGoalMinutes} minutos</dd>
-        </div>
-        <div>
-          <dt>Objetivo</dt>
-          <dd>
-            {journey.learnerProfile.primaryGoal
-              ? goalLabels[journey.learnerProfile.primaryGoal]
-              : "Não definido"}
-          </dd>
-        </div>
-      </dl>
+      <p className="eyebrow">Hoje · {item.estimatedMinutes} min</p>
+      <h1 id="today-title">{isContinuing ? "Continue de onde parou." : "Sua próxima ação está pronta."}</h1>
+      <div className="today-plan" aria-label="Plano de estudo de hoje">
+        <p className="today-plan__label">Aprender</p>
+        <h2>{today.lesson.title["pt-BR"]}</h2>
+        <p>
+          {journey.enrollment.entryPointLevel} · ~{item.estimatedMinutes} minutos
+        </p>
+      </div>
+      <form action="/api/study/session/start" method="post">
+        <input type="hidden" name="sessionId" value={today.session.id} />
+        <input type="hidden" name="itemId" value={item.id} />
+        <Button type="submit">
+          {isContinuing ? "Continuar estudo" : "Começar estudo"}
+        </Button>
+      </form>
       <a className="text-link" href="/app/onboarding?edit=1">
         Ajustar preferências
       </a>

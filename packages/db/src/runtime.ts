@@ -12,6 +12,7 @@ export {
   revokeAuthSessionByTokenHash,
 } from "./auth.ts";
 export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
+export { PostgresStudyRepository } from "./repositories/postgres-study-repository.ts";
 export {
   findOwnershipFixtureForUser,
   updateOwnershipFixtureForUser,
