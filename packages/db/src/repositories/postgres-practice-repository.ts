@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, lt, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, lte, sql } from "drizzle-orm";
 import type {
   ActivityAttempt,
   ConceptEvidence,
@@ -277,7 +277,7 @@ export class PostgresPracticeRepository implements PracticeRepository {
           },
         });
 
-      for (const conceptId of input.conceptIds) {
+      for (const conceptId of new Set(input.conceptIds)) {
         const schedule = input.initialMemorySchedules.find(
           (candidate) => candidate.conceptId === conceptId,
         );
@@ -474,7 +474,7 @@ export class PostgresPracticeRepository implements PracticeRepository {
         and(
           eq(masteryStates.enrollmentId, enrollmentId),
           lt(masteryStates.scorePercent, 60),
-          lte(sql`20`, masteryStates.confidencePercent),
+          gte(masteryStates.confidencePercent, 20),
         ),
       )
       .orderBy(
