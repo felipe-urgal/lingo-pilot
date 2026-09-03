@@ -56,8 +56,7 @@ const documents: readonly ContentDocument[] = [
         description: { "pt-BR": "Objetivo" },
       },
     ],
-    prerequisiteLessonIds:
-      index === 0 ? [] : [`lesson.a${index - 1}.01`],
+    prerequisiteLessonIds: index === 0 ? [] : [`lesson.a${index - 1}.01`],
     introducesConceptIds: [],
     reinforcesConceptIds: [],
     vocabularyIds: [],
