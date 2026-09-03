@@ -1,10 +1,4 @@
-import type {
-  ContentDocument,
-  Course,
-  Lesson,
-  Level,
-  Unit,
-} from "./model.ts";
+import type { ContentDocument, Course, Lesson, Level, Unit } from "./model.ts";
 
 export interface CurriculumCatalog {
   readonly course: Course;
