@@ -3,11 +3,7 @@ import type { CurriculumCatalog, Lesson } from "../../content/src/index.ts";
 export type CurriculumEntryPoint = "A0" | "A1" | "A2";
 export type LessonProgressStatus = "in_progress" | "completed";
 export type LessonAvailability =
-  | "locked"
-  | "available"
-  | "in_progress"
-  | "completed"
-  | "waived";
+  "locked" | "available" | "in_progress" | "completed" | "waived";
 export type EligibilityReason =
   | "progress-satisfied"
   | "placement-waived"
@@ -110,7 +106,11 @@ function evaluateLesson(
     return { lesson, availability: "completed", reason: "already-completed" };
   }
   if (saved?.status === "in_progress") {
-    return { lesson, availability: "in_progress", reason: "resume-in-progress" };
+    return {
+      lesson,
+      availability: "in_progress",
+      reason: "resume-in-progress",
+    };
   }
   if (lessonRank(input.catalog, lesson) < levelRanks[input.entryPointLevel]) {
     return { lesson, availability: "waived", reason: "placement-waived" };
@@ -147,6 +147,7 @@ export function canStartLesson(
 ): boolean {
   const lesson = eligibility.find((item) => item.lesson.id === lessonId);
   return (
-    lesson?.availability === "available" || lesson?.availability === "in_progress"
+    lesson?.availability === "available" ||
+    lesson?.availability === "in_progress"
   );
 }
