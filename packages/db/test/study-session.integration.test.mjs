@@ -180,6 +180,12 @@ test("isolates progress for two enrollments studying the same curriculum", async
     now: new Date("2026-09-03T12:35:00.000Z"),
   });
 
-  assert.equal((await repository.listLessonProgress(firstEnrollment)).length, 1);
-  assert.equal((await repository.listLessonProgress(secondEnrollment)).length, 0);
+  assert.equal(
+    (await repository.listLessonProgress(firstEnrollment)).length,
+    1,
+  );
+  assert.equal(
+    (await repository.listLessonProgress(secondEnrollment)).length,
+    0,
+  );
 });
