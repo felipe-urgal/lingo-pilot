@@ -82,6 +82,7 @@ function attemptInput(enrollmentId, overrides = {}) {
     contentSchemaVersion: 1,
     contentRevision: 1,
     operationKey: `attempt-op-${suffix}`,
+    maxAttempts: 3,
     answer: "understood",
     correct: true,
     scorePercent: 100,
@@ -278,4 +279,90 @@ test("rejects a session item owned by another enrollment without leaking its exi
     [firstEnrollment],
   );
   assert.equal(counts.rows[0]?.attempts, 0);
+});
+
+test("enforces configured retry limit before creating additional evidence", async () => {
+  const enrollmentId = await createEnrollment();
+  const repository = new PostgresPracticeRepository(client.db);
+  const activityId = `activity.retry-limit-${randomUUID()}`;
+  const conceptId = `concept.retry-limit-${randomUUID()}`;
+
+  for (let index = 0; index < 3; index += 1) {
+    const result = await repository.submitAttempt(
+      attemptInput(enrollmentId, {
+        activityId,
+        conceptIds: [conceptId],
+        initialMemorySchedules: [
+          {
+            conceptId,
+            memoryItemId: `memory-${randomUUID()}`,
+            dueAt: new Date("2026-09-03T13:00:00.000Z"),
+            intervalSeconds: 600,
+            algorithmVersion: "review-scheduler-v1",
+          },
+        ],
+      }),
+      reduceMastery,
+    );
+    assert.equal(result.ok, true);
+  }
+
+  const rejected = await repository.submitAttempt(
+    attemptInput(enrollmentId, {
+      activityId,
+      conceptIds: [conceptId],
+      initialMemorySchedules: [
+        {
+          conceptId,
+          memoryItemId: `memory-${randomUUID()}`,
+          dueAt: new Date("2026-09-03T13:00:00.000Z"),
+          intervalSeconds: 600,
+          algorithmVersion: "review-scheduler-v1",
+        },
+      ],
+    }),
+    reduceMastery,
+  );
+
+  assert.deepEqual(rejected, { ok: false, reason: "retry-limit" });
+  const state = await client.pool.query(
+    `select
+      (select count(*)::int from activity_attempts where enrollment_id = $1 and activity_id = $2) as attempts,
+      (select count(*)::int from concept_evidence where enrollment_id = $1 and concept_id = $3) as evidence`,
+    [enrollmentId, activityId, conceptId],
+  );
+  assert.deepEqual(state.rows[0], { attempts: 3, evidence: 3 });
+});
+
+test("paginates the due queue in deterministic dueAt/id order", async () => {
+  const enrollmentId = await createEnrollment();
+  const repository = new PostgresPracticeRepository(client.db);
+  const dueAt = new Date("2026-09-03T13:00:00.000Z");
+
+  for (const suffix of ["a", "b"]) {
+    const conceptId = `concept.page.${suffix}.${randomUUID()}`;
+    await repository.submitAttempt(
+      attemptInput(enrollmentId, {
+        activityId: `activity.page.${suffix}.${randomUUID()}`,
+        conceptIds: [conceptId],
+        initialMemorySchedules: [
+          {
+            conceptId,
+            memoryItemId: `memory.page.${suffix}.${randomUUID()}`,
+            dueAt,
+            intervalSeconds: 600,
+            algorithmVersion: "review-scheduler-v1",
+          },
+        ],
+      }),
+      reduceMastery,
+    );
+  }
+
+  const first = await repository.listDueReviewItems(enrollmentId, dueAt, 1, 0);
+  const second = await repository.listDueReviewItems(enrollmentId, dueAt, 1, 1);
+  assert.equal(first.length, 1);
+  assert.equal(second.length, 1);
+  assert.notEqual(first[0]?.id, second[0]?.id);
+  assert.ok((first[0]?.id ?? "") < (second[0]?.id ?? ""));
 });

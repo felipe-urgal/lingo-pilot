@@ -118,7 +118,7 @@ ALTER TABLE "activity_progress" ADD CONSTRAINT "activity_progress_enrollment_id_
 --> statement-breakpoint
 ALTER TABLE "memory_items" ADD CONSTRAINT "memory_items_enrollment_id_enrollments_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."enrollments"("id") ON DELETE cascade ON UPDATE no action;
 --> statement-breakpoint
-ALTER TABLE "review_events" ADD CONSTRAINT "review_events_memory_item_id_memory_items_id_fk" FOREIGN KEY ("memory_item_id") REFERENCES "public"."memory_items"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "review_events" ADD CONSTRAINT "review_events_memory_item_id_memory_items_id_fk" FOREIGN KEY ("memory_item_id") REFERENCES "public"."memory_items"("id") ON DELETE restrict ON UPDATE no action;
 --> statement-breakpoint
 ALTER TABLE "review_events" ADD CONSTRAINT "review_events_enrollment_id_enrollments_id_fk" FOREIGN KEY ("enrollment_id") REFERENCES "public"."enrollments"("id") ON DELETE cascade ON UPDATE no action;
 --> statement-breakpoint

@@ -169,7 +169,7 @@ export const reviewEvents = pgTable(
     id: text("id").primaryKey(),
     memoryItemId: text("memory_item_id")
       .notNull()
-      .references(() => memoryItems.id, { onDelete: "cascade" }),
+      .references(() => memoryItems.id, { onDelete: "restrict" }),
     enrollmentId: text("enrollment_id")
       .notNull()
       .references(() => enrollments.id, { onDelete: "cascade" }),

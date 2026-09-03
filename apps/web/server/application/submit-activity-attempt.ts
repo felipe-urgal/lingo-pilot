@@ -16,7 +16,7 @@ import {
 import { getPracticeActivity } from "../practice/activity-catalog";
 
 export type SubmitActivityAttemptError =
-  "invalid-input" | "invalid-reference" | "content-unavailable";
+  "invalid-input" | "invalid-reference" | "content-unavailable" | "retry-limit";
 
 export type SubmitActivityAttemptResult =
   | Readonly<{
@@ -127,6 +127,7 @@ export function createSubmitActivityAttempt(
         contentSchemaVersion: activity.content.schemaVersion,
         contentRevision: activity.content.revision,
         operationKey: input.operationKey,
+        maxAttempts: activity.maxAttempts,
         answer: input.answer,
         correct: evaluated.evaluation.correct,
         scorePercent: evaluated.evaluation.scorePercent,
@@ -152,7 +153,15 @@ export function createSubmitActivityAttempt(
       },
       (evidence) => computeMastery(evidence, now),
     );
-    if (!persisted.ok) return { ok: false, reason: "invalid-reference" };
+    if (!persisted.ok) {
+      return {
+        ok: false,
+        reason:
+          persisted.reason === "retry-limit"
+            ? "retry-limit"
+            : "invalid-reference",
+      };
+    }
 
     return {
       ok: true,

@@ -222,6 +222,10 @@ export class PostgresPracticeRepository implements PracticeRepository {
     reduceMastery: MasteryReducer,
   ): Promise<SubmitAttemptResult> {
     return this.database.transaction(async (transaction) => {
+      await transaction.execute(
+        sql`select pg_advisory_xact_lock(hashtext(${input.enrollmentId}), hashtext(${input.activityId}))`,
+      );
+
       const duplicate = await findAttemptByOperation(
         transaction,
         input.enrollmentId,
@@ -244,6 +248,21 @@ export class PostgresPracticeRepository implements PracticeRepository {
         ))
       ) {
         return { ok: false, reason: "not-found" };
+      }
+
+      const maxAttempts = Math.max(1, Math.trunc(input.maxAttempts));
+      const [progress] = await transaction
+        .select({ attempts: activityProgress.attempts })
+        .from(activityProgress)
+        .where(
+          and(
+            eq(activityProgress.enrollmentId, input.enrollmentId),
+            eq(activityProgress.activityId, input.activityId),
+          ),
+        )
+        .limit(1);
+      if ((progress?.attempts ?? 0) >= maxAttempts) {
+        return { ok: false, reason: "retry-limit" };
       }
 
       const [created] = await transaction
@@ -353,8 +372,10 @@ export class PostgresPracticeRepository implements PracticeRepository {
     enrollmentId: string,
     now: Date,
     limit: number,
+    offset = 0,
   ): Promise<readonly DueReviewItem[]> {
     const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
+    const safeOffset = Math.max(0, Math.trunc(offset));
     const rows = await this.database
       .select({ memory: memoryItems, mastery: masteryStates })
       .from(memoryItems)
@@ -372,7 +393,8 @@ export class PostgresPracticeRepository implements PracticeRepository {
         ),
       )
       .orderBy(asc(memoryItems.dueAt), asc(memoryItems.id))
-      .limit(safeLimit);
+      .limit(safeLimit)
+      .offset(safeOffset);
 
     return rows.map(({ memory, mastery }) => ({
       id: memory.id,
