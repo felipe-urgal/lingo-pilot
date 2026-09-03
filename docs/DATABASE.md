@@ -1,6 +1,6 @@
 # PostgreSQL e Drizzle — LingoPilot
 
-Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11 e pela jornada inicial do aluno da #17.
+Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11, pela jornada inicial do aluno da #17 e pela foundation de currículo/sessão/aula das #18–#20.
 
 ## 1. Responsabilidade
 
@@ -65,14 +65,15 @@ Se `.env.local` já existia antes da issue #10, adicione as variáveis server-on
 
 Nenhuma dessas variáveis é pública. Nunca criar aliases `NEXT_PUBLIC_DATABASE_*`.
 
-A baseline de auth e o onboarding da #17 não adicionam secrets de provider nem novas variáveis de ambiente.
+A baseline de auth, o onboarding e a foundation de estudo não adicionam secrets de provider nem novas variáveis de ambiente.
 
 ## 5. Schema e migrations
 
-Fonte do schema:
+Fontes do schema:
 
 ```text
-packages/db/src/schema.ts
+packages/db/src/schema.ts        identidade, auth e jornada
+packages/db/src/study-schema.ts  progresso de aula e sessão de estudo
 ```
 
 Configuração Drizzle Kit:
@@ -80,6 +81,8 @@ Configuração Drizzle Kit:
 ```text
 packages/db/drizzle.config.ts
 ```
+
+A configuração carrega `packages/db/src/*schema.ts`, mantendo os dois arquivos na mesma migration graph PostgreSQL.
 
 Migrations versionadas:
 
@@ -97,7 +100,7 @@ pnpm db:migrate
 
 Fluxo para alterar schema:
 
-1. alterar `packages/db/src/schema.ts`;
+1. alterar o arquivo `*schema.ts` dono da entidade;
 2. executar `pnpm db:generate -- --name=<descricao>`;
 3. revisar SQL e metadata gerados;
 4. executar `pnpm db:check`;
@@ -154,31 +157,54 @@ A operação de onboarding grava `LearnerProfile`, `LanguageProfile` e `Enrollme
 
 Essa migration não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` ou completion para conteúdo anterior. Placement manual altera elegibilidade futura, não evidência pedagógica.
 
+### `0003_study_sessions`
+
+As #18–#20 introduzem a primeira persistência do Study Engine sem antecipar attempts, mastery ou SRS:
+
+- `lesson_progress` — progresso por `Enrollment + Lesson`, incluindo revision do conteúdo, estado `in_progress|completed`, posição retomável e timestamps;
+- `study_sessions` — plano diário por enrollment e `local_study_date`, com `planner_version`, estado e timestamps UTC;
+- `session_items` — itens ordenados da sessão, com resource/revision, reason code, motivo de elegibilidade, estimativa e estado.
+
+Invariantes importantes:
+
+- existe no máximo uma sessão por `Enrollment + localStudyDate`;
+- existe no máximo um progresso por `Enrollment + Lesson`;
+- itens preservam `content_schema_version + content_revision` planejados;
+- `reason_code` inicial é `NEW_ELIGIBLE_LESSON` ou `RESUME_IN_PROGRESS`;
+- `eligibility_reason` distingue `progress-satisfied`, `placement-waived` e `resume-in-progress`;
+- posição de aula é não negativa e só é atualizada quando o índice persistido ainda corresponde ao índice esperado pelo submit;
+- completion de progresso exige `completed_at`, enquanto `in_progress` exige `completed_at IS NULL`.
+
+A criação da sessão usa `INSERT ... ON CONFLICT DO NOTHING` dentro de transação e relê a sessão vencedora. Assim dois requests/dispositivos para a mesma data local convergem para o mesmo plano em vez de criar sessões independentes.
+
+`PostgresStudyRepository` sempre recebe `enrollmentId` resolvido a partir da jornada autenticada. Busca de sessão/item combina esse enrollment com o identificador do recurso, impedindo que um ID de outro aluno seja usado como autorização.
+
 ## 7. IDs e timestamps
 
-Convenções para schemas futuros:
+Convenções:
 
-- IDs de domínio devem permanecer opacos e consistentes; a escolha concreta deve respeitar o contrato do domínio antes de virar coluna física;
+- IDs de domínio permanecem opacos e consistentes;
 - timestamps persistidos usam PostgreSQL `timestamp with time zone` (`timestamptz`);
 - o pool configura a sessão PostgreSQL para `UTC`;
 - timezone pedagógico do aluno é dado de domínio separado, não configuração da conexão;
+- `localStudyDate` é uma data civil `YYYY-MM-DD` calculada com o timezone do `LearnerProfile`;
 - defaults de banco não substituem relógio injetável em regras temporais de domínio.
 
-IDs de usuário/sessão são opacos. Sessões persistem `token_hash`, nunca o token bruto do cookie. `LanguageProfile` e `Enrollment` também usam IDs opacos gerados pela aplicação; unicidade semântica é protegida separadamente pelas constraints compostas da migration `0002`.
+IDs de usuário/sessão são opacos. Sessões de autenticação persistem `token_hash`, nunca o token bruto do cookie. `LanguageProfile`, `Enrollment`, `StudySession` e `SessionItem` também usam IDs opacos gerados pela aplicação; unicidade semântica é protegida separadamente pelas constraints compostas.
 
 ## 8. Pool e transações
 
 `createDatabaseClient()` cria um `pg.Pool` e um cliente Drizzle sem conectar durante import/build. O pool usa limite explícito configurável e `UTC` como timezone de sessão.
 
-`withTransaction(database, operation)` fornece a fronteira transacional injetável. Use cases/repositories futuros podem receber `Database` ou `DatabaseTransaction` sem acessar `process.env` nem criar conexão internamente.
+`withTransaction(database, operation)` fornece a fronteira transacional injetável. Use cases/repositories podem receber `Database` ou `DatabaseTransaction` sem acessar `process.env` nem criar conexão internamente.
 
-Operações que precisam permanecer atomicamente consistentes devem usar esse boundary em vez de executar writes independentes. O repository da jornada inicial da #17 usa a própria transação do cliente Drizzle para manter `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes.
+Operações que precisam permanecer atomicamente consistentes usam esse boundary em vez de executar writes independentes. O repository da jornada inicial mantém `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes; o repository de estudo mantém criação de sessão/item, start e completion em transações próprias.
 
-O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth e ownership nunca são importados pelo bundle cliente.
+O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth, ownership e persistência de estudo nunca são importados pelo bundle cliente.
 
 Código de delivery que precisa de persistência importa `packages/db/src/runtime.ts`, uma superfície deliberadamente sem `migrations.ts`. Migration tooling permanece exclusivo dos comandos/scripts operacionais e não deve entrar no grafo do bundle Next.js.
 
-## 9. Auth, ownership e jornada do aluno
+## 9. Auth, ownership, jornada e estudo
 
 Helpers de auth em `packages/db/src/auth.ts`:
 
@@ -190,6 +216,8 @@ Helpers de auth em `packages/db/src/auth.ts`:
 Helpers de ownership em `packages/db/src/ownership.ts` recebem `userId` resolvido no servidor. Leitura/escrita da fixture usam `resourceId + ownerId` na mesma cláusula `WHERE`.
 
 O repository PostgreSQL da jornada recebe o `userId` autenticado pelo use case/delivery e consulta `LearnerProfile`/`LanguageProfile` pela identidade do servidor; o cliente não fornece `ownerId` como prova de acesso. A matrícula é alcançada pelo `LanguageProfile` pertencente ao usuário.
+
+O fluxo de estudo parte desse `Enrollment` server-side. `StudySession`, `SessionItem` e `LessonProgress` são buscados/mutados sob o mesmo `enrollmentId`; `sessionId`, `itemId` ou `lessonId` enviados pelo browser nunca bastam isoladamente para autorizar uma operação.
 
 É proibido transformar o padrão em:
 
@@ -218,7 +246,10 @@ A suíte:
 7. valida sessão ativa, expirada e revogada;
 8. prova que usuário B não lê nem altera recurso de A;
 9. valida criação transacional/idempotente da jornada inicial e suas constraints de placement;
-10. confirma timezone UTC.
+10. valida geração concorrente idempotente de `StudySession`;
+11. valida start, posição retomável, proteção contra submit duplicado e completion explícita;
+12. prova isolamento de `LessonProgress` entre dois enrollments no mesmo currículo;
+13. confirma timezone UTC.
 
 O teste nunca recebe `DATABASE_URL` como destino de escrita.
 
@@ -244,7 +275,9 @@ pnpm db:down
 
 O projeto não depende de seed de domínio para criar contas ou jornadas reais de desenvolvimento. A #17 adiciona signup first-party que reutiliza o hashing/persistência da baseline de auth e cria a jornada somente quando o usuário conclui o onboarding.
 
-Fixtures e factories automatizadas continuam usando somente dados sintéticos/determinísticos. Quando uma issue dona de conteúdo/dados de desenvolvimento exigir seed, ela deve adicionar comando explícito e documentação de idempotência no mesmo PR.
+O catálogo bootstrap das #18–#20 é conteúdo versionado em Git, não seed de banco. Conteúdo pedagógico editorial A0–A2 continua sendo migrado pelas issues donas desse trabalho; não promover material não revisado por seed ou migration.
+
+Fixtures e factories automatizadas continuam usando somente dados sintéticos/determinísticos. Quando uma issue dona de dados de desenvolvimento exigir seed, ela deve adicionar comando explícito e documentação de idempotência no mesmo PR.
 
 ## 13. Produção
 
