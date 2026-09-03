@@ -23,7 +23,13 @@ function localizedText(text: Readonly<Record<string, string>>): string {
 
 function LessonUnavailable({
   reason,
-}: Readonly<{ reason: "content-unavailable" | "revision-conflict" | "invalid-position" | "invalid-reference" }>) {
+}: Readonly<{
+  reason:
+    | "content-unavailable"
+    | "revision-conflict"
+    | "invalid-position"
+    | "invalid-reference";
+}>) {
   const copy =
     reason === "revision-conflict"
       ? "O conteúdo desta aula foi atualizado depois que sua sessão foi criada. Seu progresso foi preservado e a sessão não será concluída automaticamente."
@@ -34,7 +40,10 @@ function LessonUnavailable({
           : "Não foi possível abrir esta aula a partir da sessão informada.";
 
   return (
-    <section className="lesson-player lesson-player--unavailable" aria-labelledby="lesson-title">
+    <section
+      className="lesson-player lesson-player--unavailable"
+      aria-labelledby="lesson-title"
+    >
       <p className="eyebrow">Aula indisponível</p>
       <h1 id="lesson-title">Não foi possível continuar agora.</h1>
       <p className="description">{copy}</p>
@@ -45,7 +54,10 @@ function LessonUnavailable({
   );
 }
 
-export default async function LessonPage({ params, searchParams }: LessonPageProps) {
+export default async function LessonPage({
+  params,
+  searchParams,
+}: LessonPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
   if (!journey) redirect("/app/onboarding");
@@ -89,7 +101,10 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         </p>
       </header>
 
-      <section className="lesson-objectives" aria-labelledby="lesson-objective-title">
+      <section
+        className="lesson-objectives"
+        aria-labelledby="lesson-objective-title"
+      >
         <h2 id="lesson-objective-title">Objetivo</h2>
         <ul>
           {player.lesson.objectives.map((objective) => (
@@ -111,7 +126,11 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
 
       <LessonContentBlock block={currentBlock} />
 
-      <form className="lesson-navigation" action="/api/study/lesson/navigate" method="post">
+      <form
+        className="lesson-navigation"
+        action="/api/study/lesson/navigate"
+        method="post"
+      >
         <input type="hidden" name="sessionId" value={sessionId} />
         <input type="hidden" name="itemId" value={itemId} />
         <input type="hidden" name="lessonId" value={player.lesson.id} />
