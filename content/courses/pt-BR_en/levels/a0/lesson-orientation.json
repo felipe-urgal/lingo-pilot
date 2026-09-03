@@ -1,0 +1,42 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.bootstrap.orientation",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.bootstrap",
+  "title": {
+    "pt-BR": "Como funciona uma aula"
+  },
+  "estimatedMinutes": 3,
+  "objectives": [
+    {
+      "id": "objective.a0.bootstrap.orientation",
+      "description": {
+        "pt-BR": "Entender como avançar e concluir uma aula no LingoPilot."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": [],
+  "introducesConceptIds": [],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.bootstrap.orientation.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "As aulas aparecem em passos curtos. Leia cada parte com calma e avance quando estiver pronto."
+      }
+    },
+    {
+      "id": "block.a0.bootstrap.orientation.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "No último passo, use Concluir aula para registrar a conclusão. Apenas abrir a última tela não conclui nada."
+      }
+    }
+  ],
+  "activityIds": []
+}

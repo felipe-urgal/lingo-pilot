@@ -31,6 +31,10 @@ export {
   type Unit,
   type VocabularyItem,
 } from "./model.ts";
+export {
+  createCurriculumCatalog,
+  type CurriculumCatalog,
+} from "./catalog.ts";
 export { parseContentDocument } from "./schema.ts";
 export { validateContentGraph } from "./validation.ts";
 export { validateContentInputs, type ContentInput } from "./validator.ts";

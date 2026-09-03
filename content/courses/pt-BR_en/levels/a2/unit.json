@@ -1,0 +1,12 @@
+{
+  "kind": "unit",
+  "id": "unit.a2.bootstrap",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "levelId": "level.a2",
+  "title": {
+    "pt-BR": "Trilha A2"
+  },
+  "lessonIds": []
+}

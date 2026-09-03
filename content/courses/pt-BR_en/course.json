@@ -1,0 +1,13 @@
+{
+  "kind": "course",
+  "id": "course.en.ptbr.v1",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "sourceLocale": "pt-BR",
+  "targetLocale": "en",
+  "title": {
+    "pt-BR": "Inglês · Português (Brasil) → Inglês"
+  },
+  "levelIds": ["level.a0", "level.a1", "level.a2"]
+}
