@@ -1,8 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { Button } from "@lingo-pilot/ui";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../../server/auth/current-user";
+import { getEnglishCourseCatalog } from "../../../../server/content/runtime";
 import { getLearnerJourneyRepository } from "../../../../server/learner/runtime";
+import { listPracticeActivitiesForLesson } from "../../../../server/practice/activity-catalog";
 import { getLessonPlayer } from "../../../../server/study/runtime";
+import { PracticeActivityForm } from "../../practice-activity-form";
 import { LessonContentBlock } from "./lesson-content-block";
 
 type LessonPageProps = Readonly<{
@@ -10,6 +14,7 @@ type LessonPageProps = Readonly<{
   searchParams: Promise<{
     session?: string | string[];
     item?: string | string[];
+    practice?: string | string[];
   }>;
 }>;
 
@@ -19,6 +24,21 @@ function firstValue(value: string | string[] | undefined): string {
 
 function localizedText(text: Readonly<Record<string, string>>): string {
   return text["pt-BR"] ?? text.en ?? Object.values(text)[0] ?? "";
+}
+
+function PracticeFeedback({ status }: Readonly<{ status: string }>) {
+  if (!status) return null;
+  const copy =
+    status === "correct"
+      ? "Resposta correta. A tentativa foi registrada e este conteúdo entrou na sua agenda de revisão."
+      : status === "incorrect"
+        ? "Ainda não. A tentativa foi preservada; revise a explicação ou use a dica e tente novamente."
+        : "Não foi possível registrar esta tentativa. Nenhum progresso parcial foi aplicado.";
+  return (
+    <p className="practice-feedback" role="status">
+      {copy}
+    </p>
+  );
 }
 
 function LessonUnavailable({
@@ -66,6 +86,7 @@ export default async function LessonPage({
   const query = await searchParams;
   const sessionId = firstValue(query.session);
   const itemId = firstValue(query.item);
+  const practiceStatus = firstValue(query.practice);
   if (!sessionId || !itemId) redirect("/app/today");
 
   const player = await getLessonPlayer()({
@@ -87,6 +108,12 @@ export default async function LessonPage({
     return <LessonUnavailable reason="invalid-position" />;
   }
   const isLastBlock = currentIndex === player.totalBlocks - 1;
+  const practiceActivities = isLastBlock
+    ? listPracticeActivitiesForLesson(
+        getEnglishCourseCatalog(),
+        player.lesson.id,
+      )
+    : [];
 
   return (
     <article className="lesson-player" aria-labelledby="lesson-title">
@@ -125,6 +152,22 @@ export default async function LessonPage({
       </div>
 
       <LessonContentBlock block={currentBlock} />
+
+      {isLastBlock ? <PracticeFeedback status={practiceStatus} /> : null}
+      {practiceActivities.map((activity) => (
+        <PracticeActivityForm
+          key={activity.content.id}
+          action="/api/study/activity/submit"
+          activity={activity}
+          operationKey={randomUUID()}
+          hiddenFields={[
+            { name: "sessionId", value: sessionId },
+            { name: "itemId", value: itemId },
+            { name: "lessonId", value: player.lesson.id },
+          ]}
+          submitLabel="Verificar resposta"
+        />
+      ))}
 
       <form
         className="lesson-navigation"
