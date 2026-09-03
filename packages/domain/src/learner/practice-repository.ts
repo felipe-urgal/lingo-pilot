@@ -36,6 +36,7 @@ export interface SubmitAttemptInput {
   readonly contentSchemaVersion: number;
   readonly contentRevision: number;
   readonly operationKey: string;
+  readonly maxAttempts: number;
   readonly answer: PersistedActivityAnswer;
   readonly correct: boolean;
   readonly scorePercent: number;
@@ -50,7 +51,7 @@ export interface SubmitAttemptInput {
 
 export type SubmitAttemptResult =
   | Readonly<{ ok: true; attempt: ActivityAttempt; duplicate: boolean }>
-  | Readonly<{ ok: false; reason: "not-found" }>;
+  | Readonly<{ ok: false; reason: "not-found" | "retry-limit" }>;
 
 export interface DueReviewItem extends MemoryItem {
   readonly mastery: MasteryState | null;
@@ -90,6 +91,7 @@ export interface PracticeRepository {
     enrollmentId: string,
     now: Date,
     limit: number,
+    offset?: number,
   ): Promise<readonly DueReviewItem[]>;
   findReviewByOperation(
     enrollmentId: string,
