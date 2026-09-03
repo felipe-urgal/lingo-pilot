@@ -83,7 +83,8 @@ export default async function TodayPage() {
         <p className="today-plan__label">Aprender</p>
         <h2>{today.lesson.title["pt-BR"]}</h2>
         <p>
-          {journey.enrollment.entryPointLevel} · ~{item.estimatedMinutes} minutos
+          {journey.enrollment.entryPointLevel} · ~{item.estimatedMinutes}{" "}
+          minutos
         </p>
       </div>
       <form action="/api/study/session/start" method="post">
