@@ -2,7 +2,7 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
-> **Estado de execução em 2026-09-02:** a Fase 0 está concluída (#7–#16). A Fase 1 iniciou com a #17, que entregou learner profile, jornada inicial, onboarding A0/A1/A2 e Today shell mínimo. A próxima issue elegível é a #18. O status operacional detalhado fica em `docs/ISSUE_INDEX.md` e nas próprias issues.
+> **Estado de execução em 2026-09-03:** a Fase 0 está concluída (#7–#16). A Fase 1 começou com a #17 e o PR atual cobre #18–#20: catálogo/elegibilidade, StudySession/Today e Lesson Player. Após o merge, a próxima dependência direta do fluxo é #21 (Exercise Engine). O conteúdo A0→A2 real continua nas issues editoriais; o catálogo deste PR é somente bootstrap estrutural.
 
 ## Fase 0 — Foundation
 
@@ -75,33 +75,61 @@ Entregue:
 - entrada V1: começar do zero ou escolher um ponto de entrada A1/A2 para falso iniciante;
 - `Enrollment` ligando `LanguageProfile` ao curso;
 - criação idempotente/transacional da jornada inicial;
-- redirecionamento a um Today shell mínimo após onboarding;
+- redirecionamento a Today após onboarding;
 - edição posterior de preferências sem resetar o placement inicial.
 
 A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio. Conteúdo anterior pode ser dispensado para elegibilidade da trilha, mas não gera `Attempt`, `ReviewEvent`, `ConceptEvidence` ou `MasteryState` fictício. Um diagnóstico adaptativo completo continua posterior.
 
 ### Épico 1.2 — Currículo e conteúdo
 
-**Próxima frente: #18.**
+**Status: foundation coberta por #18 neste PR; expansão editorial continua.**
 
-- Course / Level / Unit / Lesson / Activity;
-- content revision;
-- schema de lesson;
-- import/validation pipeline;
-- A0 piloto;
-- A1/A2 completos progressivamente;
-- regras explícitas de elegibilidade por enrollment/entry point.
+A #18 entrega:
 
-### Épico 1.3 — Lesson Player
+- registry `Course → Level → Unit → Lesson` a partir de JSON validado;
+- catálogo pt-BR → en com IDs/revisions estáveis;
+- elegibilidade pura/testável;
+- diferença auditável entre `progress-satisfied`, `placement-waived` e prerequisite ausente;
+- blocking de lesson locked por ID manual;
+- proteção contra resume de revision incompatível.
 
-- blocos pedagógicos;
-- navegação;
-- persistência de progresso;
-- retomada;
-- completion rules;
-- estados de erro e offline parcial.
+O conteúdo do PR é bootstrap estrutural: A0/A1/A2 existem no catálogo e há uma única lesson de orientação do produto em A0. A migração/revisão pedagógica A0 piloto e a expansão A1/A2 continuam separadas.
 
-### Épico 1.4 — Exercise Engine
+### Épico 1.3 — Today + StudySession
+
+**Status: foundation coberta por #19 neste PR.**
+
+Entregue:
+
+- `StudySession + SessionItem` persistidos;
+- `localStudyDate` derivada do timezone do aluno;
+- plano versionado por `plannerVersion=today-shell-v1`;
+- item ordenado com reason code, eligibility reason, revision e estimativa;
+- unicidade por `Enrollment + localStudyDate` para geração concorrente idempotente;
+- Today mobile-first com `Começar estudo`/`Continuar estudo`;
+- estados loading, empty, error, success e completed.
+
+O planner completo de prioridade/tempo/reviews permanece na #25.
+
+### Épico 1.4 — Lesson Player
+
+**Status: foundation coberta por #20 neste PR.**
+
+Entregue:
+
+- renderer de ContentBlocks estruturados;
+- objetivo da lesson e progresso de passos;
+- start/resume por `LessonProgress`;
+- posição persistida;
+- navegação forward/back protegida contra submit stale/duplicado;
+- completion explícita somente no último passo;
+- ownership, eligibility e content revision revalidados no servidor;
+- fallback seguro para bloco desconhecido/conteúdo indisponível/revision mismatch;
+- layout mobile-first e controles nativos navegáveis por teclado.
+
+### Épico 1.5 — Exercise Engine
+
+**Próxima dependência direta após #20: #21.**
 
 - choice;
 - fill blank;
@@ -111,7 +139,7 @@ A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio
 - tentativa, feedback e retry;
 - conceito/habilidade vinculados à tentativa.
 
-### Épico 1.5 — Review/SRS
+### Épico 1.6 — Review/SRS
 
 - memory items;
 - review state;
@@ -120,7 +148,7 @@ A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio
 - histórico de review;
 - proteção contra duplicidade.
 
-### Épico 1.6 — Daily Session Planner
+### Épico 1.7 — Daily Session Planner
 
 - orçamento de minutos;
 - prioridade de revisões vencidas;
@@ -130,7 +158,7 @@ A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio
 - retomada da sessão;
 - sessão determinística e auditável.
 
-### Épico 1.7 — Progress & Mastery
+### Épico 1.8 — Progress & Mastery
 
 - progress event model;
 - domínio por conceito;
@@ -349,13 +377,17 @@ Design/Observability/Content/Test foundations ✅ #13–#16
   ↓
 Onboarding + LanguageProfile + Enrollment      ✅ #17
   ↓
-Course catalog + curriculum eligibility        ← próximo: #18
+Course catalog + curriculum eligibility        PR atual: #18
   ↓
-Lesson + Exercise Engine
+StudySession + Today                           PR atual: #19
+  ↓
+Lesson Player                                  PR atual: #20
+  ↓
+Exercise Engine                                próximo após merge: #21
   ↓
 Review/SRS
   ↓
-Daily Session Planner
+Daily Session Planner completo
   ↓
 Progress/Mastery
   ↓
