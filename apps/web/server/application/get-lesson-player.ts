@@ -79,7 +79,11 @@ export function createGetLessonPlayer(
     }
 
     const lesson = dependencies.catalog.lessonById.get(input.lessonId);
-    if (!lesson || lesson.status !== "published" || lesson.blocks.length === 0) {
+    if (
+      !lesson ||
+      lesson.status !== "published" ||
+      lesson.blocks.length === 0
+    ) {
       return { ok: false, reason: "content-unavailable" };
     }
     if (
