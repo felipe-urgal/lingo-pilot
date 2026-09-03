@@ -31,6 +31,15 @@ export {
   type UserRecord,
 } from "./ownership.ts";
 export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
+export { PostgresPracticeRepository } from "./repositories/postgres-practice-repository.ts";
+export {
+  activityAttempts,
+  activityProgress,
+  conceptEvidence,
+  masteryStates,
+  memoryItems,
+  reviewEvents,
+} from "./practice-schema.ts";
 export {
   appMetadata,
   authCredentials,
