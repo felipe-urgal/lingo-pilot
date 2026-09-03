@@ -15,23 +15,28 @@ const supportedTypes = [
 ] as const;
 
 describe("LessonContentBlock", () => {
-  it.each(supportedTypes)("renders %s blocks with an explicit label", (type, label) => {
-    render(
-      <LessonContentBlock
-        block={{
-          id: `block.${type}`,
-          type,
-          text: { "pt-BR": `Conteúdo ${type}` },
-        }}
-      />,
-    );
+  it.each(supportedTypes)(
+    "renders %s blocks with an explicit label",
+    (type, label) => {
+      render(
+        <LessonContentBlock
+          block={{
+            id: `block.${type}`,
+            type,
+            text: { "pt-BR": `Conteúdo ${type}` },
+          }}
+        />,
+      );
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-    expect(screen.getByText(`Conteúdo ${type}`)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.getByText(`Conteúdo ${type}`)).toBeInTheDocument();
+    },
+  );
 
   it("fails safely and records an observable warning for an unknown block", () => {
-    const warning = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warning = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
 
     render(
       <LessonContentBlock
@@ -43,8 +48,12 @@ describe("LessonContentBlock", () => {
       />,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Conteúdo indisponível");
-    expect(screen.queryByText("payload não renderizado")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Conteúdo indisponível",
+    );
+    expect(
+      screen.queryByText("payload não renderizado"),
+    ).not.toBeInTheDocument();
     expect(warning).toHaveBeenCalledWith("lesson_player.unsupported_block", {
       blockId: "block.unknown",
       blockType: "future-block",
