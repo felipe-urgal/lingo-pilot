@@ -1,0 +1,301 @@
+name: PR 86 acceptance hardening
+
+on:
+  push:
+    branches:
+      - feature/21-24-practice-learning-loop
+
+permissions:
+  contents: write
+
+env:
+  CI: true
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:5400
+  APP_TIMEZONE: UTC
+  DATABASE_URL: postgresql://lingo_pilot:lingo_pilot@127.0.0.1:5435/lingo_pilot_runtime
+  TEST_DATABASE_URL: postgresql://lingo_pilot:lingo_pilot@127.0.0.1:5435/lingo_pilot_test
+  LINGO_TEST_MODE: false
+
+jobs:
+  harden:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feature/21-24-practice-learning-loop
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          check-latest: false
+          package-manager-cache: true
+      - name: Enable package manager
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply acceptance hardening
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # Domain: retry limit is part of the mutation contract and due queue supports deterministic paging.
+          path = Path('packages/domain/src/learner/practice-repository.ts')
+          text = path.read_text()
+          text = text.replace(
+              '  readonly operationKey: string;\n  readonly answer: PersistedActivityAnswer;',
+              '  readonly operationKey: string;\n  readonly maxAttempts: number;\n  readonly answer: PersistedActivityAnswer;',
+              1,
+          )
+          text = text.replace(
+              '| Readonly<{ ok: false; reason: "not-found" }>;',
+              '| Readonly<{ ok: false; reason: "not-found" | "retry-limit" }>;',
+              1,
+          )
+          text = text.replace(
+              '    limit: number,\n  ): Promise<readonly DueReviewItem[]>;',
+              '    limit: number,\n    offset?: number,\n  ): Promise<readonly DueReviewItem[]>;',
+              1,
+          )
+          path.write_text(text)
+
+          # Repository: serialize per learner/activity before enforcing retry policy, paginate due queue, preserve review history.
+          path = Path('packages/db/src/repositories/postgres-practice-repository.ts')
+          text = path.read_text()
+          anchor = '''    return this.database.transaction(async (transaction) => {\n      const duplicate = await findAttemptByOperation('''
+          replacement = '''    return this.database.transaction(async (transaction) => {\n      await transaction.execute(\n        sql`select pg_advisory_xact_lock(hashtext(${`${input.enrollmentId}:${input.activityId}`}))`,\n      );\n\n      const duplicate = await findAttemptByOperation('''
+          if anchor not in text:
+              raise SystemExit('submit transaction anchor missing')
+          text = text.replace(anchor, replacement, 1)
+
+          anchor = '''      if (\n        input.sessionItemId &&\n        !(await ownsSessionItem(\n          transaction,\n          input.enrollmentId,\n          input.sessionItemId,\n        ))\n      ) {\n        return { ok: false, reason: "not-found" };\n      }\n\n      const [created] = await transaction'''
+          replacement = '''      if (\n        input.sessionItemId &&\n        !(await ownsSessionItem(\n          transaction,\n          input.enrollmentId,\n          input.sessionItemId,\n        ))\n      ) {\n        return { ok: false, reason: "not-found" };\n      }\n\n      const maxAttempts = Math.max(1, Math.trunc(input.maxAttempts));\n      const [progress] = await transaction\n        .select({ attempts: activityProgress.attempts })\n        .from(activityProgress)\n        .where(\n          and(\n            eq(activityProgress.enrollmentId, input.enrollmentId),\n            eq(activityProgress.activityId, input.activityId),\n          ),\n        )\n        .limit(1);\n      if ((progress?.attempts ?? 0) >= maxAttempts) {\n        return { ok: false, reason: "retry-limit" };\n      }\n\n      const [created] = await transaction'''
+          if anchor not in text:
+              raise SystemExit('retry limit anchor missing')
+          text = text.replace(anchor, replacement, 1)
+
+          text = text.replace(
+              '    limit: number,\n  ): Promise<readonly DueReviewItem[]> {\n    const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));',
+              '    limit: number,\n    offset = 0,\n  ): Promise<readonly DueReviewItem[]> {\n    const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));\n    const safeOffset = Math.max(0, Math.trunc(offset));',
+              1,
+          )
+          text = text.replace(
+              '      .orderBy(asc(memoryItems.dueAt), asc(memoryItems.id))\n      .limit(safeLimit);',
+              '      .orderBy(asc(memoryItems.dueAt), asc(memoryItems.id))\n      .limit(safeLimit)\n      .offset(safeOffset);',
+              1,
+          )
+          path.write_text(text)
+
+          # App use case: carry configured retry policy and return a stable error.
+          path = Path('apps/web/server/application/submit-activity-attempt.ts')
+          text = path.read_text()
+          text = text.replace(
+              '  "invalid-input" | "invalid-reference" | "content-unavailable";',
+              '  | "invalid-input"\n  | "invalid-reference"\n  | "content-unavailable"\n  | "retry-limit";',
+              1,
+          )
+          text = text.replace(
+              '        operationKey: input.operationKey,\n        answer: input.answer,',
+              '        operationKey: input.operationKey,\n        maxAttempts: activity.maxAttempts,\n        answer: input.answer,',
+              1,
+          )
+          text = text.replace(
+              '    if (!persisted.ok) return { ok: false, reason: "invalid-reference" };',
+              '    if (!persisted.ok) {\n      return {\n        ok: false,\n        reason: persisted.reason === "retry-limit" ? "retry-limit" : "invalid-reference",\n      };\n    }',
+              1,
+          )
+          path.write_text(text)
+
+          # Schema/migration: ReviewEvent is historical and must not disappear with a MemoryItem deletion.
+          path = Path('packages/db/src/practice-schema.ts')
+          text = path.read_text().replace(
+              '.references(() => memoryItems.id, { onDelete: "cascade" }),',
+              '.references(() => memoryItems.id, { onDelete: "restrict" }),',
+              1,
+          )
+          path.write_text(text)
+
+          path = Path('packages/db/drizzle/0004_practice_learning_loop.sql')
+          text = path.read_text().replace(
+              'REFERENCES "public"."memory_items"("id") ON DELETE cascade ON UPDATE no action;',
+              'REFERENCES "public"."memory_items"("id") ON DELETE restrict ON UPDATE no action;',
+              1,
+          )
+          path.write_text(text)
+
+          # Integration fixtures and acceptance tests.
+          path = Path('packages/db/test/practice-learning.integration.test.mjs')
+          text = path.read_text().replace(
+              '    operationKey: `attempt-op-${suffix}`,\n    answer: "understood",',
+              '    operationKey: `attempt-op-${suffix}`,\n    maxAttempts: 3,\n    answer: "understood",',
+              1,
+          )
+          addition = r'''
+
+test("enforces configured retry limit before creating additional evidence", async () => {
+  const enrollmentId = await createEnrollment();
+  const repository = new PostgresPracticeRepository(client.db);
+  const activityId = `activity.retry-limit-${randomUUID()}`;
+  const conceptId = `concept.retry-limit-${randomUUID()}`;
+
+  for (let index = 0; index < 3; index += 1) {
+    const result = await repository.submitAttempt(
+      attemptInput(enrollmentId, {
+        activityId,
+        conceptIds: [conceptId],
+        initialMemorySchedules: [
+          {
+            conceptId,
+            memoryItemId: `memory-${randomUUID()}`,
+            dueAt: new Date("2026-09-03T13:00:00.000Z"),
+            intervalSeconds: 600,
+            algorithmVersion: "review-scheduler-v1",
+          },
+        ],
+      }),
+      reduceMastery,
+    );
+    assert.equal(result.ok, true);
+  }
+
+  const rejected = await repository.submitAttempt(
+    attemptInput(enrollmentId, {
+      activityId,
+      conceptIds: [conceptId],
+      initialMemorySchedules: [
+        {
+          conceptId,
+          memoryItemId: `memory-${randomUUID()}`,
+          dueAt: new Date("2026-09-03T13:00:00.000Z"),
+          intervalSeconds: 600,
+          algorithmVersion: "review-scheduler-v1",
+        },
+      ],
+    }),
+    reduceMastery,
+  );
+  assert.deepEqual(rejected, { ok: false, reason: "retry-limit" });
+
+  const state = await client.pool.query(
+    `select
+      (select count(*)::int from activity_attempts where enrollment_id = $1 and activity_id = $2) as attempts,
+      (select count(*)::int from concept_evidence where enrollment_id = $1 and concept_id = $3) as evidence`,
+    [enrollmentId, activityId, conceptId],
+  );
+  assert.deepEqual(state.rows[0], { attempts: 3, evidence: 3 });
+});
+
+test("paginates the due queue in deterministic dueAt/id order", async () => {
+  const enrollmentId = await createEnrollment();
+  const repository = new PostgresPracticeRepository(client.db);
+  const dueAt = new Date("2026-09-03T13:00:00.000Z");
+
+  for (const suffix of ["a", "b"]) {
+    const conceptId = `concept.page.${suffix}.${randomUUID()}`;
+    await repository.submitAttempt(
+      attemptInput(enrollmentId, {
+        activityId: `activity.page.${suffix}.${randomUUID()}`,
+        conceptIds: [conceptId],
+        initialMemorySchedules: [
+          {
+            conceptId,
+            memoryItemId: `memory.page.${suffix}.${randomUUID()}`,
+            dueAt,
+            intervalSeconds: 600,
+            algorithmVersion: "review-scheduler-v1",
+          },
+        ],
+      }),
+      reduceMastery,
+    );
+  }
+
+  const first = await repository.listDueReviewItems(enrollmentId, dueAt, 1, 0);
+  const second = await repository.listDueReviewItems(enrollmentId, dueAt, 1, 1);
+  assert.equal(first.length, 1);
+  assert.equal(second.length, 1);
+  assert.notEqual(first[0]?.id, second[0]?.id);
+  assert.ok((first[0]?.id ?? "") < (second[0]?.id ?? ""));
+});
+'''
+          if 'enforces configured retry limit before creating additional evidence' not in text:
+              text += addition
+          path.write_text(text)
+
+          # Evaluator coverage for every deterministic type + unknown safe failure.
+          path = Path('packages/learning/src/activity-engine.test.ts')
+          text = path.read_text()
+          addition = r'''
+
+it("evaluates each deterministic activity discriminator", () => {
+  const cases = [
+    [{ type: "single-choice", choiceIds: ["a", "b"], correctChoiceId: "a" }, "a"],
+    [
+      { type: "multiple-choice", choiceIds: ["a", "b"], correctChoiceIds: ["a", "b"] },
+      ["a", "b"],
+    ],
+    [
+      {
+        type: "fill-blank",
+        acceptedAnswers: ["hello"],
+        normalization: { locale: "en" },
+      },
+      "hello",
+    ],
+    [{ type: "word-order", tokenIds: ["a", "b"], correctOrder: ["a", "b"] }, ["a", "b"]],
+    [{ type: "matching", pairs: { left: "right" } }, { left: "right" }],
+    [
+      {
+        type: "short-answer",
+        acceptedAnswers: ["hello"],
+        normalization: { locale: "en" },
+      },
+      "hello",
+    ],
+    [
+      {
+        type: "translation",
+        acceptedAnswers: ["hello"],
+        normalization: { locale: "en" },
+      },
+      "hello",
+    ],
+  ];
+
+  for (const [definition, answer] of cases) {
+    const result = evaluateActivity(definition, answer);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.evaluation.correct).toBe(true);
+  }
+});
+
+it("fails safely for an unknown activity discriminator", () => {
+  const result = evaluateActivity({ type: "future-type" }, "answer");
+  expect(result).toEqual({ ok: false, reason: "unsupported-activity" });
+});
+'''
+          if 'evaluates each deterministic activity discriminator' not in text:
+              text += addition
+          path.write_text(text)
+          PY
+
+      - name: Format and validate fast gates
+        run: |
+          pnpm format
+          pnpm format:check
+          pnpm typecheck
+          pnpm test:unit
+
+      - name: Commit and remove helper
+        shell: bash
+        run: |
+          git rm .github/workflows/pr-86-acceptance-hardening.yml
+          git add -A
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix: enforce practice retry and history invariants"
+          git push origin HEAD:feature/21-24-practice-learning-loop
