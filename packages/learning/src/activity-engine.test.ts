@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { evaluateActivity } from "./activity-engine.ts";
+import {
+  evaluateActivity,
+  type ActivityAnswer,
+  type DeterministicActivityDefinition,
+} from "./activity-engine.ts";
 
 describe("deterministic activity engine", () => {
   it("evaluates single and multiple choice without accepting duplicate selections", () => {
@@ -92,5 +96,67 @@ describe("deterministic activity engine", () => {
         ["am"],
       ),
     ).toEqual({ ok: false, reason: "invalid-answer" });
+  });
+
+  it("evaluates every supported deterministic discriminator", () => {
+    const cases: ReadonlyArray<
+      readonly [DeterministicActivityDefinition, ActivityAnswer]
+    > = [
+      [
+        { type: "single-choice", choiceIds: ["a", "b"], correctChoiceId: "a" },
+        "a",
+      ],
+      [
+        {
+          type: "multiple-choice",
+          choiceIds: ["a", "b"],
+          correctChoiceIds: ["a", "b"],
+        },
+        ["a", "b"],
+      ],
+      [
+        {
+          type: "fill-blank",
+          acceptedAnswers: ["hello"],
+          normalization: { locale: "en" },
+        },
+        "hello",
+      ],
+      [
+        { type: "word-order", tokenIds: ["a", "b"], correctOrder: ["a", "b"] },
+        ["a", "b"],
+      ],
+      [{ type: "matching", pairs: { left: "right" } }, { left: "right" }],
+      [
+        {
+          type: "short-answer",
+          acceptedAnswers: ["hello"],
+          normalization: { locale: "en" },
+        },
+        "hello",
+      ],
+      [
+        {
+          type: "translation",
+          acceptedAnswers: ["hello"],
+          normalization: { locale: "en" },
+        },
+        "hello",
+      ],
+    ];
+
+    for (const [definition, answer] of cases) {
+      const result = evaluateActivity(definition, answer);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.evaluation.correct).toBe(true);
+    }
+  });
+
+  it("fails safely for an unknown activity discriminator", () => {
+    const result = evaluateActivity(
+      { type: "future-type" } as never,
+      "answer",
+    );
+    expect(result).toEqual({ ok: false, reason: "unsupported-activity" });
   });
 });
