@@ -11,9 +11,7 @@ import {
 
 export type LessonPlayerAction = "back" | "next" | "complete";
 export type NavigateLessonPlayerError =
-  | LessonPlayerLoadError
-  | "invalid-action"
-  | "invalid-state";
+  LessonPlayerLoadError | "invalid-action" | "invalid-state";
 
 export type NavigateLessonPlayerResult =
   | Readonly<{
