@@ -43,7 +43,7 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 
 ### Sequência atual recomendada
 
-A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding. As issues #18, #19 e #20 formam agora uma única vertical coesa em review, porque catálogo/elegibilidade alimenta a sessão diária e o Lesson Player consome exatamente o item/revision planejado.
+A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding. As issues #18, #19 e #20 formam agora uma única vertical coesa em review no PR #85, porque catálogo/elegibilidade alimenta a sessão diária e o Lesson Player consome exatamente o item/revision planejado.
 
 Após o merge desse conjunto, a próxima frente elegível passa a ser:
 
@@ -54,10 +54,10 @@ Após o merge desse conjunto, a próxima frente elegível passa a ser:
 ## Fase 1 — Study Engine
 
 - #17 Learner profile and onboarding flow — **Concluída**
-- #18 Course catalog, enrollment and curriculum eligibility — **Em review no PR da vertical #18–#20**
-- #19 StudySession data model and Today experience shell — **Em review no PR da vertical #18–#20**
-- #20 Lesson Player with structured pedagogical blocks — **Em review no PR da vertical #18–#20**
-- #21 Exercise Engine for deterministic activity types — **Próxima após merge de #18–#20**
+- #18 Course catalog, enrollment and curriculum eligibility — **Em review no PR #85**
+- #19 StudySession data model and Today experience shell — **Em review no PR #85**
+- #20 Lesson Player with structured pedagogical blocks — **Em review no PR #85**
+- #21 Exercise Engine for deterministic activity types — **Próxima após merge do PR #85**
 - #22 Transactional attempt submission and feedback pipeline
 - #23 Spaced repetition engine and review queue
 - #24 Concept evidence and mastery model v1
@@ -115,11 +115,11 @@ A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar 
 ```text
 profile + LanguageProfile + Enrollment       ✅ #17
       ↓
-course + eligibility                         review #18
+course + eligibility                         review #18 / PR #85
       ↓
-Today/session                                review #19
+Today/session                                review #19 / PR #85
       ↓
-Lesson Player                                review #20
+Lesson Player                                review #20 / PR #85
       ↓
 exercise → attempt
       ↓          ↓
@@ -246,4 +246,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. As issues **#18, #19 e #20** estão agrupadas na vertical atualmente em review. Após o merge, a próxima issue elegível será **#21 — Exercise Engine for deterministic activity types**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. As issues **#18, #19 e #20** estão agrupadas no **PR #85**, atualmente em review/CI. Após o merge, a próxima issue elegível será **#21 — Exercise Engine for deterministic activity types**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
