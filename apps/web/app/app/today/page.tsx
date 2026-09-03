@@ -74,7 +74,11 @@ export default async function TodayPage() {
   return (
     <section className="today-card" aria-labelledby="today-title">
       <p className="eyebrow">Hoje · {item.estimatedMinutes} min</p>
-      <h1 id="today-title">{isContinuing ? "Continue de onde parou." : "Sua próxima ação está pronta."}</h1>
+      <h1 id="today-title">
+        {isContinuing
+          ? "Continue de onde parou."
+          : "Sua próxima ação está pronta."}
+      </h1>
       <div className="today-plan" aria-label="Plano de estudo de hoje">
         <p className="today-plan__label">Aprender</p>
         <h2>{today.lesson.title["pt-BR"]}</h2>
