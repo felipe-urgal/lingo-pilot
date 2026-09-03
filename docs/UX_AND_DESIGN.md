@@ -78,6 +78,19 @@ Falar sobre você · 5 min
 
 Não colocar gráficos históricos, badges e configurações acima da ação de estudar.
 
+### Baseline executável da Fase 1
+
+A vertical #18–#20 implementa o primeiro Today orientado por sessão real:
+
+- o servidor resolve uma `StudySession` persistida por matrícula + data local;
+- a sessão inicial contém uma única lesson elegível enquanto o planner completo da #25 ainda não existe;
+- refresh não troca silenciosamente o item já planejado;
+- `Começar estudo` vira `Continuar estudo` quando a sessão já foi iniciada;
+- empty, loading, error, success e completed possuem estados explícitos;
+- conteúdo/revision incompatível não é apresentado como se a sessão estivesse íntegra.
+
+Essa simplificação é intencional: Today já responde “o que estudar agora?” sem antecipar review, skill balancing ou algoritmo avançado de prioridade.
+
 ## 5. Study flow
 
 Ao iniciar, entrar em modo focado.
@@ -94,6 +107,8 @@ CTA próximo
 
 A navegação global pode ser reduzida durante a sessão para evitar abandono acidental.
 
+Na baseline executável, iniciar uma lesson sempre revalida no servidor o ownership da matrícula/sessão, a elegibilidade curricular e a `ContentRevision` planejada. A URL por si só nunca concede acesso à lesson.
+
 ## 6. Lesson Player
 
 Tipos de tela/bloco:
@@ -108,6 +123,20 @@ Tipos de tela/bloco:
 - recuperação sem pista.
 
 Princípio: uma lesson longa deve ser quebrada em passos curtos, mas sem transformar cada linha em uma tela artificial.
+
+### Comportamento implementado na baseline #20
+
+- a lesson é renderizada exclusivamente a partir de `ContentBlock` validado;
+- cada passo apresenta um bloco pedagógico com largura de leitura controlada;
+- voltar/avançar depende de ação explícita do aluno;
+- a posição persistida só muda após navegação válida, nunca por refresh;
+- o backend compara o índice esperado com o persistido para impedir POST duplicado de pular conteúdo;
+- abrir o último bloco não conclui a lesson;
+- conclusão exige ação explícita `Concluir aula`;
+- revisão de conteúdo diferente da planejada/progress existente bloqueia retomada de forma segura;
+- tipo de bloco desconhecido deve falhar com estado seguro em vez de renderização genérica silenciosa.
+
+O Exercise Engine da #21 entra dentro desse fluxo depois; a baseline #20 não inventa tentativa ou avaliação para checkpoints ainda não implementados como Activity.
 
 ## 7. Feedback de exercício
 
@@ -181,6 +210,16 @@ Todo componente assíncrono precisa considerar:
 
 Exemplo: speaking precisa diferenciar falta de permissão de microfone, falha de upload, falha de transcrição e falha de avaliação.
 
+Para Today/Lesson Player, a baseline diferencia pelo menos:
+
+- sessão ainda não disponível;
+- sessão pronta;
+- sessão em andamento;
+- sessão concluída;
+- conteúdo planejado ausente/incompatível;
+- erro recuperável de carregamento;
+- lesson inacessível por ownership/elegibilidade/revision.
+
 ## 12. Design system
 
 Tokens mínimos:
@@ -243,6 +282,8 @@ Obrigatório:
 - transcrição de áudio;
 - alternativa a drag-only;
 - `prefers-reduced-motion`.
+
+Today e Lesson Player devem manter heading/landmarks previsíveis, CTAs nativos de teclado e nenhuma informação essencial dependente apenas de cor.
 
 ## 15. Motion
 
