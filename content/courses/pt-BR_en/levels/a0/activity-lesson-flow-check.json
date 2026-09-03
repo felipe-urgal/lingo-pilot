@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.bootstrap.lesson-flow-check",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "published",
+  "lessonId": "lesson.a0.bootstrap.orientation",
+  "type": "single-choice",
+  "prompt": {
+    "pt-BR": "Qual ação registra a conclusão de uma aula?"
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["complete-lesson"]
+  },
+  "conceptIds": ["concept.a0.bootstrap.lesson-flow"],
+  "objectiveIds": ["objective.a0.bootstrap.orientation"],
+  "modality": "reading",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -286,3 +286,11 @@ Produção usa `DATABASE_URL` fornecida pelo provider server-side. Migrations pe
 A conexão de produção não deve reutilizar credenciais locais/teste, e a aplicação não deve executar migration implicitamente ao iniciar ou importar módulos.
 
 Antes de tráfego público, auth/signup precisam também de rate limit adequado à topologia serverless; não usar limiter local em memória como falsa garantia distribuída.
+
+## Practice learning loop — migration 0004
+
+A migration `0004_practice_learning_loop.sql` adiciona `activity_attempts`, `activity_progress`, `memory_items`, `review_events`, `concept_evidence` e `mastery_states`.
+
+Attempt é composto numa única transação com progress, MemoryItem inicial, evidence e mastery. A política de retry é serializada por Enrollment + Activity antes da contagem, evitando que requests concorrentes ultrapassem `maxAttempts`. Review usa CAS em `review_count`; falha ou submit stale não produz evento/evidência parcial.
+
+`review_events.memory_item_id` usa `ON DELETE RESTRICT`, pois remover estado corrente não pode apagar histórico pedagógico. As tabelas ligadas diretamente a Enrollment seguem o lifecycle de exclusão da jornada; export/retention deve tratar Attempts/Reviews/Evidence como dados do learner.

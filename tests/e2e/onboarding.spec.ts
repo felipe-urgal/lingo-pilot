@@ -12,7 +12,7 @@ async function signup(page, email: string, password: string) {
   await expect(page).toHaveURL(/\/app\/onboarding$/);
 }
 
-test("signup/login -> onboarding A0 -> Today -> resumable lesson -> completed session", async ({
+test("signup/login -> onboarding A0 -> Today -> practice -> resumable lesson -> completed session", async ({
   page,
 }) => {
   const email = uniqueEmail("a0");
@@ -57,6 +57,24 @@ test("signup/login -> onboarding A0 -> Today -> resumable lesson -> completed se
   await page.reload();
   await expect(page.getByText("Passo 2 de 2")).toBeVisible();
   await expect(page.getByText("Estudo de hoje concluído.")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", {
+      name: "Qual ação registra a conclusão de uma aula?",
+    }),
+  ).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel("Usar “Concluir aula” no último passo").check();
+  await expect(
+    page.getByRole("button", { name: "Verificar resposta" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Verificar resposta" }).click();
+  await expect(
+    page.getByText(/Resposta correta\. A tentativa foi registrada/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Concluir aula" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Concluir aula" }).click();
 
   await expect(page).toHaveURL(/\/app\/today$/);

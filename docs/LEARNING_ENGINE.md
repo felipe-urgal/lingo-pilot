@@ -398,3 +398,25 @@ Qualquer mudança de fórmula que altere decisões reais precisa:
 4. registro em ADR quando alterar significado de progresso.
 
 O mesmo vale para semântica de eligibility, plannerVersion e migration de `LessonProgress` entre revisions publicadas.
+
+## 19. Practice loop executável (#21–#24)
+
+O PR #86 implementa a parte antes descrita como futura:
+
+```text
+Activity determinística
+   ↓
+ActivityAttempt imutável + ActivityProgress
+   ↓
+ConceptEvidence → MasteryState (mastery-v1)
+   ↓
+MemoryItem → due queue → ReviewEvent
+```
+
+`evaluateActivity` é puro e cobre single/multiple choice, fill blank, word order, matching, short answer e translation. A UI é apenas renderer/coleta de resposta; `correct`, score e grade são derivados no servidor. Cada Activity possui `maxAttempts`, aplicado transacionalmente sob lock por Enrollment + Activity para que submits concorrentes não ultrapassem a política.
+
+O `review-scheduler-v1` é determinístico e encapsulado atrás de `ReviewScheduler`. Ele é uma baseline explícita e auditável, **não FSRS**; parâmetros/versão ficam persistidos e a ADR 0005 documenta a decisão. A fila usa `dueAt, id` como ordem estável, limite máximo e paginação por offset.
+
+`ReviewEvent`, `ActivityAttempt` e `ConceptEvidence` são históricos imutáveis. Retry com a mesma `operationKey` retorna o evento original. Review concorrente usa `expectedReviewCount` como compare-and-set. `ReviewEvent → MemoryItem` usa `ON DELETE RESTRICT` para não apagar histórico de revisão por cascata.
+
+`mastery-v1` recomputa score/confidence a partir de evidências reais; delayed retrieval pesa mais que prática guiada e erro recente reduz o score. Mastery continua separado de lesson completion e do estado do SRS.

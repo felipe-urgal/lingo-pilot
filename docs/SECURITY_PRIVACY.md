@@ -300,3 +300,7 @@ Qualquer PR que introduza:
 - armazenamento de áudio;
 
 precisa atualizar este documento ou explicar por que não há mudança de política.
+
+## Dados de prática e revisão
+
+`ActivityAttempt.answer` é dado do learner e pode conter texto em short-answer/translation. O payload completo não entra em logs/telemetria por padrão. Ownership é derivado da jornada autenticada, nunca de IDs enviados pelo browser. Attempts, ReviewEvents e ConceptEvidence compõem histórico pedagógico; nenhum provider externo recebe respostas nesta vertical determinística.

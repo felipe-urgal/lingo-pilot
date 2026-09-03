@@ -10,9 +10,9 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
-A **Fase 1 — Study Engine** começou pela #17 com signup, `LearnerProfile`, `LanguageProfile`, `Enrollment` e onboarding A0/A1/A2. O PR das #18–#20 acrescenta a próxima vertical: catálogo curricular carregado de conteúdo versionado/validado, elegibilidade com placement waiver auditável, `StudySession` diária persistida, tela Hoje com ação clara e Lesson Player estruturado/retomável com completion explícita.
+A **Fase 1 — Study Engine** já cobre #17–#20 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today e Lesson Player retomável. O PR #86 adiciona a vertical #21–#24: Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada e evidência/mastery por conceito.
 
-O conteúdo autorado deste recorte é deliberadamente um **bootstrap estrutural**: Course/Level/Unit A0/A1/A2 e uma lesson de orientação do produto em A0. A migração editorial das aulas reais A0→A2 continua separada. Exercise Engine (#21), SRS, mastery, planner completo (#25), conteúdo pedagógico real em escala e AI Tutor continuam fora deste PR.
+O conteúdo autorado continua deliberadamente pequeno: Course/Level/Unit A0/A1/A2, uma lesson de orientação A0 e uma Activity/Concept determinísticos para exercitar o loop de prática. A migração editorial das aulas reais A0→A2 continua separada. Planner completo (#25), hardening de sessão (#26), progresso completo (#27), conteúdo em escala e AI Tutor continuam fora deste PR.
 
 Stack inicial fixada:
 
@@ -253,7 +253,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 ## Roadmap
 
 - **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
-- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17 entregue; #18–#20 cobertas por este PR. Após o merge, #21 é a próxima dependência direta do fluxo de estudo.**
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17–#20 entregues; #21–#24 em review no PR #86. Após esse merge, #25 é a próxima dependência direta do loop.**
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
 - **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.
@@ -301,3 +301,19 @@ Antes de alterar código, leia obrigatoriamente:
 - [Status de produção](docs/PRODUCTION_STATUS.md)
 - [Workflow de desenvolvimento](docs/DEVELOPMENT_WORKFLOW.md)
 - [Definition of Done](docs/DEFINITION_OF_DONE.md)
+
+### Loop de prática executável
+
+No último passo de uma lesson, Activities determinísticas são avaliadas no servidor e registradas como `ActivityAttempt`. A mesma transação atualiza `ActivityProgress`, cria `ConceptEvidence`, inicializa `MemoryItem` e recalcula `MasteryState`. `operationKey` torna retries idempotentes; a política `maxAttempts` é aplicada de forma serializada por learner + Activity.
+
+```text
+Lesson Player
+   ↓
+Activity → Attempt
+   ↓         ↓
+feedback   ConceptEvidence → MasteryState
+   ↓
+MemoryItem → /app/review → ReviewEvent
+```
+
+A due queue é ordenada deterministicamente, limitada/paginável e o histórico de `ReviewEvent` não é apagado por remoção de `MemoryItem`. O scheduler V1 é versionado (`review-scheduler-v1`) e deliberadamente não é apresentado como FSRS; a decisão está em `docs/ADR/0005-practice-scheduler-and-mastery-v1.md`.

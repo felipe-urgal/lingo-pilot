@@ -475,3 +475,12 @@ users
 A migration `0002_learner_journey` cria profiles/enrollment. A `0003_study_sessions` adiciona `lesson_progress`, `study_sessions` e `session_items`, com FKs, checks e constraints de unicidade para proteger ownership, data local, revision, estado, ordem e idempotência.
 
 Course/Level/Unit/Lesson continuam como conteúdo versionado no Git e não são duplicados como tabelas de catálogo nesta foundation. Attempts, ReviewEvent, MemoryItem, MasteryState e demais estruturas pedagógicas continuam pertencendo às issues específicas.
+
+## Practice, review e mastery (#21–#24)
+
+- `ActivityAttempt`: fato imutável de uma resposta avaliada contra uma revision específica;
+- `MemoryItem` + `ReviewEvent`: estado corrente e histórico do agendamento de revisão;
+- `ConceptEvidence`: fato pedagógico derivado de Attempt/Review;
+- `MasteryState`: projeção versionada/recomputável do conjunto de evidências.
+
+`ActivityProgress` é projeção operacional, não fonte de verdade pedagógica. `LessonProgress` continua representando navegação/conclusão de lesson e não é sinônimo de mastery. A idempotência usa `operationKey` por Enrollment; operação nova respeita `maxAttempts`, enquanto retry devolve o fato já persistido.

@@ -30,6 +30,35 @@ export type {
   LearnerJourneyRepository,
   SaveInitialLearnerJourneyInput,
 } from "./learner/learner-journey-repository.ts";
+export {
+  evaluationSources,
+  evidenceKinds,
+  evidenceModalities,
+  reviewGrades,
+  type ActivityAttempt,
+  type ActivityProgress,
+  type AttemptEvaluation,
+  type ConceptEvidence,
+  type EvaluationSource,
+  type EvidenceKind,
+  type EvidenceModality,
+  type MasteryState,
+  type MemoryItem,
+  type PersistedActivityAnswer,
+  type ReviewEvent,
+  type ReviewGrade,
+} from "./learner/practice-learning.ts";
+export type {
+  DueReviewItem,
+  InitialMemorySchedule,
+  MasteryProjection,
+  MasteryReducer,
+  PracticeRepository,
+  RecordReviewInput,
+  RecordReviewResult,
+  SubmitAttemptInput,
+  SubmitAttemptResult,
+} from "./learner/practice-repository.ts";
 export type {
   CompleteLessonInput,
   EnsureDailySessionInput,

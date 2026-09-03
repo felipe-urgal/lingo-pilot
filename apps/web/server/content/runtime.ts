@@ -1,4 +1,6 @@
 import course from "../../../../content/courses/pt-BR_en/course.json" with { type: "json" };
+import activityA0LessonFlow from "../../../../content/courses/pt-BR_en/levels/a0/activity-lesson-flow-check.json" with { type: "json" };
+import conceptA0LessonFlow from "../../../../content/courses/pt-BR_en/levels/a0/concept-lesson-flow.json" with { type: "json" };
 import levelA0 from "../../../../content/courses/pt-BR_en/levels/a0/level.json" with { type: "json" };
 import lessonA0Orientation from "../../../../content/courses/pt-BR_en/levels/a0/lesson-orientation.json" with { type: "json" };
 import unitA0 from "../../../../content/courses/pt-BR_en/levels/a0/unit.json" with { type: "json" };
@@ -18,6 +20,8 @@ const inputs: readonly ContentInput[] = [
   { file: "level-a0.json", value: levelA0 },
   { file: "unit-a0.json", value: unitA0 },
   { file: "lesson-a0-orientation.json", value: lessonA0Orientation },
+  { file: "concept-a0-lesson-flow.json", value: conceptA0LessonFlow },
+  { file: "activity-a0-lesson-flow.json", value: activityA0LessonFlow },
   { file: "level-a1.json", value: levelA1 },
   { file: "unit-a1.json", value: unitA1 },
   { file: "level-a2.json", value: levelA2 },
