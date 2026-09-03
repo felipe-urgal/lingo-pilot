@@ -10,7 +10,9 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
-A **Fase 1 — Study Engine** começou pela #17: criação de conta first-party, `LearnerProfile`, `LanguageProfile`, `Enrollment`, onboarding A0/A1/A2 e um Today shell mínimo já formam a primeira vertical de acesso. A próxima atividade elegível é a #18, responsável pelo catálogo de curso e pela elegibilidade curricular. Lesson Player, exercícios, SRS, planner, progresso completo, conteúdo pedagógico real e AI Tutor continuam fora deste recorte.
+A **Fase 1 — Study Engine** começou pela #17 com signup, `LearnerProfile`, `LanguageProfile`, `Enrollment` e onboarding A0/A1/A2. O PR das #18–#20 acrescenta a próxima vertical: catálogo curricular carregado de conteúdo versionado/validado, elegibilidade com placement waiver auditável, `StudySession` diária persistida, tela Hoje com ação clara e Lesson Player estruturado/retomável com completion explícita.
+
+O conteúdo autorado deste recorte é deliberadamente um **bootstrap estrutural**: Course/Level/Unit A0/A1/A2 e uma lesson de orientação do produto em A0. A migração editorial das aulas reais A0→A2 continua separada. Exercise Engine (#21), SRS, mastery, planner completo (#25), conteúdo pedagógico real em escala e AI Tutor continuam fora deste PR.
 
 Stack inicial fixada:
 
@@ -152,26 +154,27 @@ O contrato completo de branch protection, merge policy, segurança de Actions e 
 
 ```text
 apps/
-  web/                  aplicação Next.js + delivery/auth/onboarding server-side
+  web/                  Next.js + delivery/auth/onboarding/Today/Lesson Player
+content/                currículo JSON versionado e validado
 packages/
-  domain/               regras de negócio puras + contratos da jornada do aluno
-  learning/             planner, mastery, SRS e progressão
-  content/              schemas versionados + parser/validação de conteúdo
-  db/                   persistência, migrations, auth/ownership + learner journey
+  domain/               contratos puros da jornada, sessão e progresso
+  learning/             elegibilidade, data local e futuros planner/mastery/SRS
+  content/              schemas, parser, validação e catálogo curricular
+  db/                   persistência/migrations de auth, jornada e StudySession
   ai/                   providers, prompts, guardrails e eval contracts
   ui/                   primitives compartilhados
   config/               tooling + contrato tipado de configuração
   test-support/         suporte determinístico de testes
 scripts/                checks e operações locais do repositório
-tests/                  testes automatizados de Foundation e fluxos E2E da Fase 1
+tests/                  testes estruturais e fluxos E2E da Fase 1
 docs/                   produto, arquitetura e operação
 ```
 
-Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria a metadata técnica da foundation; a `0001` acrescenta identidade, credencial, sessão server-side e fixture de ownership; a `0002` adiciona `LearnerProfile`, `LanguageProfile` e `Enrollment` sem antecipar progresso, mastery ou StudySession.
+Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria metadata técnica; `0001` identidade/credencial/sessão/ownership; `0002` `LearnerProfile + LanguageProfile + Enrollment`; e `0003` adiciona `LessonProgress`, `StudySession` e `SessionItem` sem antecipar Attempt, mastery ou SRS.
 
-## Primeiro acesso e onboarding
+## Primeiro acesso e fluxo de estudo
 
-O fluxo implementado pela #17 é:
+O fluxo da primeira vertical da Fase 1 é:
 
 ```text
 /signup
@@ -182,10 +185,18 @@ conta + sessão
   ↓
 LearnerProfile + LanguageProfile + Enrollment
   ↓
-/app/today
+Curriculum Eligibility
+  ↓
+/app/today → StudySession diária
+  ↓
+Lesson Player → LessonProgress
 ```
 
-A entrada pode ser A0 (`placementSource=zero`) ou A1/A2 (`placementSource=manual`). A escolha manual serve apenas para posicionar a trilha: ela não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício. Retry/refresh não cria uma segunda jornada equivalente, e edição posterior preserva o ponto de entrada enquanto altera apenas preferências globais.
+A entrada pode ser A0 (`placementSource=zero`) ou A1/A2 (`placementSource=manual`). A escolha manual serve apenas para posicionar a trilha: ela não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
+
+Today calcula a data local pelo timezone do aluno e persiste uma sessão por `Enrollment + localStudyDate`. O planner V1 (`today-shell-v1`) retoma uma lesson em andamento ou seleciona a próxima elegível. O plano preserva reason code, motivo de elegibilidade e revision do conteúdo, portanto refresh não replana silenciosamente a sessão.
+
+O Lesson Player renderiza `ContentBlock` estruturado, persiste posição e exige ação explícita no último passo para concluir. Start/resume revalidam ownership, eligibility e `schemaVersion + revision`; uma URL manual ou uma revision alterada não consegue forçar progresso.
 
 ## Princípios do produto
 
@@ -211,7 +222,7 @@ Domain
 Infrastructure adapters
 ```
 
-Autenticação segue a mesma direção: delivery resolve identidade via `AuthAdapter`; domínio não conhece cookie, senha, token ou provider. Ownership e jornada do aluno são aplicados no servidor nas queries de recurso.
+Autenticação segue a mesma direção: delivery resolve identidade via `AuthAdapter`; domínio não conhece cookie, senha, token ou provider. Ownership da jornada e dos recursos de estudo é aplicado no servidor, usando o `Enrollment` alcançado pela identidade autenticada em vez de confiar em IDs enviados pelo browser.
 
 A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md), [`docs/ADR/0001-initial-architecture.md`](docs/ADR/0001-initial-architecture.md) e [`docs/ADR/0003-first-party-auth-session.md`](docs/ADR/0003-first-party-auth-session.md).
 
@@ -242,7 +253,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 ## Roadmap
 
 - **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
-- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **Iniciada; #17 entregue e #18 é a próxima atividade.**
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17 entregue; #18–#20 cobertas por este PR. Após o merge, #21 é a próxima dependência direta do fluxo de estudo.**
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
 - **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.
