@@ -48,10 +48,9 @@ export interface SubmitAttemptInput {
   readonly now: Date;
 }
 
-export interface SubmitAttemptResult {
-  readonly attempt: ActivityAttempt;
-  readonly duplicate: boolean;
-}
+export type SubmitAttemptResult =
+  | Readonly<{ ok: true; attempt: ActivityAttempt; duplicate: boolean }>
+  | Readonly<{ ok: false; reason: "not-found" }>;
 
 export interface DueReviewItem extends MemoryItem {
   readonly mastery: MasteryState | null;
