@@ -39,11 +39,17 @@ test("signup/login -> onboarding A0 -> Today -> resumable lesson -> completed se
   await expect(
     page.getByRole("heading", { name: "Sua próxima ação está pronta." }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Como funciona uma aula" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Como funciona uma aula" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Começar estudo" }).click();
 
-  await expect(page).toHaveURL(/\/app\/lesson\/lesson\.a0\.bootstrap\.orientation/);
-  await expect(page.getByRole("heading", { name: "Como funciona uma aula" })).toBeVisible();
+  await expect(page).toHaveURL(
+    /\/app\/lesson\/lesson\.a0\.bootstrap\.orientation/,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Como funciona uma aula" }),
+  ).toBeVisible();
   await expect(page.getByText("Passo 1 de 2")).toBeVisible();
   await page.getByRole("button", { name: "Continuar" }).click();
   await expect(page.getByText("Passo 2 de 2")).toBeVisible();
