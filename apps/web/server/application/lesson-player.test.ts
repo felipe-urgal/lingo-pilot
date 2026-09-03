@@ -19,7 +19,11 @@ import { createNavigateLessonPlayer } from "./navigate-lesson-player.ts";
 const now = new Date("2026-09-03T15:00:00.000Z");
 
 function catalogWithRevision(revision: number) {
-  const base = { schemaVersion: 1 as const, revision, status: "published" as const };
+  const base = {
+    schemaVersion: 1 as const,
+    revision,
+    status: "published" as const,
+  };
   const documents: readonly ContentDocument[] = [
     {
       ...base,
@@ -231,7 +235,12 @@ describe("lesson player application flow", () => {
     });
 
     await expect(
-      getPlayer({ journey, sessionId: "session-1", itemId: "item-1", lessonId: "lesson.a0.01" }),
+      getPlayer({
+        journey,
+        sessionId: "session-1",
+        itemId: "item-1",
+        lessonId: "lesson.a0.01",
+      }),
     ).resolves.toEqual({ ok: false, reason: "revision-conflict" });
   });
 
@@ -272,7 +281,11 @@ describe("lesson player application flow", () => {
       action: "complete",
       expectedBlockIndex: 1,
     });
-    expect(completed).toEqual({ ok: true, completed: true, currentBlockIndex: 1 });
+    expect(completed).toEqual({
+      ok: true,
+      completed: true,
+      currentBlockIndex: 1,
+    });
     expect(study.session.status).toBe("completed");
   });
 
