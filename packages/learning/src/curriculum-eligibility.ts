@@ -21,8 +21,8 @@ export type EligibilityReason =
 export interface LessonProgressSnapshot {
   readonly lessonId: string;
   readonly status: LessonProgressStatus;
-  readonly contentSchemaVersion: number;
-  readonly contentRevision: number;
+  readonly schemaVersion: number;
+  readonly revision: number;
 }
 
 export interface LessonEligibility {
@@ -62,8 +62,8 @@ function hasRevisionMismatch(
 ): boolean {
   return (
     progress.status === "in_progress" &&
-    (progress.contentSchemaVersion !== lesson.schemaVersion ||
-      progress.contentRevision !== lesson.revision)
+    (progress.schemaVersion !== lesson.schemaVersion ||
+      progress.revision !== lesson.revision)
   );
 }
 
