@@ -47,7 +47,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         <h1 id="review-title">Revisões em dia.</h1>
         <ReviewFeedback status={feedback} />
         <p className="description">
-          Não há nenhum item vencido agora. Novas revisões aparecerão aqui quando o scheduler atingir o próximo vencimento.
+          Não há nenhum item vencido agora. Novas revisões aparecerão aqui
+          quando o scheduler atingir o próximo vencimento.
         </p>
         <a className="text-link" href="/app/today">
           Voltar para Hoje
@@ -62,17 +63,21 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         ← Hoje
       </a>
       <header className="lesson-player__header">
-        <p className="eyebrow">Revisão · {due.length} pendente{due.length === 1 ? "" : "s"}</p>
+        <p className="eyebrow">
+          Revisão · {due.length} pendente{due.length === 1 ? "" : "s"}
+        </p>
         <h1 id="review-title">Recupere antes de conferir.</h1>
         <p className="description">
-          A fila é ordenada pelo vencimento. O resultado desta tentativa atualiza o próximo intervalo e a evidência de domínio.
+          A fila é ordenada pelo vencimento. O resultado desta tentativa
+          atualiza o próximo intervalo e a evidência de domínio.
         </p>
       </header>
 
       <ReviewFeedback status={feedback} />
       {current.memory.mastery ? (
         <p className="description">
-          Domínio estimado: {current.memory.mastery.scorePercent}% · confiança {current.memory.mastery.confidencePercent}%
+          Domínio estimado: {current.memory.mastery.scorePercent}% · confiança{" "}
+          {current.memory.mastery.confidencePercent}%
         </p>
       ) : null}
 
@@ -80,9 +85,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         action="/api/study/review/submit"
         activity={current.activity}
         operationKey={randomUUID()}
-        hiddenFields={[
-          { name: "memoryItemId", value: current.memory.id },
-        ]}
+        hiddenFields={[{ name: "memoryItemId", value: current.memory.id }]}
         submitLabel="Responder revisão"
       />
     </section>

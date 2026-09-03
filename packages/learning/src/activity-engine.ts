@@ -52,9 +52,7 @@ export type DeterministicActivityDefinition =
   | MatchingDefinition;
 
 export type ActivityAnswer =
-  | string
-  | readonly string[]
-  | Readonly<Record<string, string>>;
+  string | readonly string[] | Readonly<Record<string, string>>;
 
 export type ActivityEvaluation = Readonly<{
   source: "deterministic/rule";

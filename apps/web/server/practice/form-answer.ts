@@ -25,9 +25,12 @@ export function parsePracticeFormAnswer(
       const answers = formData
         .getAll("answer")
         .filter(
-          (value): value is string => typeof value === "string" && value.length > 0,
+          (value): value is string =>
+            typeof value === "string" && value.length > 0,
         );
-      return answers.length === activity.presentation.tokens.length ? answers : null;
+      return answers.length === activity.presentation.tokens.length
+        ? answers
+        : null;
     }
     case "matching": {
       const answer: Record<string, string> = {};

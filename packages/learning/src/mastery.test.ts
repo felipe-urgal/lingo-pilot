@@ -125,6 +125,8 @@ describe("mastery model v1", () => {
       },
     ];
 
-    expect(computeMastery(evidence, now)).toEqual(computeMastery(evidence, now));
+    expect(computeMastery(evidence, now)).toEqual(
+      computeMastery(evidence, now),
+    );
   });
 });

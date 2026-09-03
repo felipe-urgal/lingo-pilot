@@ -67,7 +67,9 @@ export function createCurriculumCatalog(
     concepts,
     levelById: new Map(levels.map((level) => [level.id, level])),
     lessonById: new Map(lessons.map((lesson) => [lesson.id, lesson])),
-    activityById: new Map(activities.map((activity) => [activity.id, activity])),
+    activityById: new Map(
+      activities.map((activity) => [activity.id, activity]),
+    ),
     conceptById: new Map(concepts.map((concept) => [concept.id, concept])),
   };
 }

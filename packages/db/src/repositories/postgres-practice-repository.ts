@@ -26,7 +26,9 @@ import { sessionItems, studySessions } from "../study-schema.ts";
 
 type Queryable = Database | DatabaseTransaction;
 
-function attemptFromRow(row: typeof activityAttempts.$inferSelect): ActivityAttempt {
+function attemptFromRow(
+  row: typeof activityAttempts.$inferSelect,
+): ActivityAttempt {
   return {
     id: row.id,
     enrollmentId: row.enrollmentId,
@@ -47,7 +49,9 @@ function attemptFromRow(row: typeof activityAttempts.$inferSelect): ActivityAtte
   };
 }
 
-function evidenceFromRow(row: typeof conceptEvidence.$inferSelect): ConceptEvidence {
+function evidenceFromRow(
+  row: typeof conceptEvidence.$inferSelect,
+): ConceptEvidence {
   return {
     id: row.id,
     enrollmentId: row.enrollmentId,
@@ -212,7 +216,11 @@ export class PostgresPracticeRepository implements PracticeRepository {
         input.operationKey,
       );
       if (duplicate) {
-        return { ok: true, attempt: attemptFromRow(duplicate), duplicate: true };
+        return {
+          ok: true,
+          attempt: attemptFromRow(duplicate),
+          duplicate: true,
+        };
       }
 
       if (
@@ -245,7 +253,10 @@ export class PostgresPracticeRepository implements PracticeRepository {
           createdAt: input.now,
         })
         .onConflictDoNothing({
-          target: [activityAttempts.enrollmentId, activityAttempts.operationKey],
+          target: [
+            activityAttempts.enrollmentId,
+            activityAttempts.operationKey,
+          ],
         })
         .returning();
 
@@ -281,7 +292,8 @@ export class PostgresPracticeRepository implements PracticeRepository {
         const schedule = input.initialMemorySchedules.find(
           (candidate) => candidate.conceptId === conceptId,
         );
-        if (!schedule) throw new Error(`Missing memory schedule for ${conceptId}`);
+        if (!schedule)
+          throw new Error(`Missing memory schedule for ${conceptId}`);
 
         await transaction
           .insert(memoryItems)

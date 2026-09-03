@@ -34,8 +34,10 @@ export const activityAttempts = pgTable(
     scorePercent: integer("score_percent").notNull(),
     hintCount: integer("hint_count").notNull(),
     modality: text("modality").notNull(),
-    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (table) => [
     unique("activity_attempts_enrollment_operation_unique").on(
@@ -47,7 +49,10 @@ export const activityAttempts = pgTable(
       table.activityId,
       table.createdAt,
     ),
-    check("activity_attempts_id_not_blank", sql`length(btrim(${table.id})) > 0`),
+    check(
+      "activity_attempts_id_not_blank",
+      sql`length(btrim(${table.id})) > 0`,
+    ),
     check(
       "activity_attempts_activity_id_not_blank",
       sql`length(btrim(${table.activityId})) > 0`,
@@ -68,7 +73,10 @@ export const activityAttempts = pgTable(
       "activity_attempts_score_range",
       sql`${table.scorePercent} between 0 and 100`,
     ),
-    check("activity_attempts_hint_count_non_negative", sql`${table.hintCount} >= 0`),
+    check(
+      "activity_attempts_hint_count_non_negative",
+      sql`${table.hintCount} >= 0`,
+    ),
     check(
       "activity_attempts_modality_supported",
       sql`${table.modality} in ('reading', 'listening', 'writing', 'speaking', 'mixed')`,
@@ -116,23 +124,38 @@ export const memoryItems = pgTable(
     intervalSeconds: integer("interval_seconds").notNull(),
     reviewCount: integer("review_count").notNull().default(0),
     algorithmVersion: text("algorithm_version").notNull(),
-    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (table) => [
     unique("memory_items_enrollment_concept_unique").on(
       table.enrollmentId,
       table.conceptId,
     ),
-    index("memory_items_due_queue_idx").on(table.enrollmentId, table.dueAt, table.id),
+    index("memory_items_due_queue_idx").on(
+      table.enrollmentId,
+      table.dueAt,
+      table.id,
+    ),
     check("memory_items_id_not_blank", sql`length(btrim(${table.id})) > 0`),
-    check("memory_items_concept_id_not_blank", sql`length(btrim(${table.conceptId})) > 0`),
+    check(
+      "memory_items_concept_id_not_blank",
+      sql`length(btrim(${table.conceptId})) > 0`,
+    ),
     check(
       "memory_items_source_activity_not_blank",
       sql`length(btrim(${table.sourceActivityId})) > 0`,
     ),
-    check("memory_items_interval_non_negative", sql`${table.intervalSeconds} >= 0`),
-    check("memory_items_review_count_non_negative", sql`${table.reviewCount} >= 0`),
+    check(
+      "memory_items_interval_non_negative",
+      sql`${table.intervalSeconds} >= 0`,
+    ),
+    check(
+      "memory_items_review_count_non_negative",
+      sql`${table.reviewCount} >= 0`,
+    ),
     check(
       "memory_items_algorithm_version_not_blank",
       sql`length(btrim(${table.algorithmVersion})) > 0`,
@@ -158,19 +181,26 @@ export const reviewEvents = pgTable(
       mode: "date",
       withTimezone: true,
     }).notNull(),
-    nextDueAt: timestamp("next_due_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    nextDueAt: timestamp("next_due_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
     intervalSeconds: integer("interval_seconds").notNull(),
     algorithmVersion: text("algorithm_version").notNull(),
-    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (table) => [
     unique("review_events_enrollment_operation_unique").on(
       table.enrollmentId,
       table.operationKey,
     ),
-    index("review_events_memory_created_idx").on(table.memoryItemId, table.createdAt),
+    index("review_events_memory_created_idx").on(
+      table.memoryItemId,
+      table.createdAt,
+    ),
     check("review_events_id_not_blank", sql`length(btrim(${table.id})) > 0`),
     check(
       "review_events_operation_key_not_blank",
@@ -180,7 +210,10 @@ export const reviewEvents = pgTable(
       "review_events_grade_supported",
       sql`${table.grade} in ('again', 'hard', 'good', 'easy')`,
     ),
-    check("review_events_hint_count_non_negative", sql`${table.hintCount} >= 0`),
+    check(
+      "review_events_hint_count_non_negative",
+      sql`${table.hintCount} >= 0`,
+    ),
     check("review_events_interval_positive", sql`${table.intervalSeconds} > 0`),
     check(
       "review_events_algorithm_version_not_blank",
@@ -203,8 +236,10 @@ export const conceptEvidence = pgTable(
     modality: text("modality").notNull(),
     outcome: text("outcome").notNull(),
     supportLevel: integer("support_level").notNull(),
-    occurredAt: timestamp("occurred_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    occurredAt: timestamp("occurred_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (table) => [
     unique("concept_evidence_source_concept_unique").on(
@@ -238,7 +273,10 @@ export const conceptEvidence = pgTable(
       "concept_evidence_outcome_supported",
       sql`${table.outcome} in ('correct', 'incorrect')`,
     ),
-    check("concept_evidence_support_non_negative", sql`${table.supportLevel} >= 0`),
+    check(
+      "concept_evidence_support_non_negative",
+      sql`${table.supportLevel} >= 0`,
+    ),
   ],
 );
 
@@ -252,8 +290,10 @@ export const masteryStates = pgTable(
     scorePercent: integer("score_percent").notNull(),
     confidencePercent: integer("confidence_percent").notNull(),
     algorithmVersion: text("algorithm_version").notNull(),
-    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
-      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (table) => [
     primaryKey({
@@ -265,7 +305,10 @@ export const masteryStates = pgTable(
       table.scorePercent,
       table.confidencePercent,
     ),
-    check("mastery_states_score_range", sql`${table.scorePercent} between 0 and 100`),
+    check(
+      "mastery_states_score_range",
+      sql`${table.scorePercent} between 0 and 100`,
+    ),
     check(
       "mastery_states_confidence_range",
       sql`${table.confidencePercent} between 0 and 100`,

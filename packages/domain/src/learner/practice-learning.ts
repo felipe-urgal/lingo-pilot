@@ -23,9 +23,7 @@ export const reviewGrades = ["again", "hard", "good", "easy"] as const;
 export type ReviewGrade = (typeof reviewGrades)[number];
 
 export type PersistedActivityAnswer =
-  | string
-  | readonly string[]
-  | Readonly<Record<string, string>>;
+  string | readonly string[] | Readonly<Record<string, string>>;
 
 export interface AttemptEvaluation {
   readonly source: EvaluationSource;

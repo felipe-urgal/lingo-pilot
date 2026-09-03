@@ -50,7 +50,10 @@ const presentations = new Map<string, PracticePresentation>([
     {
       type: "single-choice",
       choices: [
-        { id: "complete-lesson", label: "Usar “Concluir aula” no último passo" },
+        {
+          id: "complete-lesson",
+          label: "Usar “Concluir aula” no último passo",
+        },
         { id: "open-last-step", label: "Apenas abrir o último passo" },
         { id: "return-today", label: "Voltar para a tela Hoje" },
       ],
@@ -61,7 +64,9 @@ const presentations = new Map<string, PracticePresentation>([
 const hints = new Map<string, readonly string[]>([
   [
     "activity.a0.bootstrap.lesson-flow-check",
-    ["A conclusão precisa ser uma ação explícita, não apenas a visualização do último passo."],
+    [
+      "A conclusão precisa ser uma ação explícita, não apenas a visualização do último passo.",
+    ],
   ],
 ]);
 

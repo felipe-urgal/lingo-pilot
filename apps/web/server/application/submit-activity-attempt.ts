@@ -16,9 +16,7 @@ import {
 import { getPracticeActivity } from "../practice/activity-catalog";
 
 export type SubmitActivityAttemptError =
-  | "invalid-input"
-  | "invalid-reference"
-  | "content-unavailable";
+  "invalid-input" | "invalid-reference" | "content-unavailable";
 
 export type SubmitActivityAttemptResult =
   | Readonly<{
@@ -69,7 +67,10 @@ export function createSubmitActivityAttempt(
       return { ok: false, reason: "invalid-input" };
     }
 
-    const activity = getPracticeActivity(dependencies.catalog, input.activityId);
+    const activity = getPracticeActivity(
+      dependencies.catalog,
+      input.activityId,
+    );
     if (!activity) return { ok: false, reason: "content-unavailable" };
 
     const session = await dependencies.study.findSession(
@@ -112,7 +113,10 @@ export function createSubmitActivityAttempt(
         scorePercent: evaluated.evaluation.scorePercent,
         hintCount,
         modality: activity.content.modality,
-        supportLevel: Math.max(activity.content.supportLevel, hintCount > 0 ? 1 : 0),
+        supportLevel: Math.max(
+          activity.content.supportLevel,
+          hintCount > 0 ? 1 : 0,
+        ),
         evidenceKind:
           activity.content.supportLevel > 0 || hintCount > 0
             ? "guided"

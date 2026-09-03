@@ -29,13 +29,21 @@ describe("review scheduler v1", () => {
 
   it("maps incorrect, hinted and independent success to distinct grades", () => {
     expect(
-      reviewGradeFromResult({ correct: false, hintCount: 0, independent: true }),
+      reviewGradeFromResult({
+        correct: false,
+        hintCount: 0,
+        independent: true,
+      }),
     ).toBe("again");
     expect(
       reviewGradeFromResult({ correct: true, hintCount: 1, independent: true }),
     ).toBe("hard");
     expect(
-      reviewGradeFromResult({ correct: true, hintCount: 0, independent: false }),
+      reviewGradeFromResult({
+        correct: true,
+        hintCount: 0,
+        independent: false,
+      }),
     ).toBe("good");
     expect(
       reviewGradeFromResult({ correct: true, hintCount: 0, independent: true }),

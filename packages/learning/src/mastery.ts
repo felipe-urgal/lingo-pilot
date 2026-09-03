@@ -75,8 +75,6 @@ export function computeMastery(
   };
 }
 
-export function isWeakConcept(
-  projection: MasteryProjection,
-): boolean {
+export function isWeakConcept(projection: MasteryProjection): boolean {
   return projection.scorePercent < 60 && projection.confidencePercent >= 20;
 }

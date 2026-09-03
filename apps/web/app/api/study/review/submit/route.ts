@@ -44,8 +44,13 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       const memoryItemId = formValue(formData.get("memoryItemId"));
       const operationKey = formValue(formData.get("operationKey"));
       const activityId = formValue(formData.get("activityId"));
-      const activity = getPracticeActivity(getEnglishCourseCatalog(), activityId);
-      const answer = activity ? parsePracticeFormAnswer(activity, formData) : null;
+      const activity = getPracticeActivity(
+        getEnglishCourseCatalog(),
+        activityId,
+      );
+      const answer = activity
+        ? parsePracticeFormAnswer(activity, formData)
+        : null;
       if (!activity || answer === null) {
         logger.info("study.review.submission.rejected", {
           errorCode: errorCodes.requestInvalidInput,

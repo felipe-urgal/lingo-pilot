@@ -24,13 +24,20 @@ function AnswerFields({ activity }: Readonly<{ activity: PracticeActivity }>) {
     case "multiple-choice":
       return (
         <fieldset aria-describedby={promptId}>
-          <legend>Escolha {presentation.type === "multiple-choice" ? "as respostas" : "uma resposta"}</legend>
+          <legend>
+            Escolha{" "}
+            {presentation.type === "multiple-choice"
+              ? "as respostas"
+              : "uma resposta"}
+          </legend>
           {presentation.choices.map((choice) => (
             <label key={choice.id} className="practice-option">
               <input
                 name="answer"
                 required={presentation.type === "single-choice"}
-                type={presentation.type === "single-choice" ? "radio" : "checkbox"}
+                type={
+                  presentation.type === "single-choice" ? "radio" : "checkbox"
+                }
                 value={choice.id}
               />
               <span>{choice.label}</span>
@@ -59,7 +66,8 @@ function AnswerFields({ activity }: Readonly<{ activity: PracticeActivity }>) {
         <fieldset aria-describedby={promptId}>
           <legend>Monte a ordem</legend>
           <p className="description">
-            Use os seletores abaixo. Eles são a alternativa por teclado ao arrastar e soltar.
+            Use os seletores abaixo. Eles são a alternativa por teclado ao
+            arrastar e soltar.
           </p>
           {presentation.tokens.map((_, index) => (
             <label key={index} className="practice-order-position">
@@ -139,7 +147,8 @@ export function PracticeActivityForm({
             </ul>
           </details>
           <label>
-            <input type="checkbox" name="hintUsed" value="1" /> Usei a dica nesta tentativa
+            <input type="checkbox" name="hintUsed" value="1" /> Usei a dica
+            nesta tentativa
           </label>
         </div>
       ) : null}

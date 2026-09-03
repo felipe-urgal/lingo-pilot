@@ -81,11 +81,13 @@ export function createReviewSchedulerV1(): ReviewScheduler {
   };
 }
 
-export function reviewGradeFromResult(input: Readonly<{
-  correct: boolean;
-  hintCount: number;
-  independent: boolean;
-}>): ReviewGrade {
+export function reviewGradeFromResult(
+  input: Readonly<{
+    correct: boolean;
+    hintCount: number;
+    independent: boolean;
+  }>,
+): ReviewGrade {
   if (!input.correct) return "again";
   if (input.hintCount > 0) return "hard";
   return input.independent ? "easy" : "good";

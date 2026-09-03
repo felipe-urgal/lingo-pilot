@@ -15,10 +15,7 @@ import {
 import { getPracticeActivity } from "../practice/activity-catalog";
 
 export type SubmitReviewError =
-  | "invalid-input"
-  | "not-due"
-  | "content-unavailable"
-  | "stale-review";
+  "invalid-input" | "not-due" | "content-unavailable" | "stale-review";
 
 export type SubmitReviewResult =
   | Readonly<{

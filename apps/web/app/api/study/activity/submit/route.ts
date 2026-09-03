@@ -56,10 +56,19 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       const lessonId = formValue(formData.get("lessonId"));
       const activityId = formValue(formData.get("activityId"));
       const operationKey = formValue(formData.get("operationKey"));
-      const activity = getPracticeActivity(getEnglishCourseCatalog(), activityId);
-      const answer = activity ? parsePracticeFormAnswer(activity, formData) : null;
+      const activity = getPracticeActivity(
+        getEnglishCourseCatalog(),
+        activityId,
+      );
+      const answer = activity
+        ? parsePracticeFormAnswer(activity, formData)
+        : null;
 
-      if (!activity || activity.content.lessonId !== lessonId || answer === null) {
+      if (
+        !activity ||
+        activity.content.lessonId !== lessonId ||
+        answer === null
+      ) {
         logger.info("study.activity.submission.rejected", {
           errorCode: errorCodes.requestInvalidInput,
           result: "rejected",
