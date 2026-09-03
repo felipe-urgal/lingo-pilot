@@ -78,6 +78,10 @@ export type RecordReviewResult =
   | Readonly<{ ok: false; reason: "not-found" | "stale-review" }>;
 
 export interface PracticeRepository {
+  findAttemptByOperation(
+    enrollmentId: string,
+    operationKey: string,
+  ): Promise<ActivityAttempt | null>;
   submitAttempt(
     input: SubmitAttemptInput,
     reduceMastery: MasteryReducer,
@@ -87,6 +91,10 @@ export interface PracticeRepository {
     now: Date,
     limit: number,
   ): Promise<readonly DueReviewItem[]>;
+  findReviewByOperation(
+    enrollmentId: string,
+    operationKey: string,
+  ): Promise<ReviewEvent | null>;
   recordReview(
     input: RecordReviewInput,
     reduceMastery: MasteryReducer,
