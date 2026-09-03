@@ -8,6 +8,14 @@ on:
 permissions:
   contents: write
 
+env:
+  CI: true
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:5400
+  APP_TIMEZONE: UTC
+  DATABASE_URL: postgresql://lingo_pilot:lingo_pilot@127.0.0.1:5435/lingo_pilot_runtime
+  TEST_DATABASE_URL: postgresql://lingo_pilot:lingo_pilot@127.0.0.1:5435/lingo_pilot_test
+  LINGO_TEST_MODE: false
+
 jobs:
   harden:
     if: github.actor != 'github-actions[bot]'
