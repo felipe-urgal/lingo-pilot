@@ -134,11 +134,7 @@ export default async function LessonPage({
         <input type="hidden" name="sessionId" value={sessionId} />
         <input type="hidden" name="itemId" value={itemId} />
         <input type="hidden" name="lessonId" value={player.lesson.id} />
-        <input
-          type="hidden"
-          name="expectedBlockIndex"
-          value={currentIndex}
-        />
+        <input type="hidden" name="expectedBlockIndex" value={currentIndex} />
         <Button
           disabled={currentIndex === 0}
           name="action"
