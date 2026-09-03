@@ -153,10 +153,7 @@ describe("deterministic activity engine", () => {
   });
 
   it("fails safely for an unknown activity discriminator", () => {
-    const result = evaluateActivity(
-      { type: "future-type" } as never,
-      "answer",
-    );
+    const result = evaluateActivity({ type: "future-type" } as never, "answer");
     expect(result).toEqual({ ok: false, reason: "unsupported-activity" });
   });
 });

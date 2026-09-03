@@ -2,7 +2,7 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
-> **Estado de execução em 2026-09-03:** a Fase 0 está concluída (#7–#16). A Fase 1 começou com a #17 e o PR atual cobre #18–#20: catálogo/elegibilidade, StudySession/Today e Lesson Player. Após o merge, a próxima dependência direta do fluxo é #21 (Exercise Engine). O conteúdo A0→A2 real continua nas issues editoriais; o catálogo deste PR é somente bootstrap estrutural.
+> **Estado de execução em 2026-09-03:** a Fase 0 está concluída (#7–#16) e #17–#20 já estão em `main`. O PR #86 cobre #21–#24 como uma vertical coesa: Exercise Engine → Attempt → SRS/Review → ConceptEvidence/Mastery. Após esse merge, a próxima dependência direta é #25 (Daily Session Planner v1). O conteúdo A0→A2 real continua nas issues editoriais; o material atual é bootstrap estrutural.
 
 ## Fase 0 — Foundation
 
@@ -129,7 +129,7 @@ Entregue:
 
 ### Épico 1.5 — Exercise Engine
 
-**Próxima dependência direta após #20: #21.**
+**Status: em review no PR #86 pela #21.**
 
 - choice;
 - fill blank;
@@ -140,6 +140,8 @@ Entregue:
 - conceito/habilidade vinculados à tentativa.
 
 ### Épico 1.6 — Review/SRS
+
+**Status: baseline em review no PR #86 pela #23.**
 
 - memory items;
 - review state;
@@ -159,6 +161,8 @@ Entregue:
 - sessão determinística e auditável.
 
 ### Épico 1.8 — Progress & Mastery
+
+**Status: ConceptEvidence + mastery v1 em review no PR #86 pela #24; UI completa permanece #27.**
 
 - progress event model;
 - domínio por conceito;
@@ -377,19 +381,19 @@ Design/Observability/Content/Test foundations ✅ #13–#16
   ↓
 Onboarding + LanguageProfile + Enrollment      ✅ #17
   ↓
-Course catalog + curriculum eligibility        PR atual: #18
+Course catalog + curriculum eligibility        ✅ #18
   ↓
-StudySession + Today                           PR atual: #19
+StudySession + Today                           ✅ #19
   ↓
-Lesson Player                                  PR atual: #20
+Lesson Player                                  ✅ #20
   ↓
-Exercise Engine                                próximo após merge: #21
+Exercise Engine + Attempts                     review: #21/#22 · PR #86
   ↓
-Review/SRS
+Review/SRS + Concept Mastery                   review: #23/#24 · PR #86
   ↓
-Daily Session Planner completo
+Daily Session Planner completo                 próximo: #25
   ↓
-Progress/Mastery
+Progress UI/history                            #27
   ↓
 A0 dogfood → A1/A2 coverage
   ↓

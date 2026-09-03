@@ -103,3 +103,7 @@ Pull requests executam:
 - `CI / build`: só inicia depois de `quality` e `e2e` concluírem com sucesso.
 
 Essa separação mantém o feedback de unit/integration rápido e torna o smoke de navegador um gate explícito sem misturar suas dependências com os testes puros.
+
+## Cobertura do practice learning loop
+
+#21–#24 combinam unit tests do evaluator/SRS/mastery, component tests de todos os renderers, integration PostgreSQL de idempotência/ownership/rollback/retry limit/paginação/stale review e E2E Chromium de onboarding → Today → Lesson Player → Activity/feedback → completion. O relógio pedagógico permanece injetável; CI oficial valida migrations, content validation, E2E e build.

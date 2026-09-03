@@ -43,24 +43,24 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 
 ### Sequência atual recomendada
 
-A **Foundation está concluída** e a Fase 1 já começou. A #17 entregou a primeira vertical real de learner profile/onboarding. As issues #18, #19 e #20 formam agora uma única vertical coesa em review no PR #85, porque catálogo/elegibilidade alimenta a sessão diária e o Lesson Player consome exatamente o item/revision planejado.
+A **Foundation está concluída** e a Fase 1 já avançou por #17–#20, hoje em `main`. As issues #21, #22, #23 e #24 formam a vertical coesa em review no PR #86: Activity determinística → Attempt transacional → SRS/Review → ConceptEvidence/Mastery.
 
 Após o merge desse conjunto, a próxima frente elegível passa a ser:
 
 ```text
-#21 Exercise Engine for deterministic activity types
+#25 Daily Session Planner v1
 ```
 
 ## Fase 1 — Study Engine
 
 - #17 Learner profile and onboarding flow — **Concluída**
-- #18 Course catalog, enrollment and curriculum eligibility — **Em review no PR #85**
-- #19 StudySession data model and Today experience shell — **Em review no PR #85**
-- #20 Lesson Player with structured pedagogical blocks — **Em review no PR #85**
-- #21 Exercise Engine for deterministic activity types — **Próxima após merge do PR #85**
-- #22 Transactional attempt submission and feedback pipeline
-- #23 Spaced repetition engine and review queue
-- #24 Concept evidence and mastery model v1
+- #18 Course catalog, enrollment and curriculum eligibility — **Concluída**
+- #19 StudySession data model and Today experience shell — **Concluída**
+- #20 Lesson Player with structured pedagogical blocks — **Concluída**
+- #21 Exercise Engine for deterministic activity types — **Em review no PR #86**
+- #22 Transactional attempt submission and feedback pipeline — **Em review no PR #86**
+- #23 Spaced repetition engine and review queue — **Em review no PR #86**
+- #24 Concept evidence and mastery model v1 — **Em review no PR #86**
 - #25 Daily Session Planner v1
 - #26 Session execution, resume and idempotency hardening
 - #27 Progress, weak concepts and study history
@@ -246,4 +246,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu **#7–#16** e a primeira vertical da Fase 1 concluiu **#17 — Learner profile and onboarding flow**. As issues **#18, #19 e #20** estão agrupadas no **PR #85**, atualmente em review/CI. Após o merge, a próxima issue elegível será **#21 — Exercise Engine for deterministic activity types**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A Foundation concluiu **#7–#16** e a Fase 1 já entregou **#17–#20**. As issues **#21–#24** estão agrupadas no **PR #86**, cobrindo o practice learning loop. Após o merge, a próxima issue elegível será **#25 — Daily Session Planner v1**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.

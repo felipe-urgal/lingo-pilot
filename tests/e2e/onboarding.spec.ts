@@ -72,7 +72,9 @@ test("signup/login -> onboarding A0 -> Today -> practice -> resumable lesson -> 
   await expect(
     page.getByText(/Resposta correta\. A tentativa foi registrada/),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Concluir aula" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Concluir aula" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Concluir aula" }).click();
 
   await expect(page).toHaveURL(/\/app\/today$/);

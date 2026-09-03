@@ -53,7 +53,10 @@ describe("PracticeActivityForm", () => {
       }),
     ],
     ["fill-blank", activity({ type: "fill-blank", placeholder: "Complete" })],
-    ["short-answer", activity({ type: "short-answer", placeholder: "Responda" })],
+    [
+      "short-answer",
+      activity({ type: "short-answer", placeholder: "Responda" }),
+    ],
     ["translation", activity({ type: "translation", placeholder: "Traduza" })],
     [
       "word-order",
@@ -88,9 +91,13 @@ describe("PracticeActivityForm", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: `Prompt ${practice.presentation.type}` }),
+      screen.getByRole("heading", {
+        name: `Prompt ${practice.presentation.type}`,
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Responder" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Responder" }),
+    ).toBeInTheDocument();
   });
 
   it("keeps word-order and matching usable without drag interactions", () => {

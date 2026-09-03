@@ -334,3 +334,9 @@ PR que altera UI deve incluir:
 ## 20. Critério de qualidade
 
 Uma pessoa iniciante deve conseguir iniciar e concluir a sessão sem entender a arquitetura curricular, o algoritmo de SRS ou a estrutura interna do produto.
+
+## Prática determinística e revisão rápida
+
+No último passo da lesson, a prática aparece antes da ação de conclusão. Choice usa inputs nativos; word order e matching usam seletores focáveis como alternativa keyboard-first a drag interactions. Fill blank/short answer/translation usam input textual com label explícito. Feedback correto/incorreto usa `role=status` e não depende somente de cor.
+
+O E2E Chromium percorre desktop até o último passo, muda para viewport 390×844, responde à Activity e confirma que feedback e `Concluir aula` permanecem utilizáveis. `/app/review` mantém fila curta, controles nativos, empty state e foco previsível.
