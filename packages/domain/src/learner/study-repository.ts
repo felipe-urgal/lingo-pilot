@@ -34,6 +34,7 @@ export interface SaveLessonPositionInput {
   readonly lessonId: string;
   readonly contentSchemaVersion: number;
   readonly contentRevision: number;
+  readonly expectedBlockIndex: number;
   readonly currentBlockIndex: number;
   readonly now: Date;
 }
