@@ -4,11 +4,9 @@ import {
   type ContentDocument,
 } from "../../../../packages/content/src/index.ts";
 import type {
-  EnsureDailySessionInput,
   LessonProgress,
   SaveLessonPositionInput,
   SessionItem,
-  StartSessionItemInput,
   StudyMutationResult,
   StudyRepository,
   StudySession,
@@ -174,13 +172,11 @@ class StudyRepositoryFake implements StudyRepository {
     return sessionId === this.session.id ? this.session : null;
   }
 
-  async ensureDailySession(_input: EnsureDailySessionInput) {
+  async ensureDailySession() {
     return this.session;
   }
 
-  async startSessionItem(
-    _input: StartSessionItemInput,
-  ): Promise<StudyMutationResult<LessonProgress>> {
+  async startSessionItem(): Promise<StudyMutationResult<LessonProgress>> {
     return { ok: true, value: this.progress };
   }
 
