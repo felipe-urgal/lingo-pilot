@@ -8,11 +8,18 @@ export default function TodayError({
   reset,
 }: Readonly<{ error: Error & { digest?: string }; reset: () => void }>) {
   useEffect(() => {
-    console.error("today.load.failed", { name: error.name, digest: error.digest });
+    console.error("today.load.failed", {
+      name: error.name,
+      digest: error.digest,
+    });
   }, [error]);
 
   return (
-    <section className="today-card" role="alert" aria-labelledby="today-error-title">
+    <section
+      className="today-card"
+      role="alert"
+      aria-labelledby="today-error-title"
+    >
       <p className="eyebrow">Hoje</p>
       <h1 id="today-error-title">Não foi possível carregar sua sessão.</h1>
       <p className="description">
