@@ -105,6 +105,12 @@ function exactPairs(
   );
 }
 
+function isMatchingAnswer(
+  answer: ActivityAnswer,
+): answer is Readonly<Record<string, string>> {
+  return typeof answer === "object" && answer !== null && !Array.isArray(answer);
+}
+
 function evaluation(correct: boolean): EvaluateActivityResult {
   return {
     ok: true,
@@ -147,14 +153,9 @@ export function evaluateActivity(
         ? evaluation(exactSequence(answer, definition.correctOrder))
         : { ok: false, reason: "invalid-answer" };
     case "matching":
-      if (
-        typeof answer !== "object" ||
-        answer === null ||
-        Array.isArray(answer)
-      ) {
-        return { ok: false, reason: "invalid-answer" };
-      }
-      return evaluation(exactPairs(answer, definition.pairs));
+      return isMatchingAnswer(answer)
+        ? evaluation(exactPairs(answer, definition.pairs))
+        : { ok: false, reason: "invalid-answer" };
     default:
       return { ok: false, reason: "unsupported-activity" };
   }
