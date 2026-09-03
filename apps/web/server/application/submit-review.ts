@@ -60,6 +60,21 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
       return { ok: false, reason: "invalid-input" };
     }
 
+    const duplicate = await dependencies.practice.findReviewByOperation(
+      input.journey.enrollment.id,
+      input.operationKey,
+    );
+    if (duplicate) {
+      return {
+        ok: true,
+        reviewEventId: duplicate.id,
+        correct: duplicate.correct,
+        grade: duplicate.grade,
+        nextDueAt: duplicate.nextDueAt,
+        duplicate: true,
+      };
+    }
+
     const now = dependencies.clock.now();
     const due = await dependencies.practice.listDueReviewItems(
       input.journey.enrollment.id,

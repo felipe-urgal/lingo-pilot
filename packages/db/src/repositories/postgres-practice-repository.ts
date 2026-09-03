@@ -205,6 +205,18 @@ export class PostgresPracticeRepository implements PracticeRepository {
     this.database = database;
   }
 
+  async findAttemptByOperation(
+    enrollmentId: string,
+    operationKey: string,
+  ): Promise<ActivityAttempt | null> {
+    const row = await findAttemptByOperation(
+      this.database,
+      enrollmentId,
+      operationKey,
+    );
+    return row ? attemptFromRow(row) : null;
+  }
+
   async submitAttempt(
     input: SubmitAttemptInput,
     reduceMastery: MasteryReducer,
@@ -374,6 +386,18 @@ export class PostgresPracticeRepository implements PracticeRepository {
       updatedAt: memory.updatedAt,
       mastery: mastery ? masteryFromRow(mastery) : null,
     }));
+  }
+
+  async findReviewByOperation(
+    enrollmentId: string,
+    operationKey: string,
+  ): Promise<ReviewEvent | null> {
+    const row = await findReviewByOperation(
+      this.database,
+      enrollmentId,
+      operationKey,
+    );
+    return row ? reviewFromRow(row) : null;
   }
 
   async recordReview(

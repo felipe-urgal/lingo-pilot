@@ -108,7 +108,9 @@ function exactPairs(
 function isMatchingAnswer(
   answer: ActivityAnswer,
 ): answer is Readonly<Record<string, string>> {
-  return typeof answer === "object" && answer !== null && !Array.isArray(answer);
+  return (
+    typeof answer === "object" && answer !== null && !Array.isArray(answer)
+  );
 }
 
 function evaluation(correct: boolean): EvaluateActivityResult {

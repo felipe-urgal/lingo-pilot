@@ -67,6 +67,20 @@ export function createSubmitActivityAttempt(
       return { ok: false, reason: "invalid-input" };
     }
 
+    const duplicate = await dependencies.practice.findAttemptByOperation(
+      input.journey.enrollment.id,
+      input.operationKey,
+    );
+    if (duplicate) {
+      return {
+        ok: true,
+        attemptId: duplicate.id,
+        correct: duplicate.evaluation.correct,
+        scorePercent: duplicate.evaluation.scorePercent,
+        duplicate: true,
+      };
+    }
+
     const activity = getPracticeActivity(
       dependencies.catalog,
       input.activityId,
@@ -83,7 +97,12 @@ export function createSubmitActivityAttempt(
         candidate.kind === "lesson" &&
         candidate.resourceId === activity.content.lessonId,
     );
-    if (!session || !item || session.status === "abandoned") {
+    if (
+      !session ||
+      !item ||
+      session.status !== "in_progress" ||
+      item.status !== "in_progress"
+    ) {
       return { ok: false, reason: "invalid-reference" };
     }
 
