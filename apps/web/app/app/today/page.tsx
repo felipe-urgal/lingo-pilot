@@ -2,7 +2,18 @@ import { Button } from "@lingo-pilot/ui";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
+import { getDueReviews } from "../../../server/practice/runtime";
 import { getTodayStudy } from "../../../server/study/runtime";
+
+function ReviewLink({ count }: Readonly<{ count: number }>) {
+  return (
+    <a className="text-link" href="/app/review">
+      {count > 0
+        ? `Revisar agora · ${count} pendente${count === 1 ? "" : "s"}`
+        : "Ver revisões"}
+    </a>
+  );
+}
 
 function EmptyToday() {
   return (
@@ -36,11 +47,13 @@ export default async function TodayPage() {
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
   if (!journey) redirect("/app/onboarding");
 
+  const dueReviews = await getDueReviews()(journey, 20);
   const today = await getTodayStudy()(journey);
   if (!today.session) {
     return (
       <section className="today-card" aria-labelledby="today-title">
         <EmptyToday />
+        <ReviewLink count={dueReviews.length} />
         <a className="text-link" href="/app/onboarding?edit=1">
           Ajustar preferências
         </a>
@@ -51,6 +64,7 @@ export default async function TodayPage() {
     return (
       <section className="today-card" aria-labelledby="today-title">
         <CompletedToday />
+        <ReviewLink count={dueReviews.length} />
       </section>
     );
   }
@@ -65,6 +79,7 @@ export default async function TodayPage() {
           O plano está preservado, mas o conteúdo associado não está disponível
           nesta revisão. Tente novamente depois de uma atualização do conteúdo.
         </p>
+        <ReviewLink count={dueReviews.length} />
       </section>
     );
   }
@@ -94,6 +109,7 @@ export default async function TodayPage() {
           {isContinuing ? "Continuar estudo" : "Começar estudo"}
         </Button>
       </form>
+      <ReviewLink count={dueReviews.length} />
       <a className="text-link" href="/app/onboarding?edit=1">
         Ajustar preferências
       </a>
