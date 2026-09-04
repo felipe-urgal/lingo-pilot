@@ -1,0 +1,54 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.013.days-of-week",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "Dias da semana" },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.013.name-days-of-week",
+      "description": {
+        "pt-BR": "Nomear dias da semana e reconhecer referências simples de agenda."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.012.age-and-phone"],
+  "introducesConceptIds": ["concept.a0.calendar.days-of-week"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.013.days.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Os sete dias da semana formam um conjunto fixo. Em inglês, os nomes dos dias começam com letra maiúscula."
+      }
+    },
+    {
+      "id": "block.a0.013.days.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": {
+        "en": "Monday · Tuesday · Wednesday · Thursday · Friday · Saturday · Sunday"
+      }
+    },
+    {
+      "id": "block.a0.013.days.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "Monday · Wednesday · Sunday" }
+    },
+    {
+      "id": "block.a0.013.days.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Pratique dias fora da ordem da semana para reconhecer cada nome sem depender da sequência."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.013.name-days-of-week"]
+}

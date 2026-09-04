@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.014.write-basic-date",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.014.months-and-dates",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Escreva em inglês na forma mês + número: 12 de maio."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["May 12"]
+  },
+  "conceptIds": ["concept.a0.calendar.months-and-dates"],
+  "objectiveIds": ["objective.a0.014.write-basic-date"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

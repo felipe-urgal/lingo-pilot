@@ -1,0 +1,52 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.018.irregular-plurals",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "Plural irregular" },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.018.use-irregular-plurals",
+      "description": {
+        "pt-BR": "Reconhecer e usar plurais irregulares essenciais em frases curtas."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.017.regular-plurals"],
+  "introducesConceptIds": ["concept.a0.grammar.irregular-plurals"],
+  "reinforcesConceptIds": ["concept.a0.grammar.regular-plurals"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.018.irregular.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Alguns substantivos não formam o plural com -s ou -es e precisam ser aprendidos como pares."
+      }
+    },
+    {
+      "id": "block.a0.018.irregular.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": { "en": "person → people · child → children" }
+    },
+    {
+      "id": "block.a0.018.irregular.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "one child · two children" }
+    },
+    {
+      "id": "block.a0.018.irregular.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Não aplique a regra regular a estes pares: memorize a forma plural junto com o singular."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.018.form-irregular-plural"]
+}

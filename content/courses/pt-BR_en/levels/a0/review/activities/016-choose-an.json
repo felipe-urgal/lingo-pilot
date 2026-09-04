@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.016.choose-an",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.016.articles-a-an",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Complete com a ou an: ___ apple"
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["an"]
+  },
+  "conceptIds": ["concept.a0.grammar.indefinite-articles"],
+  "objectiveIds": ["objective.a0.016.choose-a-an"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

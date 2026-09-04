@@ -1,0 +1,25 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.015.tell-half-past-time",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.015.telling-time",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: São três e meia."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "It is half past three.",
+      "It's half past three.",
+      "It’s half past three."
+    ]
+  },
+  "conceptIds": ["concept.a0.time.clock-time"],
+  "objectiveIds": ["objective.a0.015.tell-basic-time"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}
