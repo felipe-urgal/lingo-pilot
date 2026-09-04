@@ -53,8 +53,8 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 - #24 Concept evidence and mastery model v1 — **Concluída no PR #86**
 - #25 Daily Session Planner v1 — **Concluída no PR #87**
 - #26 Session execution, resume and idempotency hardening — **Concluída nos PRs #91 e #92**
-- #27 Progress, weak concepts and study history — **Recorte 1 concluído no PR #95; fechamento em review no PR #96**
-- #28 Migrate and editorially review A0 course content
+- #27 Progress, weak concepts and study history — **Escopo funcional concluído nos PRs #95 e #96; issue aberta por pendência de DoD de evidência visual/E2E**
+- #28 Migrate and editorially review A0 course content — **Ativa; 12/43 aulas materializadas em `review` nos PRs #97 e #98**
 - #49 14-day A0 dogfood validation and learning-loop review
 - #29 Migrate and editorially review A1 and A2 course content
 
@@ -160,16 +160,44 @@ O PR #95 entregou a base de leitura de progresso sem XP como proxy:
 - datas de sessão usam o `localStudyDate` já calculado no timezone do aluno;
 - `/app/progress` separa visualmente “trilha concluída” de “domínio estimado”.
 
-O PR #96 fecha o escopo funcional restante da #27 sem criar uma fórmula paralela de mastery:
+O PR #96 concluiu o escopo funcional restante da #27 sem criar uma fórmula paralela de mastery:
 
 - `ConceptEvidence` é agregado por `reading|listening|writing|speaking` como desempenho observado + tamanho da amostra;
 - `mixed` continua válido para o modelo pedagógico por conceito, mas não vira uma quinta habilidade visual;
 - o drill-down de nível/unidade/lesson reutiliza `evaluateCurriculum` e exibe `completed|in_progress|available|waived|locked`;
 - `waived` permanece explicitamente diferente de completion;
 - a UI usa `<details>/<summary>` nativos para manter a trilha consultável sem aumentar a densidade padrão;
-- ownership e agregação por modalidade são cobertos por regressão de banco; o E2E cobre mobile/keyboard e placement sem progresso fictício.
+- ownership e agregação por modalidade são cobertos por regressão de banco; o cenário E2E cobre mobile/keyboard e placement sem progresso fictício.
+
+A issue #27 permanece aberta somente pela pendência processual de DoD já registrada nela: evidência visual real e execução E2E não foram comprovadas na sessão em que #96 foi mergeado. Isso não bloqueia a materialização editorial da #28.
 
 Histórico avançado e filtros continuam YAGNI até que dogfood mostre necessidade concreta.
+
+### Migração editorial A0 — #28 / PRs #97 e #98
+
+A #28 está ativa e o conteúdo expandido continua deliberadamente isolado em `status=review` até revisão editorial humana explícita.
+
+O PR #97 estabeleceu a fundação editorial:
+
+- inventário das 43 aulas A0 com stable IDs e organização proposta em 7 Units;
+- mapa de objetivos, conceitos, vocabulário candidato e prerequisites para revisão;
+- Unit 01 `unit.a0.01.first-contact`, aulas 001–006, materializada em schema `review`;
+- `pnpm content:validate` passou a fazer parte do CI obrigatório do repositório;
+- conteúdo assistido por IA permanece fora de `level.a0.unitIds` e fora do runtime publicado.
+
+O PR #98 adicionou a Unit 02 `unit.a0.02.personal-information`, aulas 007–012:
+
+- `be` negativo, perguntas e short answers;
+- números 0–20 e 20–100;
+- idade e telefone com exemplos fictícios;
+- Concepts e Activities determinísticas ligadas aos objetivos;
+- VocabularyItems apenas para léxico real (`not`, `yes`, `no`), sem transformar sistemas numéricos/chunks em entidades artificiais;
+- ponte explícita de progressão 006 → 007 e sequência até 012;
+- regressão de conteúdo e `content:validate` 100% verdes.
+
+Estado atual da migração: **12/43 aulas A0 materializadas em schema `review`**. Units 01 e 02 ainda não estão publicadas e precisam de revisão editorial humana, revisão de naturalidade/CEFR e smoke no Lesson Player antes de qualquer promoção para `published`.
+
+A próxima fatia planejada da #28 é a **Unit 03, aulas 013–018** (`days-of-week` → `irregular-plurals`), mantendo a mesma política de isolamento editorial.
 
 ### Estratégia de entrega
 
@@ -192,24 +220,31 @@ Today/session ───────→ planner               ✅ #25 / PR #87
       ↓                 ↓
 resume ────────────→ hardening               ✅ #26 / PRs #91/#92
       ↓
-progress/history                             ativa #27 / PRs #95/#96
+progress/history                             funcional ✅ #27 / PRs #95/#96
       ↓
-A0 dogfood
+A0 content review                            ativa #28 · 12/43 / PRs #97/#98
       ↓
-A1/A2 content + progression + representative E2E
+A0 publicado + smoke pedagógico
+      ↓
+A0 dogfood                                   #49
+      ↓
+A1/A2 content + progression + representative E2E   #29
 ```
 
 A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especial por nível e quando entry point manual A1/A2 não fabrica mastery.
 
 ### Sequência atual recomendada
 
-A frente ativa é:
+A frente funcional ativa é:
 
 ```text
-#27 Progress, weak concepts and study history — PR #96
+#28 Migrate and editorially review A0 course content
+  └─ próximo recorte: Unit 03 / aulas 013–018
 ```
 
-O PR #95 entregou o primeiro recorte e o PR #96 fecha modalidade + drill-down. Se o CI, auto-review e DoD finais permanecerem verdes, a #27 pode ser concluída; o próximo passo do roadmap volta a ser #28, seguido do dogfood #49 e da expansão #29 conforme as dependências registradas.
+Os PRs #97 e #98 já deixaram **12/43** aulas em `review` com validação de conteúdo no CI. A sequência é continuar materializando Units 03–07, revisar a progressão A0 do início ao fim e só então promover conteúdo explicitamente aprovado para `published` + smoke pedagógico. Em paralelo, #27 permanece aberta apenas pela evidência de DoD registrada na própria issue.
+
+Depois de A0 utilizável ponta a ponta, a sequência volta para dogfood #49 e expansão A1/A2 #29 conforme as dependências registradas.
 
 ## Fase 2 — Skills + AI Evaluation Foundation
 
@@ -321,4 +356,6 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87, o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92 e o primeiro recorte de progresso **#27 está concluído em `main`** pelo PR #95. A frente ativa é o fechamento da **#27 no PR #96**; após isso, a sequência da Fase 1 segue para **#28 — conteúdo A0**, depois dogfood #49 e expansão A1/A2 #29. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87, o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92 e o escopo funcional de progresso **#27 está em `main`** pelos PRs #95 e #96, permanecendo a issue aberta somente pela pendência explícita de evidência de DoD.
+
+A frente funcional ativa é **#28 — conteúdo A0**. Os PRs #97 e #98 materializaram Units 01–02 e **12/43 aulas em `review`**; o próximo recorte é **Unit 03 / aulas 013–018**. Nenhuma Unit assistida por IA deve ser promovida para `published` antes de revisão editorial humana, validação completa e smoke pedagógico. Depois de A0 utilizável ponta a ponta, seguem dogfood #49 e expansão A1/A2 #29. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
