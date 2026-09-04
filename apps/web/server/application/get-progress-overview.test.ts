@@ -136,7 +136,8 @@ function journey(entryPointLevel: "A0" | "A1" = "A1") {
       languageProfileId: "language-1",
       courseId: "course.en.ptbr.v1",
       entryPointLevel,
-      placementSource: entryPointLevel === "A0" ? ("zero" as const) : ("manual" as const),
+      placementSource:
+        entryPointLevel === "A0" ? ("zero" as const) : ("manual" as const),
       status: "active" as const,
       enrolledAt: now,
       updatedAt: now,
@@ -163,6 +164,7 @@ function emptySnapshot(): ProgressSnapshot {
       averageScorePercent: null,
       averageConfidencePercent: null,
     },
+    modalityEvidence: [],
     weakConcepts: [],
     dueReviewCount: 0,
     recentSessions: [],
@@ -187,9 +189,40 @@ describe("progress overview", () => {
     expect(result.learning.completedLessons).toBe(0);
     expect(result.learning.masteryConceptCount).toBe(0);
     expect(result.learning.averageMasteryPercent).toBeNull();
+    expect(result.modalities).toEqual([]);
+    expect(result.curriculum).toEqual([
+      expect.objectContaining({
+        id: "level.a0",
+        completedLessons: 0,
+        units: [
+          expect.objectContaining({
+            lessons: [
+              expect.objectContaining({
+                id: "lesson.a0.01",
+                status: "waived",
+              }),
+            ],
+          }),
+        ],
+      }),
+      expect.objectContaining({
+        id: "level.a1",
+        completedLessons: 0,
+        units: [
+          expect.objectContaining({
+            lessons: [
+              expect.objectContaining({
+                id: "lesson.a1.01",
+                status: "available",
+              }),
+            ],
+          }),
+        ],
+      }),
+    ]);
   });
 
-  it("uses persisted mastery, weak concepts and bounded history pagination", async () => {
+  it("uses persisted mastery, modality evidence and bounded history pagination", async () => {
     const progress = new ProgressRepositoryFake({
       ...emptySnapshot(),
       lessonProgress: [
@@ -210,6 +243,11 @@ describe("progress overview", () => {
         averageScorePercent: 42,
         averageConfidencePercent: 80,
       },
+      modalityEvidence: [
+        { modality: "reading", evidenceCount: 3, correctCount: 2 },
+        { modality: "listening", evidenceCount: 2, correctCount: 2 },
+        { modality: "mixed", evidenceCount: 5, correctCount: 5 },
+      ],
       weakConcepts: [
         {
           enrollmentId: "enrollment-1",
@@ -236,6 +274,12 @@ describe("progress overview", () => {
 
     expect(result.learning.completedLessons).toBe(1);
     expect(result.learning.averageMasteryPercent).toBe(42);
+    expect(result.modalities).toEqual([
+      { modality: "reading", evidenceCount: 3, correctPercent: 67 },
+      { modality: "listening", evidenceCount: 2, correctPercent: 100 },
+    ]);
+    expect(result.curriculum[0]?.units[0]?.lessons[0]?.status).toBe("waived");
+    expect(result.curriculum[1]?.units[0]?.lessons[0]?.status).toBe("completed");
     expect(result.weakConcepts).toEqual([
       {
         id: "concept.present",
