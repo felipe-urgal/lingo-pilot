@@ -4,6 +4,7 @@ import type {
   LearnerJourney,
   PersistedActivityAnswer,
   PracticeRepository,
+  SessionExecutionRepository,
 } from "../../../../packages/domain/src/index.ts";
 import type { CurriculumCatalog } from "../../../../packages/content/src/index.ts";
 import {
@@ -33,6 +34,7 @@ export interface SubmitReviewDependencies {
   readonly idGenerator: IdGenerator;
   readonly catalog: CurriculumCatalog;
   readonly practice: PracticeRepository;
+  readonly execution: SessionExecutionRepository;
 }
 
 export interface SubmitReviewInput {
@@ -137,6 +139,19 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
         reason:
           persisted.reason === "stale-review" ? "stale-review" : "not-due",
       };
+    }
+
+    if (input.sessionItemId) {
+      await dependencies.execution.finalizeSessionIfTerminal({
+        enrollmentId: input.journey.enrollment.id,
+        sessionId:
+          (
+            await dependencies.execution.findLatestOpenSession(
+              input.journey.enrollment.id,
+            )
+          )?.id ?? "",
+        now,
+      });
     }
 
     return {
