@@ -146,6 +146,7 @@ test("false beginner can choose A2 manual entry without fabricated completion UI
   await expect(
     page.getByText(/Ainda não há evidência específica de leitura, escuta, escrita ou fala/),
   ).toBeVisible();
+  await page.locator("details summary").first().click();
   await expect(
     page.getByText("Dispensada pelo ponto de entrada", { exact: true }).first(),
   ).toBeVisible();
