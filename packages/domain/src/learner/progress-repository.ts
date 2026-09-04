@@ -1,4 +1,4 @@
-import type { MasteryState } from "./practice-learning.ts";
+import type { EvidenceModality, MasteryState } from "./practice-learning.ts";
 import type { LessonProgress, StudySession } from "./study-session.ts";
 
 export interface ProgressMasterySummary {
@@ -7,9 +7,16 @@ export interface ProgressMasterySummary {
   readonly averageConfidencePercent: number | null;
 }
 
+export interface ProgressModalityEvidenceSummary {
+  readonly modality: EvidenceModality;
+  readonly evidenceCount: number;
+  readonly correctCount: number;
+}
+
 export interface ProgressSnapshot {
   readonly lessonProgress: readonly LessonProgress[];
   readonly mastery: ProgressMasterySummary;
+  readonly modalityEvidence: readonly ProgressModalityEvidenceSummary[];
   readonly weakConcepts: readonly MasteryState[];
   readonly dueReviewCount: number;
   readonly recentSessions: readonly StudySession[];
