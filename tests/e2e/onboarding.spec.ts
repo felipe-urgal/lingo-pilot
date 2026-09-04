@@ -94,6 +94,21 @@ test("signup/login -> onboarding A0 -> Today -> interrupt/login resume -> comple
     page.getByRole("heading", { name: "Estudo concluído." }),
   ).toBeVisible();
   await expect(page.getByText(/1 aula e 0 revisões concluídas/)).toBeVisible();
+
+  const progressLink = page.getByRole("link", { name: "Progresso" });
+  await progressLink.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/app\/progress$/);
+  await expect(
+    page.getByRole("heading", { name: "Sua jornada, sem pontos artificiais." }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Avanço e domínio são medidas distintas." }),
+  ).toBeVisible();
+  await expect(page.getByText("1 aula", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Sessões persistidas" }),
+  ).toBeVisible();
 });
 
 test("false beginner can choose A2 manual entry without fabricated completion UI", async ({
@@ -114,4 +129,11 @@ test("false beginner can choose A2 manual entry without fabricated completion UI
     }),
   ).toBeVisible();
   await expect(page.getByText(/concluíd|dominad/i)).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Progresso" }).click();
+  await expect(page).toHaveURL(/\/app\/progress$/);
+  await expect(page.getByText("0 aulas", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(/Ainda não há evidência suficiente para estimar domínio/),
+  ).toBeVisible();
 });
