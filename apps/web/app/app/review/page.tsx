@@ -94,9 +94,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const hiddenFields = [
     { name: "memoryItemId", value: current.memory.id },
-    ...(plannedItem
-      ? [{ name: "sessionItemId", value: plannedItem.id }]
-      : []),
+    ...(plannedItem ? [{ name: "sessionItemId", value: plannedItem.id }] : []),
     ...(fromToday ? [{ name: "source", value: "today" }] : []),
   ];
 

@@ -5,11 +5,7 @@ export const EXTREME_REVIEW_DEBT_MULTIPLIER = 2;
 export const HEAVILY_OVERDUE_MS = 24 * 60 * 60 * 1000;
 
 export type PlannerModality =
-  | "reading"
-  | "listening"
-  | "writing"
-  | "speaking"
-  | "mixed";
+  "reading" | "listening" | "writing" | "speaking" | "mixed";
 
 export type PlannerReasonCode =
   | "RESUME_IN_PROGRESS"
@@ -176,7 +172,8 @@ function prepareCandidates(input: DailySessionPlannerInput): PlannerCandidates {
   const reviews = orderedReviews(input.reviews).filter((review) =>
     available.has(review.modality),
   );
-  const debtMinutes = Math.max(0, input.dueReviewCount) * REVIEW_ESTIMATED_MINUTES;
+  const debtMinutes =
+    Math.max(0, input.dueReviewCount) * REVIEW_ESTIMATED_MINUTES;
   const extremeDebt = debtMinutes >= goal * EXTREME_REVIEW_DEBT_MULTIPLIER;
   const lessons = orderedLessons(input.lessons);
   return {
@@ -207,10 +204,7 @@ function addReviews(
   return used;
 }
 
-function reviewGroups(
-  reviews: readonly PlannerReviewCandidate[],
-  now: Date,
-) {
+function reviewGroups(reviews: readonly PlannerReviewCandidate[], now: Date) {
   const heavilyOverdue = reviews.filter(
     (review) => now.getTime() - review.dueAt.getTime() >= HEAVILY_OVERDUE_MS,
   );
@@ -273,7 +267,9 @@ export function planDailySession(
       reviewDebtCount: Math.max(0, Math.trunc(input.dueReviewCount)),
       reviewBudgetMinutes: candidates.maxReviewMinutes,
       newContentSuspended:
-        candidates.extremeDebt && Boolean(candidates.newLesson) && !candidates.resume,
+        candidates.extremeDebt &&
+        Boolean(candidates.newLesson) &&
+        !candidates.resume,
       unavailableModalityReviewCount: candidates.unavailableReviewCount,
     },
   };

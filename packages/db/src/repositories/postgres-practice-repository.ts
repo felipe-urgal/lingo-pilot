@@ -151,7 +151,10 @@ async function ownsSessionItem(
 
 async function findOwnedPlannedReview(
   database: Queryable,
-  input: Pick<RecordReviewInput, "enrollmentId" | "memoryItemId" | "sessionItemId">,
+  input: Pick<
+    RecordReviewInput,
+    "enrollmentId" | "memoryItemId" | "sessionItemId"
+  >,
 ) {
   if (!input.sessionItemId) return null;
   const [row] = await database

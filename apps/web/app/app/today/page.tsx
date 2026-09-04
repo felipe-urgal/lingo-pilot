@@ -97,8 +97,8 @@ export default async function TodayPage() {
         <div className="today-plan" aria-label="Plano de estudo de hoje">
           <p className="today-plan__label">Revisar</p>
           <h2>
-            {plannedReviews.length} revisão{plannedReviews.length === 1 ? "" : "ões"}{" "}
-            no plano de hoje
+            {plannedReviews.length} revisão
+            {plannedReviews.length === 1 ? "" : "ões"} no plano de hoje
           </h2>
           <p>O planner priorizou o que precisa ser recuperado agora.</p>
         </div>

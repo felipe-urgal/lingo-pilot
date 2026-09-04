@@ -73,7 +73,10 @@ function lessonCandidates(
   eligibility: readonly LessonEligibility[],
 ): readonly PlannerLessonCandidate[] {
   return eligibility.flatMap((item, curriculumOrder) => {
-    if (item.availability !== "in_progress" && item.availability !== "available") {
+    if (
+      item.availability !== "in_progress" &&
+      item.availability !== "available"
+    ) {
       return [];
     }
     return [
@@ -162,7 +165,9 @@ async function buildPlan(
     dependencies.practice.listWeakConcepts(enrollmentId, MAX_WEAK_CONCEPTS),
     dependencies.practice.countDueReviewItems?.(enrollmentId, now),
   ]);
-  const weakConceptIds = new Set(weakConcepts.map((concept) => concept.conceptId));
+  const weakConceptIds = new Set(
+    weakConcepts.map((concept) => concept.conceptId),
+  );
   const startedAt = performance.now();
   const plan = planDailySession({
     plannerVersion: DAILY_SESSION_PLANNER_VERSION,
@@ -173,7 +178,11 @@ async function buildPlan(
     reviews: reviewCandidates(dependencies, due, weakConceptIds),
     availableModalities: dependencies.availableModalities,
   });
-  recordPlannerMetrics(dependencies.telemetry, performance.now() - startedAt, plan);
+  recordPlannerMetrics(
+    dependencies.telemetry,
+    performance.now() - startedAt,
+    plan,
+  );
   return plan;
 }
 
