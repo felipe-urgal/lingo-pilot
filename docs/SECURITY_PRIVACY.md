@@ -175,13 +175,21 @@ Nunca logar por default:
 
 Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando um ID técnico for suficiente. A conclusão do onboarding pode registrar somente escolhas categóricas estruturadas necessárias para operação/analytics, como entry point, `placementSource` e objetivo, sem email ou payload completo.
 
-## 11. Secrets
+## 11. Secrets e classes de privilégio
 
 - `.env.example` contém nomes, nunca valores reais;
-- secrets em secret manager/hosting;
-- rotação em caso de exposição;
+- secrets ficam em secret manager/hosting/configuração administrativa local protegida;
+- rotação é obrigatória em caso de exposição;
 - princípio de least privilege;
 - ambientes separados quando possível.
+
+Em Production, mantenha separadas pelo menos estas classes:
+
+- **runtime DB:** somente privilégio necessário para a aplicação, usando conexão pooled apropriada;
+- **migration/backup DB:** credencial administrativa direta, fora do runtime Vercel;
+- **provider deployment:** credencial/conexão do Dev Dashboard com a Vercel, fora do repositório.
+
+Uma rotação de valor não deve exigir editar código quando o contrato/nome do secret permanece o mesmo. Procedimento: [`runbooks/leaked-secret.md`](runbooks/leaked-secret.md).
 
 ## 12. Banco
 
@@ -193,6 +201,8 @@ Logs podem usar IDs e categorias de erro. Email também deve ser evitado quando 
 - queries sempre filtradas por ownership quando aplicável.
 
 Credenciais e sessões de auth ficam separadas dos recursos pedagógicos. FK para `users` propaga exclusão de credenciais/sessões e, a partir da #17, também dos perfis/jornada inicial vinculados. O workflow completo de account deletion continua pertencendo à #43.
+
+Backup/restore de emergência deve preservar evidência, validar o artefato fora de Production e considerar impacto de retenção/LGPD antes de cutover. Veja [`runbooks/backup-restore.md`](runbooks/backup-restore.md) e [`runbooks/data-corruption.md`](runbooks/data-corruption.md).
 
 ## 13. Rate limits e abuso
 
@@ -276,14 +286,23 @@ A #11 documenta a baseline de auth em `AUTHENTICATION.md`; a #17 estende o mesmo
 
 ## 19. Incidentes
 
-Antes de produto público, criar runbook para:
+Procedimentos operacionais atuais:
 
-- credencial vazada;
-- acesso indevido;
-- provider comprometido;
-- perda/corrupção de dados;
-- exposição de mídia;
-- dependency vulnerability crítica.
+- credencial vazada: [`runbooks/leaked-secret.md`](runbooks/leaked-secret.md);
+- suspeita/corrupção de dados: [`runbooks/data-corruption.md`](runbooks/data-corruption.md);
+- auth indisponível: [`runbooks/auth-outage.md`](runbooks/auth-outage.md);
+- banco indisponível: [`runbooks/database-outage.md`](runbooks/database-outage.md);
+- backup/restore: [`runbooks/backup-restore.md`](runbooks/backup-restore.md).
+
+Regras de resposta:
+
+- preservar evidência antes de repetir mutação de efeito parcial/ambíguo;
+- nunca colocar secret/PII/dump na evidência compartilhada;
+- rotacionar credencial no sistema de origem e atualizar secret store, não código;
+- tratar acesso indevido confirmado como incidente de segurança, mesmo que a disponibilidade já tenha voltado;
+- registrar commit/deployment/requestId/errorCode seguros para correlação.
+
+Runbooks de provider de IA e storage só serão adicionados quando essas capabilities existirem. Exposição de mídia e dependency vulnerability crítica deverão ganhar procedimento específico quando o risco/capability correspondente entrar em Production.
 
 ## 20. Revisão obrigatória
 

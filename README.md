@@ -10,11 +10,11 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
-A **Fase 1 — Study Engine** já cobre #17–#24 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today, Lesson Player retomável, Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada e evidência/mastery por conceito. O PR #86 consolidou o practice learning loop das #21–#24.
+A **Fase 1 — Study Engine** já cobre #17–#26 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today, Lesson Player retomável, Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada, evidência/mastery por conceito, planner diário e hardening de resume/concorrência/stale items.
 
-A #25 está em review no PR #87 e evolui o shell diário para `daily-session-v1`: resume, reviews vencidos, weak concepts e conteúdo novo passam a competir por um budget diário determinístico e auditável, persistido como snapshot multi-item. O hardening completo da execução desse plano continua na #26 e a UI completa de progresso/histórico continua na #27.
+A #27 tem o escopo funcional de progresso/weak concepts/histórico entregue nos PRs #95 e #96 e permanece aberta apenas pela pendência processual de evidência visual/E2E registrada na própria issue. A #28 está ativa na migração editorial A0: 12/43 aulas estão materializadas em `status=review` em `main`, ainda fora do catálogo/runtime até revisão humana explícita. A expansão A1/A2 continua separada na #29.
 
-O conteúdo autorado continua deliberadamente pequeno: Course/Level/Unit A0/A1/A2, uma lesson de orientação A0 e uma Activity/Concept determinísticos para exercitar o loop de prática. A migração editorial das aulas reais A0→A2 continua separada.
+A capability de Production está ativa em Vercel + Neon. Desde o PR #102, a integração Git da Vercel não dispara deployments automaticamente; `main` continua sendo a fonte versionada do release e o Dev Dashboard aciona explicitamente o `provider-deploy` pela API da Vercel.
 
 Stack inicial fixada:
 
@@ -103,6 +103,8 @@ pnpm prod:backup       cria backup PostgreSQL explícito
 pnpm prod:restore-check -- <backup.dump>  restaura/valida backup em banco não produtivo
 ```
 
+Não existe `prod:deploy` local. A etapa de deployment de Production pertence ao Dev Dashboard (`provider-deploy`) e usa o provider Vercel explicitamente.
+
 ## Configuração de runtime
 
 Configuração é tratada como contrato, não como acesso espalhado a `process.env`.
@@ -167,10 +169,10 @@ packages/
   test-support/         suporte determinístico de testes
 scripts/                checks e operações locais do repositório
 tests/                  testes estruturais e fluxos E2E da Fase 1
-docs/                   produto, arquitetura e operação
+docs/                   produto, arquitetura, operação e runbooks
 ```
 
-Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria metadata técnica; `0001` identidade/credencial/sessão/ownership; `0002` `LearnerProfile + LanguageProfile + Enrollment`; `0003` adiciona `LessonProgress`, `StudySession` e `SessionItem`; `0004` adiciona o practice learning loop; e `0005` amplia `SessionItem` para o snapshot diário com reviews sem reinterpretar dados existentes.
+Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria metadata técnica; `0001` identidade/credencial/sessão/ownership; `0002` adiciona `LearnerProfile + LanguageProfile + Enrollment`; `0003` adiciona `LessonProgress`, `StudySession` e `SessionItem`; `0004` adiciona o practice learning loop; e `0005` amplia `SessionItem` para o snapshot diário com reviews sem reinterpretar dados existentes.
 
 ## Primeiro acesso e fluxo de estudo
 
@@ -194,7 +196,7 @@ Lesson / Review → Attempt / ReviewEvent → Evidence / Mastery
 
 A entrada pode ser A0 (`placementSource=zero`) ou A1/A2 (`placementSource=manual`). A escolha manual serve apenas para posicionar a trilha: ela não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
 
-Today calcula a data local pelo timezone do aluno e persiste no máximo uma sessão por `Enrollment + localStudyDate`. O planner V1 (`daily-session-v1`, em review no PR #87) combina resume, reviews muito vencidos, weak concepts e próxima lesson elegível dentro da meta diária. O snapshot preserva reason code, motivo de elegibilidade quando aplicável e revision do conteúdo, portanto refresh não replana silenciosamente uma sessão existente. Política completa: [`docs/DAILY_SESSION_PLANNER.md`](docs/DAILY_SESSION_PLANNER.md).
+Today calcula a data local pelo timezone do aluno e persiste no máximo uma sessão por `Enrollment + localStudyDate`. O planner V1 (`daily-session-v1`) combina resume, reviews muito vencidos, weak concepts e próxima lesson elegível dentro da meta diária. O snapshot preserva reason code, motivo de elegibilidade quando aplicável e revision do conteúdo, portanto refresh não replana silenciosamente uma sessão existente. Política completa: [`docs/DAILY_SESSION_PLANNER.md`](docs/DAILY_SESSION_PLANNER.md).
 
 O Lesson Player renderiza `ContentBlock` estruturado, persiste posição e exige ação explícita no último passo para concluir. Start/resume revalidam ownership, eligibility e `schemaVersion + revision`; uma URL manual ou uma revision alterada não consegue forçar progresso.
 
@@ -228,14 +230,16 @@ A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`
 
 ## Produção
 
-A receita canônica de preflight, migration, promoção e verify está em [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
+A receita canônica de preflight, migration, promoção, verify e incident response está em [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
 
 A topologia ativa é:
 
 ```text
-GitHub main
+GitHub main / SHA
    ↓
-Vercel Production
+Dev Dashboard Production
+   ↓
+provider-deploy via Vercel API
    ↓
 Next.js / LingoPilot
    ↓
@@ -248,19 +252,20 @@ Fluxo resumido:
 pnpm prod:prepare
 -> pnpm prod:check
 -> pnpm prod:backup / prod:migrate quando aplicável
--> merge em main
--> Vercel Production
+-> Dev Dashboard provider-deploy
+-> Vercel Production READY
 -> pnpm prod:verify
+-> smoke
 ```
 
-Não existe `prod:deploy` local. Migrations permanecem explícitas e fora do build da Vercel. Production usa a branch Neon `main`; Preview, quando explicitamente usado, permanece isolado.
+`git.deploymentEnabled=false` impede deployments automáticos por push/merge, inclusive na `main`. Merge e deploy são estados distintos. Não existe `prod:deploy` local; migrations permanecem explícitas e fora do build da Vercel. Production usa a branch Neon `main`; Preview, quando explicitamente usado, permanece isolado.
 
-Detalhes técnicos e evidências ficam em [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
+Detalhes técnicos e evidências ficam em [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md), [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md) e [`docs/runbooks/README.md`](docs/runbooks/README.md).
 
 ## Roadmap
 
 - **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
-- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17–#24 entregues; #25 em review no PR #87. Depois, #26 é a próxima dependência direta e #27 fecha a visualização de progresso/histórico.**
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17–#26 concluídas; #27 funcionalmente entregue com pendência processual de DoD; #28 ativa na migração A0; #29 cobre A1/A2.**
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
 - **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.
@@ -284,6 +289,7 @@ Docs especializadas continuam disponíveis para arquitetura, domínio, banco, ru
 
 - [Desenvolvimento](docs/DEVELOPMENT.md)
 - [Produção](docs/PRODUCTION.md)
+- [Runbooks de produção](docs/runbooks/README.md)
 - [Visão do produto](docs/VISION.md)
 - [Product Requirements](docs/PRODUCT_REQUIREMENTS.md)
 - [Roadmap](docs/ROADMAP.md)

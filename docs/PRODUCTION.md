@@ -1,31 +1,42 @@
 # Produção
 
-Este é o ponto de entrada canônico para preparar, migrar, promover e verificar o LingoPilot em produção.
+Este é o ponto de entrada canônico para preparar, migrar, promover, verificar e recuperar o LingoPilot em produção.
 
-A topologia ativa é **Vercel + Neon PostgreSQL**, com promoção **git-managed pela branch `main`**. Não existe `prod:deploy` local.
+A topologia ativa é **Vercel + Neon PostgreSQL**. A branch `main` continua sendo a fonte versionada do release, mas desde o PR #102 a integração Git da Vercel **não cria deployments automaticamente**: `vercel.json` mantém `git.deploymentEnabled=false`. A promoção é acionada explicitamente pelo Dev Dashboard via API do provider.
+
+Não existe `prod:deploy` local.
 
 Documentação especializada:
 
-- [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): contrato técnico detalhado de topologia, migrations, health e recovery;
+- [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): contrato técnico de topologia, migrations, health e recovery;
 - [`PRODUCTION_STATUS.md`](PRODUCTION_STATUS.md): estado factual e evidências da capacidade ativa;
+- [`runbooks/README.md`](runbooks/README.md): procedimentos executáveis de release/incidente;
 - [`ADR/0002-production-deployment-topology.md`](ADR/0002-production-deployment-topology.md): decisão de topologia;
-- [`ADR/0004-vercel-main-only-automatic-deployments.md`](ADR/0004-vercel-main-only-automatic-deployments.md): política de deployments automáticos.
+- [`ADR/0006-explicit-vercel-deployments-via-dev-dashboard.md`](ADR/0006-explicit-vercel-deployments-via-dev-dashboard.md): gatilho explícito de deploy atual.
 
 ## Visão rápida
 
 ```text
+main / SHA validado
+   ↓
 pnpm prod:prepare
--> pnpm prod:check
--> pnpm prod:backup            # antes de migration quando aplicável
--> pnpm prod:migrate           # quando houver migration necessária
--> merge/push em main
--> Vercel cria o Production Deployment
--> confirmar provider READY
--> pnpm prod:verify
--> smoke/observabilidade proporcional ao risco
+   ↓
+pnpm prod:check
+   ↓
+pnpm prod:backup            # antes de migration quando aplicável
+   ↓
+pnpm prod:migrate           # quando houver migration necessária
+   ↓
+Dev Dashboard: provider-deploy (Vercel API)
+   ↓
+confirmar provider READY
+   ↓
+pnpm prod:verify
+   ↓
+smoke + observabilidade proporcional ao risco
 ```
 
-`READY` do provider não substitui readiness da aplicação.
+`READY` do provider não substitui readiness da aplicação. Merge em `main` também não significa que Production já foi promovida.
 
 ## 1. Preparar o preflight local
 
@@ -58,15 +69,15 @@ O preflight cobre formatação, lint, typecheck, unit/integration, content valid
 
 ## 3. Backup antes de migration
 
-A política ativa exige backup antes de migration de produção:
+A política ativa exige backup antes de migration de Production:
 
 ```bash
 pnpm prod:backup
 ```
 
-O artefato fica em `.dev-dashboard/backups/`, caminho ignorado pelo Git. Credenciais não devem aparecer na linha de comando, logs, issue ou PR.
+O artefato local fica em `.dev-dashboard/backups/`, caminho ignorado pelo Git. Esse diretório não é considerado armazenamento durável de longo prazo. Credenciais e dumps nunca entram em issue/PR/log compartilhado.
 
-Para mudanças puramente de código sem migration, execute backup somente quando o risco operacional justificar.
+Política de retenção, metadata e restore exercise: [`runbooks/backup-restore.md`](runbooks/backup-restore.md).
 
 ## 4. Migration de produção
 
@@ -87,23 +98,27 @@ pnpm prod:migrate
 
 Prefira `expand -> deploy -> contract`. Migration aplicada é imutável; correções usam forward-fix.
 
-Se a migration falhar ou o estado ficar ambíguo, não promova o código dependente e não repita a operação cegamente.
+Se a migration falhar ou o estado ficar ambíguo, **não** promova código dependente e **não** repita a operação cegamente. Trate o estado como `recovery_required` e siga [`runbooks/migration-failure.md`](runbooks/migration-failure.md).
 
-## 5. Deployment
+## 5. Deployment explícito pelo Dev Dashboard
 
-Não existe `prod:deploy`.
-
-A promoção é:
+A promoção canônica é:
 
 ```text
-merge/push em main
--> integração Git da Vercel
+main / SHA validado
+-> Dev Dashboard Production
+-> provider-deploy
+-> Vercel API
 -> Production Deployment
 ```
 
-Deployments automáticos de branches de trabalho estão desabilitados pelo contrato atual. Preview explícito, quando usado, deve permanecer isolado da branch Neon `main` de Production.
+A integração Git da Vercel permanece desabilitada para todas as branches, inclusive `main`. Isso evita deployment duplicado e consumo desnecessário de quota quando o Dev Dashboard já executa a promoção explícita.
 
-Não crie alias que esconda `git push`, `vercel --prod` ou outra promoção fora desse modelo.
+Não crie alias que esconda `git push`, não use `vercel --prod` como caminho paralelo e não reative Git deployment como workaround de quota/outage.
+
+O manifesto `.dev-dashboard/production.json` continua com `strategy=git-managed`: nesse contrato, `main`/SHA é a fonte versionada do release. O gatilho do provider é explícito e pertence à orquestração do Dev Dashboard.
+
+Procedimento completo: [`runbooks/deploy.md`](runbooks/deploy.md).
 
 ## 6. Verificação pós-deploy
 
@@ -121,7 +136,7 @@ https://lingo-pilot.vercel.app/api/health/ready
 
 Para mudanças relevantes, valide também:
 
-1. commit/deployment esperado;
+1. commit SHA/deployment esperado;
 2. `/api/health/live`;
 3. `/api/health/ready`;
 4. shell/rota pública principal;
@@ -144,11 +159,21 @@ RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check
 
 Ele recusa destino igual ao endpoint de Production quando essa comparação é possível e valida o schema mínimo após o restore.
 
+Restore de emergência, cadência e critérios ficam em [`runbooks/backup-restore.md`](runbooks/backup-restore.md).
+
 ## 8. Rollback e recovery
 
 Rollback de aplicação e rollback de banco são operações diferentes.
 
-Rollback pela Vercel só é seguro quando o schema atual continua compatível com o deployment anterior. Se uma migration já tornou o schema incompatível, prefira forward-fix ou recovery coordenado conforme [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md).
+Rollback do provider só é seguro quando o schema atual continua compatível com o deployment anterior. Se uma migration já tornou o schema incompatível, prefira forward-fix ou recovery coordenado.
+
+Estado parcial/ambíguo de migration, restore, corrupção ou outra mutação deve ser tratado como `recovery_required`: preserve evidência, interrompa novas mutações e determine o estado real antes de retry.
+
+Runbooks relacionados:
+
+- [`runbooks/migration-failure.md`](runbooks/migration-failure.md);
+- [`runbooks/data-corruption.md`](runbooks/data-corruption.md);
+- [`runbooks/database-outage.md`](runbooks/database-outage.md).
 
 ## 9. Interface operacional canônica
 
@@ -162,9 +187,24 @@ pnpm prod:backup
 pnpm prod:restore-check -- <backup.dump>
 ```
 
-Sem `prod:deploy` local.
+Sem `prod:deploy` local. O `provider-deploy` é uma etapa do Dev Dashboard, não um script do repositório.
 
-## 10. Dev Dashboard Production Contract
+## 10. Resposta a incidentes
+
+Procedimentos executáveis:
+
+- deploy/smoke/rollback: [`runbooks/deploy.md`](runbooks/deploy.md);
+- migration em falha: [`runbooks/migration-failure.md`](runbooks/migration-failure.md);
+- backup/restore: [`runbooks/backup-restore.md`](runbooks/backup-restore.md);
+- Vercel outage/quota: [`runbooks/vercel-outage.md`](runbooks/vercel-outage.md);
+- PostgreSQL/Neon outage: [`runbooks/database-outage.md`](runbooks/database-outage.md);
+- auth outage: [`runbooks/auth-outage.md`](runbooks/auth-outage.md);
+- credencial vazada: [`runbooks/leaked-secret.md`](runbooks/leaked-secret.md);
+- corrupção de dados: [`runbooks/data-corruption.md`](runbooks/data-corruption.md).
+
+Todo incidente deve correlacionar, quando disponíveis, horário UTC, commit SHA, deployment id, route/useCase, errorCode e requestId. Não registrar secrets, cookies, email, payload livre do learner ou dump.
+
+## 11. Dev Dashboard Production Contract
 
 O manifesto versionado fica em:
 
@@ -187,6 +227,16 @@ restoreCheck = prod:restore-check
 ```
 
 Configuração administrativa real permanece fora do Git em `.dev-dashboard/.env.production.local`.
+
+Políticas ativas:
+
+```text
+backup = required-before-migration
+migrations = before-deploy
+rollback = provider-only-when-schema-compatible
+```
+
+Se a capacidade real deixar de ser verificável, não trate `production.enabled=true` como garantia abstrata; restaure a capacidade ou atualize o contrato de forma fail-closed.
 
 ## Desenvolvimento
 
