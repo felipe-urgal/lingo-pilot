@@ -134,7 +134,18 @@ A gravação de `ReviewEvent`, atualização de `MemoryItem`, `ConceptEvidence`,
 
 Revisões avulsas continuam válidas sem `sessionItemId`.
 
-O hardening completo de execução — múltiplas abas, mudança de dia, stale session, retries de rede e resume multi-item — permanece na #26.
+## Hardening de execução — #26
+
+O primeiro recorte da #26 mantém o snapshot persistido como autoridade e endurece quatro cenários sem criar uma segunda camada de estado:
+
+1. **refresh/resume:** `StudySession`, `SessionItem` e `LessonProgress.currentBlockIndex` são relidos do banco; refresh não replana nem avança posição;
+2. **submit repetido:** Attempt e Review continuam idempotentes por `operationKey`, e o formulário bloqueia um segundo submit enquanto a mesma operação está em voo;
+3. **duas abas:** propostas concorrentes para o mesmo `Enrollment + localStudyDate` convergem para o snapshot vencedor; a aba perdedora recebe os IDs e itens realmente persistidos;
+4. **falha de rede/retry:** o formulário preserva resposta e `operationKey` após falha transitória e reutiliza a mesma operação no retry.
+
+O formulário continua sendo um `<form method="post">`: sem JavaScript, o fluxo nativo permanece funcional. Com JavaScript, o submit é progressivamente aprimorado para oferecer estado de envio e recuperação de rede sem alterar o contrato server-side.
+
+Ainda permanecem na #26 a política explícita para sessão atravessando meia-noite/mudança de timezone, recovery completo de conteúdo stale/retired, summary final e os demais cenários de hardening necessários para fechar todos os critérios da issue.
 
 ## Observabilidade
 
@@ -145,6 +156,8 @@ O use case de Today emite:
 - `study.planner.new_content_suspended`;
 - `study.planner.reason_code` com atributo `reasonCode`.
 
+Os endpoints de Attempt e Review registram `duplicate` no evento de conclusão, permitindo distinguir retries idempotentes de gravações novas sem registrar respostas textuais do aluno.
+
 Nenhuma resposta textual do aluno é adicionada à telemetria.
 
 ## Testes
@@ -154,6 +167,7 @@ A cobertura obrigatória inclui:
 - primeiro dia sem histórico;
 - centenas de reviews vencidos;
 - resume de lesson ativa;
+- refresh relendo a mesma sessão/item e o mesmo `currentBlockIndex` persistido;
 - limite de timezone por `localStudyDate`;
 - ausência de lesson elegível com review disponível;
 - weak concept;
@@ -161,20 +175,21 @@ A cobertura obrigatória inclui:
 - tie-breaker determinístico;
 - snapshot determinístico;
 - geração concorrente da sessão diária;
+- duas abas recebendo exatamente o snapshot vencedor persistido;
 - persistência ordenada multi-item;
-- conclusão transacional de review planejada.
+- conclusão transacional de review planejada;
+- bloqueio de submits simultâneos no cliente;
+- retry após falha de rede preservando resposta e `operationKey`.
 
-## Limites da #25
+## Limites da #25 e continuidade da #26
 
-A #25 entrega decisão e snapshot da sessão, além do mínimo de execução necessário para não deixar reviews planejadas órfãs.
+A #25 entregou decisão e snapshot da sessão, além do mínimo de execução necessário para não deixar reviews planejadas órfãs.
 
-Permanecem na #26:
+A #26 endurece a execução em recortes coesos. Após o primeiro recorte descrito acima, ainda faltam:
 
-- regras completas de avanço entre itens;
-- duas abas/dispositivos;
-- retry/recovery UX em rede instável;
-- stale session;
-- mudança de data/timezone durante uma sessão;
-- summary final e hardening de completion.
+- regra explícita para mudança de data/timezone durante uma sessão;
+- stale/retired content recovery completo;
+- summary final e hardening adicional de completion;
+- E2E adicional de interrupção/resume conforme o fluxo estabilizar.
 
 A página completa de progresso/histórico continua na #27.
