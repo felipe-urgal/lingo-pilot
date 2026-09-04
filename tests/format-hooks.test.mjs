@@ -20,7 +20,9 @@ function git(cwd, args, options = {}) {
 }
 
 async function createRepository() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), "lingo-format-hooks-"));
+  const directory = await mkdtemp(
+    path.join(os.tmpdir(), "lingo-format-hooks-"),
+  );
   git(directory, ["init", "--quiet"]);
   git(directory, ["config", "user.email", "tests@example.invalid"]);
   git(directory, ["config", "user.name", "LingoPilot Tests"]);

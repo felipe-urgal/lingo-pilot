@@ -10,13 +10,7 @@ function git(args, options = {}) {
 }
 
 function stagedFiles() {
-  return git([
-    "diff",
-    "--cached",
-    "--name-only",
-    "--diff-filter=ACMR",
-    "-z",
-  ])
+  return git(["diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"])
     .split("\0")
     .filter(Boolean);
 }
