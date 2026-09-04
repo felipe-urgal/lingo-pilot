@@ -1,0 +1,23 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.010.numbers-0-20",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.02.personal-information",
+  "title": {"pt-BR": "Números 0-20"},
+  "estimatedMinutes": 9,
+  "objectives": [{"id": "objective.a0.010.write-zero-to-twenty", "description": {"pt-BR": "Escrever por extenso números cardinais entre 0 e 20."}}],
+  "prerequisiteLessonIds": ["lesson.a0.009.be-short-answers"],
+  "introducesConceptIds": ["concept.a0.numbers.zero-to-twenty"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {"id": "block.a0.010.numbers.explanation", "type": "explanation", "text": {"pt-BR": "Os números de zero a vinte formam a base para idade, telefone, horas e quantidades nas próximas aulas."}},
+    {"id": "block.a0.010.numbers.zero-ten", "type": "vocabulary", "language": "en", "text": {"en": "0 zero · 1 one · 2 two · 3 three · 4 four · 5 five · 6 six · 7 seven · 8 eight · 9 nine · 10 ten"}},
+    {"id": "block.a0.010.numbers.eleven-twenty", "type": "vocabulary", "language": "en", "text": {"en": "11 eleven · 12 twelve · 13 thirteen · 14 fourteen · 15 fifteen · 16 sixteen · 17 seventeen · 18 eighteen · 19 nineteen · 20 twenty"}},
+    {"id": "block.a0.010.numbers.checkpoint", "type": "checkpoint", "text": {"pt-BR": "Pratique números fora de ordem; reconhecer apenas a sequência de contagem não é suficiente."}}
+  ],
+  "activityIds": ["activity.a0.010.write-zero-to-twenty"]
+}

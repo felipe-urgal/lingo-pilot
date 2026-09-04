@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.011.write-twenty-to-hundred",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.011.numbers-20-100",
+  "type": "short-answer",
+  "prompt": {"pt-BR": "Escreva em inglês, separados por vírgulas: 30, 47, 100."},
+  "evaluation": {"type": "deterministic", "acceptedAnswers": ["thirty, forty-seven, one hundred", "thirty, forty seven, one hundred", "thirty,forty-seven,one hundred"]},
+  "conceptIds": ["concept.a0.numbers.twenty-to-hundred"],
+  "objectiveIds": ["objective.a0.011.write-twenty-to-hundred"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

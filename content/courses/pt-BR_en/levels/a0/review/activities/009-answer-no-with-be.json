@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.009.answer-no-with-be",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.009.be-short-answers",
+  "type": "short-answer",
+  "prompt": {"pt-BR": "Responda negativamente: Are they from Brazil?"},
+  "evaluation": {"type": "deterministic", "acceptedAnswers": ["No, they are not.", "No, they are not", "No, they're not.", "No, they're not", "No, they’re not.", "No, they’re not"]},
+  "conceptIds": ["concept.a0.grammar.be-short-answers", "concept.a0.grammar.be-questions", "concept.a0.grammar.be-negative"],
+  "objectiveIds": ["objective.a0.009.answer-with-be"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

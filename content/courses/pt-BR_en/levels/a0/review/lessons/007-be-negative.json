@@ -1,0 +1,23 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.007.be-negative",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.02.personal-information",
+  "title": {"pt-BR": "Verb to be - negativa"},
+  "estimatedMinutes": 8,
+  "objectives": [{"id": "objective.a0.007.negate-with-be", "description": {"pt-BR": "Negar uma frase simples de identidade ou origem com am, is ou are + not."}}],
+  "prerequisiteLessonIds": ["lesson.a0.006.be-contractions"],
+  "introducesConceptIds": ["concept.a0.grammar.be-negative"],
+  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative"],
+  "vocabularyIds": ["vocab.not"],
+  "blocks": [
+    {"id": "block.a0.007.be-negative.explanation", "type": "explanation", "text": {"pt-BR": "Para negar uma frase com be, coloque not logo depois de am, is ou are."}},
+    {"id": "block.a0.007.be-negative.rule", "type": "rule", "text": {"pt-BR": "Use I am not, he/she/it is not e you/we/they are not. Não use do ou does com be."}},
+    {"id": "block.a0.007.be-negative.example", "type": "example", "language": "en", "text": {"en": "I am not from Brazil. She is not from Brazil."}},
+    {"id": "block.a0.007.be-negative.checkpoint", "type": "checkpoint", "text": {"pt-BR": "Antes de avançar, transforme uma frase afirmativa com be em negativa sem mudar o sujeito."}}
+  ],
+  "activityIds": ["activity.a0.007.negate-with-be"]
+}

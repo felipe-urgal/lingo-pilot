@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.010.write-zero-to-twenty",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.010.numbers-0-20",
+  "type": "short-answer",
+  "prompt": {"pt-BR": "Escreva em inglês, separados por vírgulas: 0, 7, 12, 20."},
+  "evaluation": {"type": "deterministic", "acceptedAnswers": ["zero, seven, twelve, twenty", "zero,seven,twelve,twenty"]},
+  "conceptIds": ["concept.a0.numbers.zero-to-twenty"],
+  "objectiveIds": ["objective.a0.010.write-zero-to-twenty"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}
