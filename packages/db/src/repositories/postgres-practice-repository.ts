@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lt, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, lte, ne, sql } from "drizzle-orm";
 import type {
   ActivityAttempt,
   ConceptEvidence,
@@ -147,6 +147,61 @@ async function ownsSessionItem(
     )
     .limit(1);
   return Boolean(row);
+}
+
+async function findOwnedPlannedReview(
+  database: Queryable,
+  input: Pick<RecordReviewInput, "enrollmentId" | "memoryItemId" | "sessionItemId">,
+) {
+  if (!input.sessionItemId) return null;
+  const [row] = await database
+    .select({ item: sessionItems, session: studySessions })
+    .from(sessionItems)
+    .innerJoin(studySessions, eq(studySessions.id, sessionItems.studySessionId))
+    .where(
+      and(
+        eq(sessionItems.id, input.sessionItemId),
+        eq(sessionItems.kind, "review"),
+        eq(sessionItems.resourceId, input.memoryItemId),
+        eq(studySessions.enrollmentId, input.enrollmentId),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+async function completePlannedReview(
+  transaction: DatabaseTransaction,
+  input: RecordReviewInput,
+): Promise<void> {
+  if (!input.sessionItemId) return;
+  const owned = await findOwnedPlannedReview(transaction, input);
+  if (!owned) throw new Error("Planned review ownership changed during submit");
+
+  await transaction
+    .update(sessionItems)
+    .set({ status: "completed", updatedAt: input.now })
+    .where(eq(sessionItems.id, input.sessionItemId));
+
+  const [remaining] = await transaction
+    .select({ id: sessionItems.id })
+    .from(sessionItems)
+    .where(
+      and(
+        eq(sessionItems.studySessionId, owned.session.id),
+        ne(sessionItems.status, "completed"),
+      ),
+    )
+    .limit(1);
+  await transaction
+    .update(studySessions)
+    .set({
+      status: remaining ? "in_progress" : "completed",
+      startedAt: sql`coalesce(${studySessions.startedAt}, ${input.now})`,
+      completedAt: remaining ? null : input.now,
+      updatedAt: input.now,
+    })
+    .where(eq(studySessions.id, owned.session.id));
 }
 
 async function evidenceForConcept(
@@ -410,6 +465,19 @@ export class PostgresPracticeRepository implements PracticeRepository {
     }));
   }
 
+  async countDueReviewItems(enrollmentId: string, now: Date): Promise<number> {
+    const [row] = await this.database
+      .select({ count: sql<number>`count(*)::int` })
+      .from(memoryItems)
+      .where(
+        and(
+          eq(memoryItems.enrollmentId, enrollmentId),
+          lte(memoryItems.dueAt, now),
+        ),
+      );
+    return row?.count ?? 0;
+  }
+
   async findReviewByOperation(
     enrollmentId: string,
     operationKey: string,
@@ -434,6 +502,18 @@ export class PostgresPracticeRepository implements PracticeRepository {
       );
       if (duplicate) {
         return { ok: true, event: reviewFromRow(duplicate), duplicate: true };
+      }
+
+      if (input.sessionItemId) {
+        const planned = await findOwnedPlannedReview(transaction, input);
+        if (
+          !planned ||
+          planned.item.status === "completed" ||
+          planned.session.status === "completed" ||
+          planned.session.status === "abandoned"
+        ) {
+          return { ok: false, reason: "not-found" };
+        }
       }
 
       const [memory] = await transaction
@@ -508,6 +588,7 @@ export class PostgresPracticeRepository implements PracticeRepository {
         input.now,
         reduceMastery,
       );
+      await completePlannedReview(transaction, input);
 
       return { ok: true, event: reviewFromRow(event), duplicate: false };
     });
