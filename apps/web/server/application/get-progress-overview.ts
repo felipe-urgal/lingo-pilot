@@ -16,6 +16,7 @@ import {
 } from "../../../../packages/learning/src/index.ts";
 
 const DEFAULT_HISTORY_PAGE_SIZE = 5;
+const MAX_HISTORY_PAGE = 100;
 const MAX_HISTORY_PAGE_SIZE = 10;
 const WEAK_CONCEPT_LIMIT = 5;
 
@@ -142,7 +143,7 @@ function historyItem(
 
 function safePage(value: number | undefined): number {
   if (!Number.isInteger(value) || value === undefined || value <= 0) return 1;
-  return Math.trunc(value);
+  return Math.min(MAX_HISTORY_PAGE, Math.trunc(value));
 }
 
 function safePageSize(value: number | undefined): number {
