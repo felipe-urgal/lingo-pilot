@@ -65,11 +65,19 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
       return { ok: false, reason: "invalid-input" };
     }
 
+    const now = dependencies.clock.now();
     const duplicate = await dependencies.practice.findReviewByOperation(
       input.journey.enrollment.id,
       input.operationKey,
     );
     if (duplicate) {
+      if (input.sessionItemId) {
+        await dependencies.execution.finalizeSessionContainingItem({
+          enrollmentId: input.journey.enrollment.id,
+          itemId: input.sessionItemId,
+          now,
+        });
+      }
       return {
         ok: true,
         reviewEventId: duplicate.id,
@@ -80,7 +88,6 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
       };
     }
 
-    const now = dependencies.clock.now();
     const due = await dependencies.practice.listDueReviewItems(
       input.journey.enrollment.id,
       now,
