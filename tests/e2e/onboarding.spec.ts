@@ -12,7 +12,7 @@ async function signup(page, email: string, password: string) {
   await expect(page).toHaveURL(/\/app\/onboarding$/);
 }
 
-test("signup/login -> onboarding A0 -> Today -> practice -> resumable lesson -> completed session", async ({
+test("signup/login -> onboarding A0 -> Today -> interrupt/login resume -> completed session", async ({
   page,
 }) => {
   const email = uniqueEmail("a0");
@@ -56,7 +56,19 @@ test("signup/login -> onboarding A0 -> Today -> practice -> resumable lesson -> 
 
   await page.reload();
   await expect(page.getByText("Passo 2 de 2")).toBeVisible();
-  await expect(page.getByText("Estudo de hoje concluído.")).toHaveCount(0);
+  await expect(page.getByText("Estudo concluído.")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Sair" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Senha").fill(password);
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page).toHaveURL(/\/app\/today$/);
+  await expect(
+    page.getByRole("heading", { name: "Continue de onde parou." }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Continuar estudo" }).click();
+  await expect(page.getByText("Passo 2 de 2")).toBeVisible();
   await expect(
     page.getByRole("heading", {
       name: "Qual ação registra a conclusão de uma aula?",
@@ -79,8 +91,9 @@ test("signup/login -> onboarding A0 -> Today -> practice -> resumable lesson -> 
 
   await expect(page).toHaveURL(/\/app\/today$/);
   await expect(
-    page.getByRole("heading", { name: "Estudo de hoje concluído." }),
+    page.getByRole("heading", { name: "Estudo concluído." }),
   ).toBeVisible();
+  await expect(page.getByText(/1 aula e 0 revisões concluídas/)).toBeVisible();
 });
 
 test("false beginner can choose A2 manual entry without fabricated completion UI", async ({
