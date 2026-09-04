@@ -38,6 +38,7 @@ export interface SubmitReviewDependencies {
 export interface SubmitReviewInput {
   readonly journey: LearnerJourney;
   readonly memoryItemId: string;
+  readonly sessionItemId?: string;
   readonly operationKey: string;
   readonly answer: PersistedActivityAnswer;
   readonly hintCount: number;
@@ -53,6 +54,8 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
   ): Promise<SubmitReviewResult> {
     if (
       !isSafeIdentifier(input.memoryItemId) ||
+      (input.sessionItemId !== undefined &&
+        !isSafeIdentifier(input.sessionItemId)) ||
       !isSafeIdentifier(input.operationKey) ||
       !Number.isInteger(input.hintCount) ||
       input.hintCount < 0
@@ -113,6 +116,7 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
         reviewEventId: dependencies.idGenerator.generate(),
         enrollmentId: input.journey.enrollment.id,
         memoryItemId: memory.id,
+        sessionItemId: input.sessionItemId ?? null,
         operationKey: input.operationKey,
         expectedReviewCount: memory.reviewCount,
         grade,
