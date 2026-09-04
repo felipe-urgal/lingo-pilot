@@ -44,7 +44,7 @@ http://127.0.0.1:5400
 
 Depois de implementar a mudança e os testes correspondentes:
 
-1. mantenha o PostgreSQL local disponível quando a mudança depender de persistência;
+1. garanta o PostgreSQL local disponível com `pnpm db:up`, porque `pnpm check` sempre executa integration tests via `TEST_DATABASE_URL`;
 2. execute `pnpm dev` e valide manualmente o fluxo alterado quando aplicável;
 3. execute o gate canônico do repositório:
 
@@ -133,7 +133,8 @@ Qualquer push novo invalida a validação final anterior. O head que será merge
 issue
 -> branch dedicada
 -> implementação + testes
--> banco/migration quando aplicável
+-> pnpm db:up
+-> migration quando aplicável
 -> pnpm dev + validação manual quando aplicável
 -> pnpm check
 -> pnpm test:e2e quando o risco justificar
