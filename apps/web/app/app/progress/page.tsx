@@ -143,7 +143,7 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         <p className="eyebrow">Habilidades</p>
         <h2 id="progress-modalities">Evidência observada por modalidade</h2>
         <p className={styles.muted}>
-          A taxa abaixo descreve apenas as respostas registradas em cada
+          A taxa abaixo descreve apenas as evidências registradas em cada
           modalidade. Ela não é um segundo score de mastery; o tamanho da amostra
           aparece junto para manter a leitura honesta.
         </p>
