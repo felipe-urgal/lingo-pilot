@@ -81,9 +81,19 @@ export interface DailySessionPlan {
   readonly diagnostics: DailySessionPlanDiagnostics;
 }
 
+interface PlannerCandidates {
+  readonly goal: number;
+  readonly reviews: readonly PlannerReviewCandidate[];
+  readonly unavailableReviewCount: number;
+  readonly extremeDebt: boolean;
+  readonly maxReviewMinutes: number;
+  readonly resume: PlannerLessonCandidate | undefined;
+  readonly newLesson: PlannerLessonCandidate | undefined;
+}
+
 function normalizedGoal(minutes: number): number {
-  if (!Number.isFinite(minutes)) return 1;
-  return Math.max(1, Math.trunc(minutes));
+  if (!Number.isFinite(minutes)) return REVIEW_ESTIMATED_MINUTES;
+  return Math.max(REVIEW_ESTIMATED_MINUTES, Math.trunc(minutes));
 }
 
 function orderedLessons(
@@ -136,13 +146,18 @@ function reviewItem(
   };
 }
 
+function estimatedMinutes(items: readonly PlannedSessionItem[]): number {
+  return items.reduce((total, item) => total + item.estimatedMinutes, 0);
+}
+
 function appendIfFits(
   items: PlannedSessionItem[],
   candidate: PlannedSessionItem,
   budgetMinutes: number,
 ): boolean {
-  const used = items.reduce((total, item) => total + item.estimatedMinutes, 0);
-  if (used + candidate.estimatedMinutes > budgetMinutes) return false;
+  if (estimatedMinutes(items) + candidate.estimatedMinutes > budgetMinutes) {
+    return false;
+  }
   items.push(candidate);
   return true;
 }
@@ -155,73 +170,111 @@ function reviewBudget(goal: number, extremeDebt: boolean): number {
   );
 }
 
-function isHeavilyOverdue(candidate: PlannerReviewCandidate, now: Date): boolean {
-  return now.getTime() - candidate.dueAt.getTime() >= HEAVILY_OVERDUE_MS;
+function prepareCandidates(input: DailySessionPlannerInput): PlannerCandidates {
+  const goal = normalizedGoal(input.dailyGoalMinutes);
+  const available = new Set(input.availableModalities);
+  const reviews = orderedReviews(input.reviews).filter((review) =>
+    available.has(review.modality),
+  );
+  const debtMinutes = Math.max(0, input.dueReviewCount) * REVIEW_ESTIMATED_MINUTES;
+  const extremeDebt = debtMinutes >= goal * EXTREME_REVIEW_DEBT_MULTIPLIER;
+  const lessons = orderedLessons(input.lessons);
+  return {
+    goal,
+    reviews,
+    unavailableReviewCount: input.reviews.length - reviews.length,
+    extremeDebt,
+    maxReviewMinutes: reviewBudget(goal, extremeDebt),
+    resume: lessons.find((lesson) => lesson.availability === "in_progress"),
+    newLesson: lessons.find((lesson) => lesson.availability === "available"),
+  };
+}
+
+function addReviews(
+  items: PlannedSessionItem[],
+  candidates: readonly PlannerReviewCandidate[],
+  reasonCode: "OVERDUE_REVIEW" | "WEAK_CONCEPT",
+  totalBudget: number,
+  reviewBudgetMinutes: number,
+): number {
+  let used = 0;
+  for (const candidate of candidates) {
+    if (used + REVIEW_ESTIMATED_MINUTES > reviewBudgetMinutes) break;
+    if (appendIfFits(items, reviewItem(candidate, reasonCode), totalBudget)) {
+      used += REVIEW_ESTIMATED_MINUTES;
+    }
+  }
+  return used;
+}
+
+function reviewGroups(
+  reviews: readonly PlannerReviewCandidate[],
+  now: Date,
+) {
+  const heavilyOverdue = reviews.filter(
+    (review) => now.getTime() - review.dueAt.getTime() >= HEAVILY_OVERDUE_MS,
+  );
+  const heavyIds = new Set(heavilyOverdue.map((review) => review.id));
+  const remaining = reviews.filter((review) => !heavyIds.has(review.id));
+  return {
+    heavilyOverdue,
+    weak: remaining.filter((review) => review.isWeakConcept),
+    ordinary: remaining.filter((review) => !review.isWeakConcept),
+  };
+}
+
+function selectPlanItems(
+  input: DailySessionPlannerInput,
+  candidates: PlannerCandidates,
+): readonly PlannedSessionItem[] {
+  const items: PlannedSessionItem[] = [];
+  if (candidates.resume) {
+    appendIfFits(items, lessonItem(candidates.resume), candidates.goal);
+  }
+  const groups = reviewGroups(candidates.reviews, input.now);
+  let reviewRemaining = candidates.maxReviewMinutes;
+  reviewRemaining -= addReviews(
+    items,
+    groups.heavilyOverdue,
+    "OVERDUE_REVIEW",
+    candidates.goal,
+    reviewRemaining,
+  );
+  reviewRemaining -= addReviews(
+    items,
+    groups.weak,
+    "WEAK_CONCEPT",
+    candidates.goal,
+    reviewRemaining,
+  );
+  if (!candidates.resume && candidates.newLesson && !candidates.extremeDebt) {
+    appendIfFits(items, lessonItem(candidates.newLesson), candidates.goal);
+  }
+  addReviews(
+    items,
+    groups.ordinary,
+    "OVERDUE_REVIEW",
+    candidates.goal,
+    reviewRemaining,
+  );
+  return items;
 }
 
 export function planDailySession(
   input: DailySessionPlannerInput,
 ): DailySessionPlan {
-  const goal = normalizedGoal(input.dailyGoalMinutes);
-  const available = new Set(input.availableModalities);
-  const eligibleReviews = orderedReviews(input.reviews).filter((review) =>
-    available.has(review.modality),
-  );
-  const unavailableModalityReviewCount =
-    input.reviews.length - eligibleReviews.length;
-  const debtMinutes = Math.max(0, input.dueReviewCount) * REVIEW_ESTIMATED_MINUTES;
-  const extremeDebt =
-    debtMinutes >= goal * EXTREME_REVIEW_DEBT_MULTIPLIER;
-  const maxReviewMinutes = reviewBudget(goal, extremeDebt);
-  const lessons = orderedLessons(input.lessons);
-  const resume = lessons.find((lesson) => lesson.availability === "in_progress");
-  const newLesson = lessons.find((lesson) => lesson.availability === "available");
-  const items: PlannedSessionItem[] = [];
-  let usedReviewMinutes = 0;
-
-  if (resume) appendIfFits(items, lessonItem(resume), goal);
-
-  const appendReview = (
-    candidate: PlannerReviewCandidate,
-    reasonCode: "OVERDUE_REVIEW" | "WEAK_CONCEPT",
-  ) => {
-    if (usedReviewMinutes + REVIEW_ESTIMATED_MINUTES > maxReviewMinutes) return;
-    if (appendIfFits(items, reviewItem(candidate, reasonCode), goal)) {
-      usedReviewMinutes += REVIEW_ESTIMATED_MINUTES;
-    }
-  };
-
-  const heavilyOverdue = eligibleReviews.filter((review) =>
-    isHeavilyOverdue(review, input.now),
-  );
-  for (const review of heavilyOverdue) appendReview(review, "OVERDUE_REVIEW");
-
-  const remaining = eligibleReviews.filter(
-    (review) => !heavilyOverdue.includes(review),
-  );
-  const weak = remaining.filter((review) => review.isWeakConcept);
-  for (const review of weak) appendReview(review, "WEAK_CONCEPT");
-
-  const newContentSuspended = extremeDebt && Boolean(newLesson) && !resume;
-  if (!resume && newLesson && !newContentSuspended) {
-    appendIfFits(items, lessonItem(newLesson), goal);
-  }
-
-  const ordinary = remaining.filter((review) => !review.isWeakConcept);
-  for (const review of ordinary) appendReview(review, "OVERDUE_REVIEW");
-
+  const candidates = prepareCandidates(input);
+  const items = selectPlanItems(input, candidates);
   return {
     plannerVersion: input.plannerVersion,
     items,
     diagnostics: {
-      estimatedMinutes: items.reduce(
-        (total, item) => total + item.estimatedMinutes,
-        0,
-      ),
+      estimatedMinutes: estimatedMinutes(items),
       reviewDebtCount: Math.max(0, Math.trunc(input.dueReviewCount)),
-      reviewBudgetMinutes: maxReviewMinutes,
-      newContentSuspended,
-      unavailableModalityReviewCount,
+      reviewBudgetMinutes: candidates.maxReviewMinutes,
+      newContentSuspended:
+        candidates.extremeDebt && Boolean(candidates.newLesson) && !candidates.resume,
+      unavailableModalityReviewCount: candidates.unavailableReviewCount,
     },
   };
 }
