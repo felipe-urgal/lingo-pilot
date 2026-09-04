@@ -103,6 +103,7 @@ export default async function TodayPage() {
           <p>O planner priorizou o que precisa ser recuperado agora.</p>
         </div>
         <form action="/app/review" method="get">
+          <input type="hidden" name="source" value="today" />
           <Button type="submit">Começar revisões</Button>
         </form>
         <a className="text-link" href="/app/onboarding?edit=1">
