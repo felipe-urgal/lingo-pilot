@@ -11,6 +11,7 @@
     "dev:e2e": "turbo run dev:e2e --filter=@lingo-pilot/web",
     "build": "node scripts/run-with-runtime-env.mjs turbo run build",
     "start": "node scripts/run-with-runtime-env.mjs pnpm --filter @lingo-pilot/web start",
+    "prepare": "node scripts/install-git-hooks.mjs",
     "env:init": "node scripts/init-local-env.mjs",
     "env:check": "node scripts/check-local-env.mjs",
     "db:up": "docker compose up -d --wait postgres",
@@ -38,6 +39,7 @@
     "prod:backup": "node scripts/backup-production.mjs",
     "prod:restore-check": "node scripts/restore-check-production.mjs",
     "format": "prettier --write .",
+    "format:staged": "node scripts/format-staged.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

@@ -84,6 +84,18 @@ Durante desenvolvimento, commits intermediários são aceitáveis. Antes do merg
 
 Commits não devem incluir secrets ou artefatos gerados desnecessários.
 
+### Formatação automática
+
+`pnpm install` executa o script `prepare`, que instala de forma idempotente um hook local gerenciado de `pre-commit`. O hook executa `pnpm format:staged` usando a versão de Prettier fixada no repositório.
+
+`format:staged` formata o snapshot que já está no index do Git em vez de executar `git add` sobre o arquivo inteiro. Assim partial staging não incorpora silenciosamente mudanças que ainda estavam fora do commit. Quando o conteúdo do working tree é exatamente igual ao staged, o arquivo local também é sincronizado com a versão formatada.
+
+O mesmo mecanismo pode ser executado manualmente com `pnpm format:staged` antes de um commit.
+
+Se já existir um `.git/hooks/pre-commit` não gerenciado pelo LingoPilot, a instalação automática não sobrescreve o hook existente e apenas emite um aviso. Nesse caso, o desenvolvedor continua responsável por integrar `pnpm format:staged` ao hook próprio ou executar `pnpm format` antes do commit.
+
+O hook é conveniência local, não substitui o gate `pnpm format:check` do CI.
+
 ## 8. PR
 
 Abrir PR como draft quando implementação ainda estiver em andamento e houver benefício de visibilidade.
@@ -140,6 +152,10 @@ Comentários devem explicar impacto, não apenas prescrever código.
 Checks obrigatórios devem bloquear merge.
 
 Falha de CI deve ser investigada. Não desabilitar check sem issue/decisão explícita.
+
+O workflow `Format` roda em PRs de branches do próprio repositório antes dos gates finais. Ele executa `pnpm format` e, quando houver diff exclusivamente resultante da formatação, cria um commit `style: apply prettier` na branch do PR. O push feito com `GITHUB_TOKEN` não deve ser usado como substituto do `format:check`; o check permanece obrigatório e valida o head final.
+
+PRs originados de forks não recebem push automático por segurança/permissão. Nesses casos o autor corrige a formatação localmente e o CI continua reportando qualquer divergência.
 
 CI/Preview não podem usar credenciais nem banco de Production. O contrato completo de ambientes e promoção está em `docs/PRODUCTION_DEPLOYMENT.md`.
 
