@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
 import { getProgressOverview } from "../../../server/progress/runtime";
+import styles from "./progress.module.css";
 
 type ProgressPageProps = Readonly<{
   searchParams: Promise<{ page?: string | string[] }>;
@@ -45,8 +46,8 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
   const locale = journey.learnerProfile.interfaceLocale;
 
   return (
-    <section className="progress-page" aria-labelledby="progress-title">
-      <header className="progress-page__header">
+    <section className={styles.page} aria-labelledby="progress-title">
+      <header className={styles.header}>
         <p className="eyebrow">Progresso</p>
         <h1 id="progress-title">Sua jornada, sem pontos artificiais.</h1>
         <p className="description">
@@ -55,7 +56,7 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </p>
       </header>
 
-      <section className="progress-section" aria-labelledby="progress-location">
+      <section className={styles.section} aria-labelledby="progress-location">
         <p className="eyebrow">Onde você está</p>
         <h2 id="progress-location">
           {overview.location.level
@@ -64,14 +65,14 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </h2>
         {overview.location.unit ? <p>{overview.location.unit.title}</p> : null}
         {overview.location.lesson ? (
-          <p className="progress-muted">
+          <p className={styles.muted}>
             {overview.location.lesson.status === "in_progress"
               ? "Em andamento"
               : "Próxima aula"}
             : {overview.location.lesson.title}
           </p>
         ) : (
-          <p className="progress-muted">
+          <p className={styles.muted}>
             Nenhuma próxima aula publicada está disponível para este ponto da
             trilha.
           </p>
@@ -81,12 +82,12 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </a>
       </section>
 
-      <section className="progress-section" aria-labelledby="progress-learning">
+      <section className={styles.section} aria-labelledby="progress-learning">
         <p className="eyebrow">Aprendizado</p>
         <h2 id="progress-learning">Avanço e domínio são medidas distintas.</h2>
-        <div className="progress-grid">
-          <article className="progress-stat">
-            <p className="progress-stat__label">Trilha concluída</p>
+        <div className={styles.grid}>
+          <article className={styles.stat}>
+            <p className={styles.statLabel}>Trilha concluída</p>
             <strong>{overview.learning.completedLessons} aulas</strong>
             <p>
               {overview.learning.startedLessons > 0
@@ -94,8 +95,8 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
                 : "Nenhuma aula em andamento agora."}
             </p>
           </article>
-          <article className="progress-stat">
-            <p className="progress-stat__label">Domínio estimado</p>
+          <article className={styles.stat}>
+            <p className={styles.statLabel}>Domínio estimado</p>
             {overview.learning.masteryConceptCount > 0 &&
             overview.learning.averageMasteryPercent !== null ? (
               <>
@@ -120,7 +121,7 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </div>
       </section>
 
-      <section className="progress-section" aria-labelledby="progress-reinforce">
+      <section className={styles.section} aria-labelledby="progress-reinforce">
         <p className="eyebrow">Reforçar</p>
         <h2 id="progress-reinforce">
           {overview.dueReviewCount > 0
@@ -128,18 +129,19 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
             : "Revisões em dia"}
         </h2>
         {overview.weakConcepts.length > 0 ? (
-          <ul className="progress-list">
+          <ul className={styles.list}>
             {overview.weakConcepts.map((concept) => (
               <li key={concept.id}>
                 <strong>{concept.title}</strong>
                 <span>
-                  domínio {concept.scorePercent}% · confiança {concept.confidencePercent}%
+                  domínio {concept.scorePercent}% · confiança{" "}
+                  {concept.confidencePercent}%
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="progress-muted">
+          <p className={styles.muted}>
             Nenhum conceito frágil possui evidência suficiente neste momento.
           </p>
         )}
@@ -148,14 +150,14 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </a>
       </section>
 
-      <section className="progress-section" aria-labelledby="progress-history">
+      <section className={styles.section} aria-labelledby="progress-history">
         <p className="eyebrow">Histórico recente</p>
         <h2 id="progress-history">Sessões persistidas</h2>
-        <p className="progress-muted">
+        <p className={styles.muted}>
           As datas seguem o fuso de estudo configurado na sua jornada.
         </p>
         {overview.history.items.length > 0 ? (
-          <ol className="progress-history">
+          <ol className={styles.history}>
             {overview.history.items.map((session) => (
               <li key={session.id}>
                 <div>
@@ -166,8 +168,9 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
                 </div>
                 <p>
                   {session.completedLessons} aula
-                  {session.completedLessons === 1 ? "" : "s"} · {session.completedReviews}{" "}
-                  revisão{session.completedReviews === 1 ? "" : "ões"}
+                  {session.completedLessons === 1 ? "" : "s"} ·{" "}
+                  {session.completedReviews} revisão
+                  {session.completedReviews === 1 ? "" : "ões"}
                   {session.skippedItems > 0
                     ? ` · ${session.skippedItems} item${session.skippedItems === 1 ? "" : "s"} ignorado${session.skippedItems === 1 ? "" : "s"}`
                     : ""}
@@ -176,13 +179,13 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
             ))}
           </ol>
         ) : (
-          <p className="progress-muted">
+          <p className={styles.muted}>
             Nenhuma sessão foi registrada ainda. Sua primeira sessão aparecerá
             aqui depois que a jornada começar.
           </p>
         )}
         {(overview.history.hasPrevious || overview.history.hasMore) && (
-          <nav className="progress-pagination" aria-label="Páginas do histórico">
+          <nav className={styles.pagination} aria-label="Páginas do histórico">
             {overview.history.hasPrevious ? (
               <a className="text-link" href={`/app/progress?page=${page - 1}`}>
                 ← Mais recentes
