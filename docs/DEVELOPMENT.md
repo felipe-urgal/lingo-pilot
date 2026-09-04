@@ -44,7 +44,7 @@ http://127.0.0.1:5400
 
 Depois de implementar a mudança e os testes correspondentes:
 
-1. garanta o PostgreSQL local disponível com `pnpm db:up`, porque `pnpm check` sempre executa integration tests via `TEST_DATABASE_URL`;
+1. garanta o PostgreSQL local disponível com `pnpm db:up`, porque `pnpm check` executa integration tests via `TEST_DATABASE_URL`;
 2. execute `pnpm dev` e valide manualmente o fluxo alterado quando aplicável;
 3. execute o gate canônico do repositório:
 
@@ -52,50 +52,52 @@ Depois de implementar a mudança e os testes correspondentes:
 pnpm check
 ```
 
-`pnpm check` executa:
+`pnpm check` representa tudo que é sempre exigido antes do PR e executa:
 
 ```text
-format:check
--> env:check
--> lint
+lint
 -> typecheck
 -> test
 -> content:validate
--> db:check
 -> build
 ```
 
 `pnpm test` inclui unitários/estruturais e integração com PostgreSQL via `TEST_DATABASE_URL`.
 
-O objetivo é ter uma única interface para tudo que é sempre obrigatório antes do PR. CI usa o mesmo `pnpm check` em ambiente limpo e sintético.
+O CI usa o mesmo `pnpm check` em ambiente limpo e sintético.
 
 ## Checks direcionados
 
-Checks caros ou específicos continuam separados quando não são requisito de todo PR.
+Os checks abaixo permanecem explícitos quando o escopo justificar; não fazem parte do custo fixo de todo PR.
 
-### E2E
+### Ambiente/runtime
 
-Para mudanças de fluxo browser-first, autenticação, Today/Lesson Player ou regressões que justificam navegador real:
-
-```bash
-pnpm test:e2e
-```
-
-O Playwright usa `pnpm dev:e2e` internamente e a porta reservada `127.0.0.1:5401`. Não remova nem transforme `dev:e2e` em alias genérico: ele é parte do contrato E2E.
-
-### Coverage
-
-Quando a análise de cobertura ajudar a investigar lacunas:
+Quando a mudança tocar configuração, profiles ou variáveis:
 
 ```bash
-pnpm test:coverage
+pnpm env:check
 ```
 
-Coverage é diagnóstico, não meta percentual automática.
+### Formatação
 
-### Banco
+O hook local usa `pnpm format:staged`. Para auditoria explícita de formatação:
 
-Comandos especializados:
+```bash
+pnpm format:check
+```
+
+A formatação não é hoje um status obrigatório separado do CI.
+
+### Banco/migrations
+
+Para mudanças de schema/migration ou infraestrutura de banco, use conforme aplicável:
+
+```bash
+pnpm db:check
+pnpm db:smoke
+```
+
+Comandos disponíveis:
 
 ```bash
 pnpm db:up
@@ -108,6 +110,26 @@ pnpm db:smoke
 ```
 
 `db:reset` é destrutivo apenas para o volume local próprio do LingoPilot. Migrations aplicadas não devem ser reescritas; correções usam migration nova/forward-fix.
+
+### E2E
+
+Para mudanças de fluxo browser-first, autenticação, Today/Lesson Player ou regressões que justificam navegador real:
+
+```bash
+pnpm test:e2e
+```
+
+O Playwright usa `pnpm dev:e2e` internamente e a porta reservada `127.0.0.1:5401`. `dev:e2e` é parte do contrato E2E e deve permanecer.
+
+### Coverage
+
+Quando a análise de cobertura ajudar a investigar lacunas:
+
+```bash
+pnpm test:coverage
+```
+
+Coverage é diagnóstico, não meta percentual automática.
 
 ## CI e merge
 
@@ -123,7 +145,7 @@ O ruleset ativo da `main` exige o contexto `quality`. O job instala pelo lockfil
 pnpm check
 ```
 
-E2E continua sendo validação direcionada por risco/escopo, não um contexto obrigatório separado da `main` neste momento.
+E2E, format check, environment check e database consistency/smoke continuam validações direcionadas por escopo, não contextos obrigatórios separados da `main` neste momento.
 
 Qualquer push novo invalida a validação final anterior. O head que será mergeado deve ser o mesmo que passou pelo CI e pelo auto code review final.
 
@@ -137,7 +159,7 @@ issue
 -> migration quando aplicável
 -> pnpm dev + validação manual quando aplicável
 -> pnpm check
--> pnpm test:e2e quando o risco justificar
+-> checks direcionados conforme risco
 -> PR
 -> CI / quality do head atual
 -> auto code review completo
