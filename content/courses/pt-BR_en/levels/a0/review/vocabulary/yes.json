@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.yes",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "yes",
+  "language": "en",
+  "partOfSpeech": "interjection",
+  "translations": {"pt-BR": "sim"},
+  "introducedInLessonId": "lesson.a0.009.be-short-answers"
+}

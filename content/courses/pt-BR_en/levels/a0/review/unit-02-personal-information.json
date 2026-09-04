@@ -1,0 +1,19 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.02.personal-information",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Informações pessoais"
+  },
+  "lessonIds": [
+    "lesson.a0.007.be-negative",
+    "lesson.a0.008.be-questions",
+    "lesson.a0.009.be-short-answers",
+    "lesson.a0.010.numbers-0-20",
+    "lesson.a0.011.numbers-20-100",
+    "lesson.a0.012.age-and-phone"
+  ]
+}
