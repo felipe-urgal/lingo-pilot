@@ -102,9 +102,9 @@ export default async function TodayPage() {
           </h2>
           <p>O planner priorizou o que precisa ser recuperado agora.</p>
         </div>
-        <a href="/app/review">
-          <Button>Começar revisões</Button>
-        </a>
+        <form action="/app/review" method="get">
+          <Button type="submit">Começar revisões</Button>
+        </form>
         <a className="text-link" href="/app/onboarding?edit=1">
           Ajustar preferências
         </a>
