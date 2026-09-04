@@ -180,27 +180,25 @@ pnpm check
 Ela executa:
 
 ```text
-format:check
--> env:check
--> lint
+lint
 -> typecheck
 -> test
 -> content:validate
--> db:check
 -> build
 ```
 
-`pnpm test` inclui testes unitários/estruturais e integration tests PostgreSQL. O CI usa PostgreSQL efêmero e o mesmo `pnpm check`, evitando manter listas paralelas de comandos entre package scripts, documentação e workflow.
+`pnpm test` inclui testes unitários/estruturais e integration tests PostgreSQL. O CI usa PostgreSQL efêmero e o mesmo `pnpm check`, evitando manter listas paralelas entre package scripts, documentação e workflow.
 
-E2E continua proporcional ao risco da mudança e deve ser executado quando um fluxo browser-first relevante for alterado:
+A simplificação do CI de 2026-09-04 removeu deliberadamente formatação automática, `format:check`, `env:check`, `db:smoke`, `db:check` e o pipeline E2E/build separado do custo fixo de todo PR. Esses comandos continuam disponíveis e devem ser usados quando o escopo proteger seus contratos:
 
-```bash
-pnpm test:e2e
-```
+- `pnpm format:check`: auditoria explícita de formatação;
+- `pnpm env:check`: mudanças de configuração/runtime;
+- `pnpm db:check` / `pnpm db:smoke`: mudanças de schema, migrations ou infraestrutura de banco;
+- `pnpm test:e2e`: fluxos browser-first críticos.
 
-Evals online, performance/a11y avançados e verificações operacionais permanecem checks especializados conforme a fase/risco. Eles não devem virar custo fixo de todo PR sem proteger um contrato material.
+Evals online, performance/a11y avançados e verificações operacionais seguem o mesmo princípio proporcional ao risco.
 
-Nenhum check obrigatório deve ser ignorado por conveniência.
+Nenhum check obrigatório deve ser ignorado por conveniência; ao mesmo tempo, um diagnóstico especializado não deve voltar ao gate global sem decisão explícita.
 
 ## 13. Flaky tests
 
@@ -266,7 +264,8 @@ Use `pnpm test:coverage` quando a análise de cobertura ajudar a identificar lac
 Antes de release relevante:
 
 - `pnpm check`/CI verde no head final;
-- migrations verificadas;
+- checks especializados aplicáveis executados;
+- migrations verificadas quando houver mudança de schema;
 - smoke flow executado;
 - rollback conhecido;
 - observabilidade disponível;
