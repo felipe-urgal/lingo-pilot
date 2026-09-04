@@ -31,6 +31,7 @@ import vocabBrazil from "../../../content/courses/pt-BR_en/levels/a0/review/voca
 import vocabNot from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/not.json" with { type: "json" };
 import vocabYes from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/yes.json" with { type: "json" };
 import vocabNo from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/no.json" with { type: "json" };
+import vocabPhone from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/phone.json" with { type: "json" };
 import lesson001 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/001-alphabet-spelling.json" with { type: "json" };
 import lesson002 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/002-essential-greetings.json" with { type: "json" };
 import lesson003 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/003-self-introduction.json" with { type: "json" };
@@ -101,6 +102,7 @@ const inputs: readonly ContentInput[] = [
   { file: "review/vocab-not.json", value: vocabNot },
   { file: "review/vocab-yes.json", value: vocabYes },
   { file: "review/vocab-no.json", value: vocabNo },
+  { file: "review/vocab-phone.json", value: vocabPhone },
   { file: "review/lesson-001.json", value: lesson001 },
   { file: "review/lesson-002.json", value: lesson002 },
   { file: "review/lesson-003.json", value: lesson003 },
@@ -148,7 +150,7 @@ describe("A0 editorial review content", () => {
     expect(a0.unitIds).not.toContain("unit.a0.02.personal-information");
     expect(
       result.documents.filter((loaded) => loaded.document.status === "review"),
-    ).toHaveLength(48);
+    ).toHaveLength(49);
   });
 
   it("links every review lesson objective to at least one deterministic activity", () => {
