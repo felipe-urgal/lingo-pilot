@@ -1,6 +1,7 @@
 import type {
   Clock,
   LearnerJourney,
+  SessionExecutionRepository,
   StudyRepository,
 } from "../../../../packages/domain/src/index.ts";
 import type { CurriculumCatalog } from "../../../../packages/content/src/index.ts";
@@ -25,6 +26,7 @@ export interface NavigateLessonPlayerDependencies {
   readonly clock: Clock;
   readonly catalog: CurriculumCatalog;
   readonly study: StudyRepository;
+  readonly execution: SessionExecutionRepository;
 }
 
 export interface NavigateLessonPlayerInput {
@@ -83,6 +85,7 @@ export function createNavigateLessonPlayer(
       if (current !== loaded.totalBlocks - 1) {
         return { ok: false, reason: "invalid-state" };
       }
+      const now = dependencies.clock.now();
       const completed = await dependencies.study.completeLesson({
         enrollmentId: input.journey.enrollment.id,
         sessionId: loaded.session.id,
@@ -90,7 +93,7 @@ export function createNavigateLessonPlayer(
         lessonId: loaded.lesson.id,
         contentSchemaVersion: loaded.lesson.schemaVersion,
         contentRevision: loaded.lesson.revision,
-        now: dependencies.clock.now(),
+        now,
       });
       if (!completed.ok) {
         return {
@@ -101,6 +104,11 @@ export function createNavigateLessonPlayer(
               : "invalid-state",
         };
       }
+      await dependencies.execution.finalizeSessionIfTerminal({
+        enrollmentId: input.journey.enrollment.id,
+        sessionId: loaded.session.id,
+        now,
+      });
       return { ok: true, completed: true, currentBlockIndex: current };
     }
 

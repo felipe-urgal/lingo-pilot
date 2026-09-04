@@ -60,6 +60,12 @@ export type {
   SubmitAttemptResult,
 } from "./learner/practice-repository.ts";
 export type {
+  SessionExecutionRepository,
+  SessionRecoveryReason,
+  SessionReviewResource,
+  SkipSessionItemResult,
+} from "./learner/session-execution-repository.ts";
+export type {
   CompleteLessonInput,
   EnsureDailySessionInput,
   EnsureDailySessionItemInput,

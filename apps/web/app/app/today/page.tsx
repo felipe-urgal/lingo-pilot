@@ -1,4 +1,5 @@
 import { Button } from "@lingo-pilot/ui";
+import type { StudySession } from "../../../../../packages/domain/src/index.ts";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
@@ -29,17 +30,47 @@ function EmptyToday() {
   );
 }
 
-function CompletedToday() {
+function CompletedToday({
+  session,
+  currentLocalStudyDate,
+}: Readonly<{
+  session: StudySession;
+  currentLocalStudyDate: string;
+}>) {
+  const completed = session.items.filter((item) => item.status === "completed");
+  const skipped = session.items.filter((item) => item.status === "skipped");
+  const lessons = completed.filter((item) => item.kind === "lesson").length;
+  const reviews = completed.filter((item) => item.kind === "review").length;
+  const crossedDay = session.localStudyDate !== currentLocalStudyDate;
+
   return (
     <>
-      <p className="eyebrow">Hoje</p>
-      <h1 id="today-title">Estudo de hoje concluído.</h1>
+      <p className="eyebrow">{crossedDay ? "Sessão retomada" : "Hoje"}</p>
+      <h1 id="today-title">Estudo concluído.</h1>
       <p className="description">
-        Sua sessão ficou registrada. A próxima sessão será planejada na sua
-        próxima data local de estudo.
+        {lessons} aula{lessons === 1 ? "" : "s"} e {reviews} revisão
+        {reviews === 1 ? "" : "ões"} concluída{reviews === 1 ? "" : "s"} a
+        partir dos itens persistidos.
       </p>
+      {skipped.length > 0 ? (
+        <p className="description">
+          {skipped.length} item{skipped.length === 1 ? "" : "s"} indisponível
+          {skipped.length === 1 ? " foi ignorado" : " foram ignorados"} com
+          recuperação explícita; nenhum deles contou como aprendizagem concluída.
+        </p>
+      ) : null}
+      {crossedDay ? (
+        <p className="description">
+          Esta sessão manteve a data original {session.localStudyDate} mesmo após
+          a mudança para {currentLocalStudyDate}.
+        </p>
+      ) : null}
     </>
   );
+}
+
+function isPending(status: string): boolean {
+  return status === "planned" || status === "in_progress";
 }
 
 export default async function TodayPage() {
@@ -63,44 +94,52 @@ export default async function TodayPage() {
   if (today.session.status === "completed") {
     return (
       <section className="today-card" aria-labelledby="today-title">
-        <CompletedToday />
+        <CompletedToday
+          session={today.session}
+          currentLocalStudyDate={today.localStudyDate}
+        />
         <ReviewLink count={dueReviews.length} />
       </section>
     );
   }
 
-  const item = today.session.items.find(
-    (candidate) => candidate.status !== "completed",
+  const item = today.session.items.find((candidate) =>
+    isPending(candidate.status),
   );
   if (!item) {
     return (
       <section className="today-card" aria-labelledby="today-title">
         <p className="eyebrow">Hoje</p>
-        <h1 id="today-title">Não foi possível carregar sua sessão.</h1>
+        <h1 id="today-title">Não foi possível finalizar sua sessão.</h1>
         <p className="description">
-          O plano está preservado, mas nenhum item pendente foi encontrado.
+          Os itens estão preservados. Recarregue a página; nenhuma atividade será
+          criada ou concluída automaticamente.
         </p>
         <ReviewLink count={dueReviews.length} />
       </section>
     );
   }
 
+  const crossedDay = today.session.localStudyDate !== today.localStudyDate;
+
   if (item.kind === "review") {
     const plannedReviews = today.session.items.filter(
-      (candidate) =>
-        candidate.kind === "review" && candidate.status !== "completed",
+      (candidate) => candidate.kind === "review" && isPending(candidate.status),
     );
     return (
       <section className="today-card" aria-labelledby="today-title">
-        <p className="eyebrow">Hoje · {item.estimatedMinutes} min</p>
+        <p className="eyebrow">
+          {crossedDay ? `Retomada · ${today.session.localStudyDate}` : "Hoje"} ·{" "}
+          {item.estimatedMinutes} min
+        </p>
         <h1 id="today-title">Comece pelas revisões prioritárias.</h1>
-        <div className="today-plan" aria-label="Plano de estudo de hoje">
+        <div className="today-plan" aria-label="Plano de estudo atual">
           <p className="today-plan__label">Revisar</p>
           <h2>
             {plannedReviews.length} revisão
-            {plannedReviews.length === 1 ? "" : "ões"} no plano de hoje
+            {plannedReviews.length === 1 ? "" : "ões"} no plano
           </h2>
-          <p>O planner priorizou o que precisa ser recuperado agora.</p>
+          <p>O snapshot persistido continua sendo a fonte de verdade.</p>
         </div>
         <form action="/app/review" method="get">
           <input type="hidden" name="source" value="today" />
@@ -116,12 +155,18 @@ export default async function TodayPage() {
   if (!today.lesson || today.lesson.id !== item.resourceId) {
     return (
       <section className="today-card" aria-labelledby="today-title">
-        <p className="eyebrow">Hoje</p>
-        <h1 id="today-title">Não foi possível carregar sua sessão.</h1>
+        <p className="eyebrow">Recuperação da sessão</p>
+        <h1 id="today-title">Este conteúdo não pode mais ser executado.</h1>
         <p className="description">
-          O plano está preservado, mas o conteúdo associado não está disponível
-          nesta revisão. Tente novamente depois de uma atualização do conteúdo.
+          O item continua preservado no snapshot. Você pode marcá-lo como
+          indisponível e seguir para o próximo item sem registrar conclusão de
+          aprendizagem.
         </p>
+        <form action="/api/study/session/recover" method="post">
+          <input type="hidden" name="sessionId" value={today.session.id} />
+          <input type="hidden" name="itemId" value={item.id} />
+          <Button type="submit">Ignorar item indisponível e continuar</Button>
+        </form>
         <ReviewLink count={dueReviews.length} />
       </section>
     );
@@ -131,13 +176,16 @@ export default async function TodayPage() {
 
   return (
     <section className="today-card" aria-labelledby="today-title">
-      <p className="eyebrow">Hoje · {item.estimatedMinutes} min</p>
+      <p className="eyebrow">
+        {crossedDay ? `Retomada · ${today.session.localStudyDate}` : "Hoje"} ·{" "}
+        {item.estimatedMinutes} min
+      </p>
       <h1 id="today-title">
         {isContinuing
           ? "Continue de onde parou."
           : "Sua próxima ação está pronta."}
       </h1>
-      <div className="today-plan" aria-label="Plano de estudo de hoje">
+      <div className="today-plan" aria-label="Plano de estudo atual">
         <p className="today-plan__label">Aprender</p>
         <h2>{today.lesson.title["pt-BR"]}</h2>
         <p>

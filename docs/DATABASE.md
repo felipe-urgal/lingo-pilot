@@ -1,6 +1,6 @@
 # PostgreSQL e Drizzle — LingoPilot
 
-Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11, pela jornada inicial do aluno da #17, pela foundation de currículo/sessão/aula das #18–#20, pelo practice learning loop das #21–#24 e pelo planner diário da #25.
+Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11, pela jornada inicial do aluno da #17, pela foundation de currículo/sessão/aula das #18–#20, pelo practice learning loop das #21–#24, pelo planner diário da #25 e pelo hardening de execução da #26.
 
 ## 1. Responsabilidade
 
@@ -213,6 +213,20 @@ Quando uma review pertence a um item planejado, `recordReview` valida server-sid
 
 A migration é compatível com todas as rows anteriores porque apenas relaxa valores permitidos. Depois que rows `kind=review` existirem, rollback de constraints deve preservar esses dados por forward-fix ou migration compatível; restaurar cegamente os checks antigos deixaria o schema incompatível com o histórico já persistido.
 
+### `0006_session_execution_hardening`
+
+A #26 amplia somente o CHECK de `session_items.status`:
+
+```text
+planned | in_progress | completed | skipped
+```
+
+`skipped` existe para recovery explícito de um item do snapshot que deixou de ser executável. Ele é terminal para o lifecycle da sessão, mas não representa aprendizagem concluída e não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion de lesson.
+
+Não há coluna nova, backfill ou mudança de significado das rows anteriores. A classificação que autorizou o recovery (`content-unavailable`, `revision-conflict` ou `review-no-longer-due`) é validada server-side e registrada em telemetria operacional; reason/eligibility pedagógicos do snapshot não são reutilizados para outro significado.
+
+Depois que rows `skipped` existirem, restaurar o CHECK antigo exige tratar essas rows por migration/forward-fix; um rollback cego deixaria o banco incompatível com dados válidos já persistidos.
+
 ## 7. IDs e timestamps
 
 Convenções:
@@ -222,6 +236,7 @@ Convenções:
 - o pool configura a sessão PostgreSQL para `UTC`;
 - timezone pedagógico do aluno é dado de domínio separado, não configuração da conexão;
 - `localStudyDate` é uma data civil `YYYY-MM-DD` calculada com o timezone do `LearnerProfile`;
+- uma sessão `planned|in_progress` preserva o `localStudyDate` original até ficar terminal, mesmo se a timezone/data atual mudar;
 - defaults de banco não substituem relógio injetável em regras temporais de domínio.
 
 IDs de usuário/sessão são opacos. Sessões de autenticação persistem `token_hash`, nunca o token bruto do cookie. `LanguageProfile`, `Enrollment`, `StudySession` e `SessionItem` também usam IDs opacos gerados pela aplicação; unicidade semântica é protegida separadamente pelas constraints compostas.
@@ -232,7 +247,7 @@ IDs de usuário/sessão são opacos. Sessões de autenticação persistem `token
 
 `withTransaction(database, operation)` fornece a fronteira transacional injetável. Use cases/repositories podem receber `Database` ou `DatabaseTransaction` sem acessar `process.env` nem criar conexão internamente.
 
-Operações que precisam permanecer atomicamente consistentes usam esse boundary em vez de executar writes independentes. O repository da jornada inicial mantém `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes; o repository de estudo mantém criação do snapshot de sessão, start e completion em transações próprias; o repository de prática mantém Attempt/projeções e Review/projeções atomicamente consistentes.
+Operações que precisam permanecer atomicamente consistentes usam esse boundary em vez de executar writes independentes. O repository da jornada inicial mantém `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes; o repository de estudo mantém criação do snapshot de sessão, start e completion em transações próprias; o repository de prática mantém Attempt/projeções e Review/projeções atomicamente consistentes; o repository de execução da sessão serializa recovery/finalização a partir de ownership persistido e só conclui a sessão quando não resta item `planned|in_progress`.
 
 O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth, ownership e persistência de estudo nunca são importados pelo bundle cliente.
 
@@ -285,8 +300,10 @@ A suíte:
 12. valida start, posição retomável, proteção contra submit duplicado e completion explícita de lesson;
 13. valida Attempt/Review idempotentes, CAS de review, evidence e mastery;
 14. valida completion transacional de review planejada junto do `SessionItem/StudySession`;
-15. prova isolamento de recursos pedagógicos entre enrollments;
-16. confirma timezone UTC.
+15. valida resume de sessão aberta preservando o `localStudyDate` original;
+16. valida `skipped` idempotente e completion apenas quando todos os itens persistidos ficam terminais;
+17. prova isolamento de recursos pedagógicos entre enrollments;
+18. confirma timezone UTC.
 
 O teste nunca recebe `DATABASE_URL` como destino de escrita.
 

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   PostgresPracticeRepository,
+  PostgresSessionExecutionRepository,
   PostgresStudyRepository,
 } from "../../../../packages/db/src/runtime.ts";
 import { createGetDueReviews } from "../application/get-due-reviews";
@@ -17,6 +18,7 @@ function dependencies() {
     catalog: getEnglishCourseCatalog(),
     practice: new PostgresPracticeRepository(database),
     study: new PostgresStudyRepository(database),
+    execution: new PostgresSessionExecutionRepository(database),
   };
 }
 
@@ -34,6 +36,6 @@ export function getDueReviews() {
 }
 
 export function getSubmitReview() {
-  const { clock, idGenerator, catalog, practice } = dependencies();
-  return createSubmitReview({ clock, idGenerator, catalog, practice });
+  const { clock, idGenerator, catalog, practice, execution } = dependencies();
+  return createSubmitReview({ clock, idGenerator, catalog, practice, execution });
 }

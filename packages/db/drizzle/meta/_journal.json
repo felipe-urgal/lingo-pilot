@@ -43,6 +43,13 @@
       "when": 1788537600000,
       "tag": "0005_daily_session_planner",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788555600000,
+      "tag": "0006_session_execution_hardening",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { Button } from "@lingo-pilot/ui";
 import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
@@ -50,6 +51,31 @@ function PlannedReviewsComplete({ feedback }: Readonly<{ feedback: string }>) {
   );
 }
 
+function PlannedReviewUnavailable({
+  sessionId,
+  itemId,
+}: Readonly<{ sessionId: string; itemId: string }>) {
+  return (
+    <section className="today-card" aria-labelledby="review-title">
+      <p className="eyebrow">Recuperação da sessão</p>
+      <h1 id="review-title">Esta revisão não pode mais ser executada.</h1>
+      <p className="description">
+        O snapshot será preservado. A recuperação só ignora o item quando o
+        servidor confirma conteúdo indisponível, revision incompatível ou uma
+        revisão que já deixou de estar vencida.
+      </p>
+      <form action="/api/study/session/recover" method="post">
+        <input type="hidden" name="sessionId" value={sessionId} />
+        <input type="hidden" name="itemId" value={itemId} />
+        <Button type="submit">Ignorar revisão indisponível e continuar</Button>
+      </form>
+      <a className="text-link" href="/app/today">
+        Voltar para Hoje
+      </a>
+    </section>
+  );
+}
+
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
@@ -59,8 +85,29 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const feedback = firstValue(query.result);
   const fromToday = firstValue(query.source) === "today";
   const due = await getDueReviews()(journey, 20);
+  const today = fromToday ? await getTodayStudy()(journey) : null;
+  const plannedItem = today?.session?.items.find(
+    (item) => item.status === "planned" || item.status === "in_progress",
+  );
 
-  if (due.length === 0) {
+  if (fromToday && (!plannedItem || plannedItem.kind !== "review")) {
+    return <PlannedReviewsComplete feedback={feedback} />;
+  }
+
+  const current = fromToday
+    ? due.find((item) => item.memory.id === plannedItem?.resourceId)
+    : due[0];
+
+  if (fromToday && plannedItem && !current && today?.session) {
+    return (
+      <PlannedReviewUnavailable
+        sessionId={today.session.id}
+        itemId={plannedItem.id}
+      />
+    );
+  }
+
+  if (!current) {
     return (
       <section className="today-card" aria-labelledby="review-title">
         <p className="eyebrow">Revisão</p>
@@ -75,21 +122,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         </a>
       </section>
     );
-  }
-
-  const today = fromToday ? await getTodayStudy()(journey) : null;
-  const plannedItem = today?.session?.items.find(
-    (item) => item.status !== "completed",
-  );
-  if (fromToday && (!plannedItem || plannedItem.kind !== "review")) {
-    return <PlannedReviewsComplete feedback={feedback} />;
-  }
-
-  const current = fromToday
-    ? due.find((item) => item.memory.id === plannedItem?.resourceId)
-    : due[0];
-  if (!current) {
-    return <PlannedReviewsComplete feedback={feedback} />;
   }
 
   const hiddenFields = [

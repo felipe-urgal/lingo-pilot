@@ -4,6 +4,7 @@ import type {
   LearnerJourney,
   PersistedActivityAnswer,
   PracticeRepository,
+  SessionExecutionRepository,
 } from "../../../../packages/domain/src/index.ts";
 import type { CurriculumCatalog } from "../../../../packages/content/src/index.ts";
 import {
@@ -33,6 +34,7 @@ export interface SubmitReviewDependencies {
   readonly idGenerator: IdGenerator;
   readonly catalog: CurriculumCatalog;
   readonly practice: PracticeRepository;
+  readonly execution: SessionExecutionRepository;
 }
 
 export interface SubmitReviewInput {
@@ -63,11 +65,19 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
       return { ok: false, reason: "invalid-input" };
     }
 
+    const now = dependencies.clock.now();
     const duplicate = await dependencies.practice.findReviewByOperation(
       input.journey.enrollment.id,
       input.operationKey,
     );
     if (duplicate) {
+      if (input.sessionItemId) {
+        await dependencies.execution.finalizeSessionContainingItem({
+          enrollmentId: input.journey.enrollment.id,
+          itemId: input.sessionItemId,
+          now,
+        });
+      }
       return {
         ok: true,
         reviewEventId: duplicate.id,
@@ -78,7 +88,6 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
       };
     }
 
-    const now = dependencies.clock.now();
     const due = await dependencies.practice.listDueReviewItems(
       input.journey.enrollment.id,
       now,
@@ -137,6 +146,14 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
         reason:
           persisted.reason === "stale-review" ? "stale-review" : "not-due",
       };
+    }
+
+    if (input.sessionItemId) {
+      await dependencies.execution.finalizeSessionContainingItem({
+        enrollmentId: input.journey.enrollment.id,
+        itemId: input.sessionItemId,
+        now,
+      });
     }
 
     return {
