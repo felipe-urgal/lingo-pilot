@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.book",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "book",
+  "language": "en",
+  "partOfSpeech": "noun",
+  "translations": { "pt-BR": "livro" },
+  "introducedInLessonId": "lesson.a0.024.everyday-objects"
+}

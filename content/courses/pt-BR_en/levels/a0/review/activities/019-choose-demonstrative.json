@@ -1,0 +1,24 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.019.choose-demonstrative",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.019.demonstratives",
+  "type": "fill-blank",
+  "prompt": {
+    "pt-BR": "Complete com o demonstrativo para vários livros perto de você: ___ are books."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["these", "These"]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.demonstratives",
+    "concept.a0.grammar.regular-plurals"
+  ],
+  "objectiveIds": ["objective.a0.019.choose-demonstrative"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

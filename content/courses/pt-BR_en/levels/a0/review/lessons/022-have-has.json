@@ -1,0 +1,59 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.022.have-has",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "Have / Has" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.022.use-have-has",
+      "description": {
+        "pt-BR": "Usar have e has em frases afirmativas simples de posse ou relação."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.021.family"],
+  "introducesConceptIds": ["concept.a0.grammar.have-has"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.subject-pronouns",
+    "concept.a0.lexicon.family"
+  ],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.022.have-has.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use have com I/you/we/they e has com he/she/it. Neste recorte, pratique apenas frases afirmativas curtas."
+      }
+    },
+    {
+      "id": "block.a0.022.have-has.rule",
+      "type": "rule",
+      "language": "en",
+      "text": {
+        "en": "I/you/we/they have · he/she/it has"
+      }
+    },
+    {
+      "id": "block.a0.022.have-has.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "I have a sister. She has a brother."
+      }
+    },
+    {
+      "id": "block.a0.022.have-has.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Observe o sujeito antes de escolher have ou has."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.022.use-have-has"]
+}

@@ -1,0 +1,28 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.024.name-everyday-objects",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.024.everyday-objects",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: uma bolsa azul e uma chave preta."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "a blue bag and a black key",
+      "a blue bag and a black key."
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.lexicon.everyday-objects",
+    "concept.a0.lexicon.colors",
+    "concept.a0.grammar.indefinite-articles"
+  ],
+  "objectiveIds": ["objective.a0.024.name-everyday-objects"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

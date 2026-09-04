@@ -1,0 +1,64 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.021.family",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "Família" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.021.name-family",
+      "description": {
+        "pt-BR": "Identificar e usar mother, father, sister e brother em frases curtas sobre família."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.020.possessive-adjectives"],
+  "introducesConceptIds": ["concept.a0.lexicon.family"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.possessive-adjectives",
+    "concept.a0.grammar.be-affirmative"
+  ],
+  "vocabularyIds": [
+    "vocab.mother",
+    "vocab.father",
+    "vocab.sister",
+    "vocab.brother"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.021.family.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Comece com quatro relações familiares de alta frequência. Combine-as com possessivos e be já estudados."
+      }
+    },
+    {
+      "id": "block.a0.021.family.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": {
+        "en": "mother · father · sister · brother"
+      }
+    },
+    {
+      "id": "block.a0.021.family.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "She is my sister. He is my brother."
+      }
+    },
+    {
+      "id": "block.a0.021.family.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Pratique relações fictícias; o objetivo é o vocabulário, não coletar informação pessoal."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.021.name-family"]
+}

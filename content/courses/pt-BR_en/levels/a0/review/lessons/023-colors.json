@@ -1,0 +1,61 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.023.colors",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "Cores" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.023.name-colors",
+      "description": {
+        "pt-BR": "Nomear red, blue, black e white e reconhecer a ordem adjective + noun em exemplos simples."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.022.have-has"],
+  "introducesConceptIds": ["concept.a0.lexicon.colors"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [
+    "vocab.red",
+    "vocab.blue",
+    "vocab.black",
+    "vocab.white"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.023.colors.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Aprenda quatro cores de alta frequência. Em inglês, a cor normalmente vem antes do substantivo: a red book."
+      }
+    },
+    {
+      "id": "block.a0.023.colors.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": {
+        "en": "red · blue · black · white"
+      }
+    },
+    {
+      "id": "block.a0.023.colors.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "a red book · a blue book · a black book · a white book"
+      }
+    },
+    {
+      "id": "block.a0.023.colors.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Nomeie as cores fora da ordem e observe que o adjetivo não muda entre singular e plural."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.023.name-colors"]
+}
