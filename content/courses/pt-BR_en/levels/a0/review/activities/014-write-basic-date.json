@@ -11,7 +11,7 @@
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": ["May 12", "May 12th"]
+    "acceptedAnswers": ["May 12"]
   },
   "conceptIds": ["concept.a0.calendar.months-and-dates"],
   "objectiveIds": ["objective.a0.014.write-basic-date"],
