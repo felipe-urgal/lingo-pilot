@@ -30,34 +30,35 @@ O job executa:
 5. PostgreSQL `17-alpine` efêmero e isolado;
 6. `pnpm check`.
 
-`pnpm check` é a interface canônica do gate e executa:
+`pnpm check` é a interface canônica do gate obrigatório e executa:
 
 ```text
-format:check
--> env:check
--> lint
+lint
 -> typecheck
 -> test
 -> content:validate
--> db:check
 -> build
 ```
 
 `pnpm test` inclui unitários/estruturais e integration tests PostgreSQL.
 
-Não manter listas paralelas de lint/typecheck/test/build no workflow. Se o gate obrigatório mudar, altere primeiro o script canônico e reconcilie CI/documentação no mesmo PR.
+A simplificação do CI feita em 2026-09-04 removeu deliberadamente `format:check`, `env:check`, `db:smoke`, `db:check`, o job E2E separado, o job build separado e o workflow de formatação automática do custo fixo de todo PR. Esses comandos continuam disponíveis como validações direcionadas.
 
-## 3. E2E e checks especializados
+Não manter listas paralelas de lint/typecheck/test/content/build no workflow. Se o gate obrigatório mudar, altere o script canônico e reconcilie CI/documentação no mesmo PR.
 
-E2E não é hoje um contexto obrigatório separado da `main`.
+## 3. Checks especializados
 
-Execute:
+Use conforme o escopo:
 
 ```bash
-pnpm test:e2e
+pnpm format:check   # auditoria explícita de formatação
+pnpm env:check      # configuração/runtime
+pnpm db:check       # migrations/schema
+pnpm db:smoke       # conectividade/infra de banco
+pnpm test:e2e       # fluxo browser-first crítico
 ```
 
-quando a mudança afetar fluxo browser-first crítico, autenticação, Today/Lesson Player ou quando uma regressão exigir navegador real.
+E2E não é hoje um contexto obrigatório separado da `main`.
 
 AI eval online, performance/a11y avançados, security checks adicionais e verificações operacionais seguem o mesmo princípio: entram quando o risco/escopo justificar, não como custo fixo sem contrato material protegido.
 
@@ -146,18 +147,14 @@ A `main` recebe um commit semântico por PR.
 
 O fluxo canônico está em [`DEVELOPMENT.md`](DEVELOPMENT.md).
 
-Com PostgreSQL local disponível quando necessário:
+Como `pnpm test` inclui integração PostgreSQL:
 
 ```bash
 pnpm db:up
 pnpm check
 ```
 
-Quando o risco justificar navegador real:
-
-```bash
-pnpm test:e2e
-```
+Depois execute os checks especializados aplicáveis ao risco/escopo.
 
 CI continua sendo autoridade de integração porque roda instalação frozen e ambiente limpo/sintético.
 
@@ -169,6 +166,7 @@ O auto review deve confirmar:
 
 - o contexto obrigatório `quality` não mudou sem coordenação do ruleset;
 - `pnpm check` continua representando tudo que é sempre obrigatório;
+- diagnósticos especializados não foram recolocados no gate global sem decisão explícita;
 - permissões não aumentaram sem justificativa;
 - instalação continua frozen;
 - nenhuma secret entrou no caminho comum;
@@ -192,11 +190,11 @@ Procedimento:
 
 ## 11. Content/database validation
 
-`content:validate` e `db:check` fazem parte de `pnpm check` e, portanto, do gate obrigatório atual.
+`content:validate` faz parte de `pnpm check` e do gate obrigatório atual porque conteúdo versionado é parte central do produto.
 
-Evoluções de conteúdo e persistência devem preservar esses pontos de integração ou alterá-los de forma explícita no mesmo PR.
+`db:check` e `db:smoke` são verificações direcionadas para mudanças de migrations/schema/infraestrutura; integration tests continuam obrigatórios via `pnpm test` e usam `TEST_DATABASE_URL` isolada.
 
-Integration tests continuam usando `TEST_DATABASE_URL` isolada. E2E usa seu próprio fluxo de reset/migration do banco de teste e não reutiliza Development, Preview ou Production.
+E2E usa seu próprio fluxo de reset/migration do banco de teste e não reutiliza Development, Preview ou Production.
 
 ## 12. CODEOWNERS e updates automáticos
 
@@ -214,4 +212,4 @@ A promoção e as operações reais estão em [`PRODUCTION.md`](PRODUCTION.md). 
 
 Novos jobs/checks devem ser adicionados apenas quando protegerem um contrato material que justifique custo e complexidade.
 
-Se E2E voltar a ser obrigatório em todo PR, a mudança deve ser feita coordenadamente em workflow, ruleset, `QUALITY_STRATEGY.md`, `DEVELOPMENT.md` e este documento.
+Se algum check especializado voltar a ser obrigatório em todo PR, a mudança deve ser coordenada em `package.json`, workflow, ruleset quando necessário e documentação canônica.
