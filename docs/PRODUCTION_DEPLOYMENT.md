@@ -55,7 +55,7 @@ Nunca reutilize credenciais de Production localmente.
 - PostgreSQL efêmero;
 - sem secrets reais;
 - `pnpm check` como gate obrigatório;
-- E2E direcionado por risco/escopo.
+- checks especializados direcionados por risco/escopo.
 
 ### Preview
 
@@ -83,23 +83,24 @@ pnpm check
 Ele cobre:
 
 ```text
-format:check
--> env:check
--> lint
+lint
 -> typecheck
 -> test
 -> content:validate
--> db:check
 -> build
 ```
 
-E2E crítico é executado quando o risco/escopo justificar:
+Checks adicionais entram conforme o risco da mudança:
 
 ```bash
+pnpm format:check
+pnpm env:check
+pnpm db:check
+pnpm db:smoke
 pnpm test:e2e
 ```
 
-Não manter uma segunda lista de comandos obrigatórios só para produção. O preflight operacional `prod:check` existe porque precisa executar o mesmo tipo de validação sob um **ambiente isolado de check**, sem reutilizar configuração de Production.
+A simplificação do CI de 2026-09-04 removeu deliberadamente esses diagnósticos do custo fixo de todo PR. O preflight operacional `prod:check` continua mais amplo e separado porque constrói um **ambiente isolado de check**, sem reutilizar configuração de Production.
 
 ## 5. Build da Vercel
 
@@ -182,7 +183,7 @@ Hook de preparação local do Production Contract. Hoje executa `pnpm db:up`. De
 
 Preflight isolado. Usa `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL` distintos e não produtivos. Não recebe credenciais administrativas/provider nem faz fallback para Production.
 
-Ele é deliberadamente separado de `pnpm check` porque precisa construir ambiente fail-closed específico de preflight.
+Ele é deliberadamente separado de `pnpm check` porque precisa construir ambiente fail-closed específico de preflight e pode executar validações adicionais de produção.
 
 ### `prod:migrate`
 
