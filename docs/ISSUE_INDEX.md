@@ -2,7 +2,7 @@
 
 Este documento é o índice do backlog criado a partir da visão, arquitetura e roadmap. As issues são a fonte operacional de execução; este arquivo serve como mapa estável para humanos e agentes.
 
-> **Estado de referência:** 2026-09-03. O status abaixo reflete as issues do GitHub e o trabalho em review nesta data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
+> **Estado de referência:** 2026-09-04. O status abaixo reflete as issues do GitHub e o trabalho em review nesta data. Em caso de divergência futura, a issue é a fonte de verdade e este índice deve ser atualizado no mesmo trabalho de manutenção.
 
 ## Epics
 
@@ -41,27 +41,17 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 
 A capability de Production está ativa, mas isso não encerra o hardening operacional da #45.
 
-### Sequência atual recomendada
-
-A **Foundation está concluída** e a Fase 1 já avançou por #17–#20, hoje em `main`. As issues #21, #22, #23 e #24 formam a vertical coesa em review no PR #86: Activity determinística → Attempt transacional → SRS/Review → ConceptEvidence/Mastery.
-
-Após o merge desse conjunto, a próxima frente elegível passa a ser:
-
-```text
-#25 Daily Session Planner v1
-```
-
 ## Fase 1 — Study Engine
 
 - #17 Learner profile and onboarding flow — **Concluída**
 - #18 Course catalog, enrollment and curriculum eligibility — **Concluída**
 - #19 StudySession data model and Today experience shell — **Concluída**
 - #20 Lesson Player with structured pedagogical blocks — **Concluída**
-- #21 Exercise Engine for deterministic activity types — **Em review no PR #86**
-- #22 Transactional attempt submission and feedback pipeline — **Em review no PR #86**
-- #23 Spaced repetition engine and review queue — **Em review no PR #86**
-- #24 Concept evidence and mastery model v1 — **Em review no PR #86**
-- #25 Daily Session Planner v1
+- #21 Exercise Engine for deterministic activity types — **Concluída no PR #86**
+- #22 Transactional attempt submission and feedback pipeline — **Concluída no PR #86**
+- #23 Spaced repetition engine and review queue — **Concluída no PR #86**
+- #24 Concept evidence and mastery model v1 — **Concluída no PR #86**
+- #25 Daily Session Planner v1 — **Em review no PR #87**
 - #26 Session execution, resume and idempotency hardening
 - #27 Progress, weak concepts and study history
 - #28 Migrate and editorially review A0 course content
@@ -84,7 +74,7 @@ Today shell
 
 A persistência inicial é transacional/idempotente. `placementSource=manual` para A1/A2 só posiciona a trilha: não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
 
-### Vertical em review — #18 + #19 + #20
+### Vertical entregue pelas #18–#20
 
 ```text
 catálogo autorado e validado
@@ -108,6 +98,44 @@ O recorte mantém as responsabilidades separadas:
 
 O conteúdo incluído nesta vertical é deliberadamente um **bootstrap técnico A0** para exercitar os contratos. A migração/revisão editorial do curso real continua pertencendo a #28 e #29.
 
+### Practice learning loop entregue pelas #21–#24
+
+O PR #86, mergeado em 2026-09-03, entregou a vertical:
+
+```text
+Activity determinística
+        ↓
+Attempt transacional/idempotente
+        ↓
+MemoryItem + ReviewEvent
+        ↓
+ConceptEvidence + MasteryState
+```
+
+O scheduler e o mastery são versionados, a UI nunca envia grade/correct como autoridade e o histórico pedagógico relevante permanece auditável.
+
+### Planner diário em review — #25 / PR #87
+
+O PR #87 evolui o shell diário para `daily-session-v1`, combinando fatos reais de currículo, review queue e mastery dentro da meta diária.
+
+Prioridade V1:
+
+```text
+resume
+  ↓
+reviews muito vencidos
+  ↓
+reviews de weak concepts
+  ↓
+nova lesson elegível
+  ↓
+demais reviews que couberem no budget
+```
+
+O snapshot é persistido como `SessionItem[]` ordenado com `lesson|review`, reason codes estáveis e revision do conteúdo. Dívida extrema pode suspender conteúdo novo, mas não cria sessão infinita. Política completa: `docs/DAILY_SESSION_PLANNER.md`.
+
+A #25 não absorve o hardening completo de execução; duas abas, stale session, mudança de dia, retry/recovery e resume multi-item continuam na #26.
+
 ### Estratégia de entrega
 
 A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar os fundamentos de integridade. O dogfood A0 é **gate intermediário**, não autorização para considerar a Fase 1 concluída sem A1/A2.
@@ -115,19 +143,21 @@ A prioridade é produzir uma vertical A0 real o mais cedo possível, sem cortar 
 ```text
 profile + LanguageProfile + Enrollment       ✅ #17
       ↓
-course + eligibility                         review #18 / PR #85
+course + eligibility                         ✅ #18
       ↓
-Today/session                                review #19 / PR #85
+Today/session                                ✅ #19
       ↓
-Lesson Player                                review #20 / PR #85
+Lesson Player                                ✅ #20
       ↓
-exercise → attempt
+exercise → attempt                           ✅ #21/#22
       ↓          ↓
-    content   SRS → mastery
+    content   SRS → mastery                  ✅ #23/#24
       ↓                 ↓
-Today/session ───────→ planner
+Today/session ───────→ planner               review #25 / PR #87
       ↓                 ↓
-resume ────────────→ progress
+resume ────────────→ hardening               #26
+      ↓
+progress/history                             #27
       ↓
 A0 dogfood
       ↓
@@ -135,6 +165,22 @@ A1/A2 content + progression + representative E2E
 ```
 
 A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especial por nível e quando entry point manual A1/A2 não fabrica mastery.
+
+### Sequência atual recomendada
+
+Enquanto o PR #87 estiver em review, a frente ativa é:
+
+```text
+#25 Daily Session Planner v1
+```
+
+Após o merge e a validação dos gates, a próxima dependência direta é:
+
+```text
+#26 Session execution, resume and idempotency hardening
+```
+
+A #27 depende de #24, #25 e #26 e permanece depois do hardening de sessão.
 
 ## Fase 2 — Skills + AI Evaluation Foundation
 
@@ -246,4 +292,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-A Foundation concluiu **#7–#16** e a Fase 1 já entregou **#17–#20**. As issues **#21–#24** estão agrupadas no **PR #86**, cobrindo o practice learning loop. Após o merge, a próxima issue elegível será **#25 — Daily Session Planner v1**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86. A frente ativa é **#25 — Daily Session Planner v1**, em review no **PR #87**. Após esse merge, **#26** passa a ser a próxima dependência direta, seguida por **#27**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.

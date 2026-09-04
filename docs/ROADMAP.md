@@ -2,7 +2,7 @@
 
 Este roadmap descreve a sequência recomendada de construção. Ele não é um calendário: as fases representam dependências de produto e engenharia. Issues podem evoluir, mas uma fase não deve pular os fundamentos que protegem as seguintes.
 
-> **Estado de execução em 2026-09-03:** a Fase 0 está concluída (#7–#16) e #17–#20 já estão em `main`. O PR #86 cobre #21–#24 como uma vertical coesa: Exercise Engine → Attempt → SRS/Review → ConceptEvidence/Mastery. Após esse merge, a próxima dependência direta é #25 (Daily Session Planner v1). O conteúdo A0→A2 real continua nas issues editoriais; o material atual é bootstrap estrutural.
+> **Estado de execução em 2026-09-04:** a Fase 0 está concluída (#7–#16), #17–#24 já estão em `main` e o practice learning loop foi consolidado pelo PR #86. A frente ativa é #25 (Daily Session Planner v1), em review no PR #87. Após esse merge, a próxima dependência direta é #26 (session execution/resume/idempotency hardening), seguida por #27. O conteúdo A0→A2 real continua nas issues editoriais; o material atual é bootstrap estrutural.
 
 ## Fase 0 — Foundation
 
@@ -82,9 +82,9 @@ A escolha manual de A1/A2 é um **ponto de entrada**, não uma prova de domínio
 
 ### Épico 1.2 — Currículo e conteúdo
 
-**Status: foundation coberta por #18 neste PR; expansão editorial continua.**
+**Status: foundation concluída pela #18; expansão editorial continua.**
 
-A #18 entrega:
+A #18 entregou:
 
 - registry `Course → Level → Unit → Lesson` a partir de JSON validado;
 - catálogo pt-BR → en com IDs/revisions estáveis;
@@ -93,27 +93,26 @@ A #18 entrega:
 - blocking de lesson locked por ID manual;
 - proteção contra resume de revision incompatível.
 
-O conteúdo do PR é bootstrap estrutural: A0/A1/A2 existem no catálogo e há uma única lesson de orientação do produto em A0. A migração/revisão pedagógica A0 piloto e a expansão A1/A2 continuam separadas.
+O conteúdo atual é bootstrap estrutural: A0/A1/A2 existem no catálogo e há uma lesson de orientação do produto em A0. A migração/revisão pedagógica A0 piloto e a expansão A1/A2 continuam separadas.
 
 ### Épico 1.3 — Today + StudySession
 
-**Status: foundation coberta por #19 neste PR.**
+**Status: foundation concluída pela #19; planner completo em evolução pela #25.**
 
-Entregue:
+Entregue pela #19:
 
 - `StudySession + SessionItem` persistidos;
 - `localStudyDate` derivada do timezone do aluno;
-- plano versionado por `plannerVersion=today-shell-v1`;
+- shell versionado inicial;
 - item ordenado com reason code, eligibility reason, revision e estimativa;
 - unicidade por `Enrollment + localStudyDate` para geração concorrente idempotente;
-- Today mobile-first com `Começar estudo`/`Continuar estudo`;
-- estados loading, empty, error, success e completed.
+- Today mobile-first com estados de loading, empty, error, success e completed.
 
-O planner completo de prioridade/tempo/reviews permanece na #25.
+A #25 evolui o shell para snapshot multi-item `daily-session-v1` sem invalidar sessões já persistidas.
 
 ### Épico 1.4 — Lesson Player
 
-**Status: foundation coberta por #20 neste PR.**
+**Status: concluído pela #20.**
 
 Entregue:
 
@@ -129,40 +128,56 @@ Entregue:
 
 ### Épico 1.5 — Exercise Engine
 
-**Status: em review no PR #86 pela #21.**
+**Status: concluído pela #21 no PR #86.**
+
+Entregue:
 
 - choice;
 - fill blank;
 - word ordering;
 - matching;
-- short answer;
+- short answer/translation determinísticos;
 - tentativa, feedback e retry;
 - conceito/habilidade vinculados à tentativa.
 
 ### Épico 1.6 — Review/SRS
 
-**Status: baseline em review no PR #86 pela #23.**
+**Status: baseline concluída pelas #23–#24 no PR #86.**
+
+Entregue:
 
 - memory items;
 - review state;
-- scheduler baseado em FSRS ou implementação equivalente validada;
+- scheduler versionado;
 - fila de vencidos;
 - histórico de review;
-- proteção contra duplicidade.
+- proteção contra duplicidade;
+- `ConceptEvidence` e `MasteryState` recomputáveis.
 
 ### Épico 1.7 — Daily Session Planner
 
+**Status: em review no PR #87 pela #25.**
+
+O V1 entrega:
+
 - orçamento de minutos;
-- prioridade de revisões vencidas;
+- prioridade para resume, review muito vencido e weak concept;
 - elegibilidade de conteúdo novo;
-- equilíbrio entre modalidades;
-- limite de carga;
-- retomada da sessão;
-- sessão determinística e auditável.
+- limite de carga de review;
+- suspensão de conteúdo novo sob dívida extrema;
+- modalidades executáveis como constraint;
+- snapshot persistido e auditável;
+- tie-breakers determinísticos;
+- reason codes estáveis;
+- instrumentação de decisão.
+
+Política completa: `docs/DAILY_SESSION_PLANNER.md`.
+
+Skill balance histórico fica deliberadamente sem heurística enquanto o produto não possui múltiplas modalidades completas e evidência representativa. Hardening completo da execução do snapshot continua na #26.
 
 ### Épico 1.8 — Progress & Mastery
 
-**Status: ConceptEvidence + mastery v1 em review no PR #86 pela #24; UI completa permanece #27.**
+**Status: ConceptEvidence + mastery v1 concluídos pela #24; UI completa permanece #27.**
 
 - progress event model;
 - domínio por conceito;
@@ -387,11 +402,13 @@ StudySession + Today                           ✅ #19
   ↓
 Lesson Player                                  ✅ #20
   ↓
-Exercise Engine + Attempts                     review: #21/#22 · PR #86
+Exercise Engine + Attempts                     ✅ #21/#22 · PR #86
   ↓
-Review/SRS + Concept Mastery                   review: #23/#24 · PR #86
+Review/SRS + Concept Mastery                   ✅ #23/#24 · PR #86
   ↓
-Daily Session Planner completo                 próximo: #25
+Daily Session Planner                          review: #25 · PR #87
+  ↓
+Session execution/resume hardening             próximo: #26
   ↓
 Progress UI/history                            #27
   ↓

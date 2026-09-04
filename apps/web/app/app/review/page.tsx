@@ -3,10 +3,14 @@ import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
 import { getDueReviews } from "../../../server/practice/runtime";
+import { getTodayStudy } from "../../../server/study/runtime";
 import { PracticeActivityForm } from "../practice-activity-form";
 
 type ReviewPageProps = Readonly<{
-  searchParams: Promise<{ result?: string | string[] }>;
+  searchParams: Promise<{
+    result?: string | string[];
+    source?: string | string[];
+  }>;
 }>;
 
 function firstValue(value: string | string[] | undefined): string {
@@ -30,6 +34,22 @@ function ReviewFeedback({ status }: Readonly<{ status: string }>) {
   );
 }
 
+function PlannedReviewsComplete({ feedback }: Readonly<{ feedback: string }>) {
+  return (
+    <section className="today-card" aria-labelledby="review-title">
+      <p className="eyebrow">Revisão</p>
+      <h1 id="review-title">Revisões do plano concluídas.</h1>
+      <ReviewFeedback status={feedback} />
+      <p className="description">
+        Volte para Hoje para continuar o próximo item do snapshot diário.
+      </p>
+      <a className="text-link" href="/app/today">
+        Continuar em Hoje
+      </a>
+    </section>
+  );
+}
+
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
@@ -37,10 +57,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const query = await searchParams;
   const feedback = firstValue(query.result);
+  const fromToday = firstValue(query.source) === "today";
   const due = await getDueReviews()(journey, 20);
-  const current = due[0];
 
-  if (!current) {
+  if (due.length === 0) {
     return (
       <section className="today-card" aria-labelledby="review-title">
         <p className="eyebrow">Revisão</p>
@@ -56,6 +76,27 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       </section>
     );
   }
+
+  const today = fromToday ? await getTodayStudy()(journey) : null;
+  const plannedItem = today?.session?.items.find(
+    (item) => item.status !== "completed",
+  );
+  if (fromToday && (!plannedItem || plannedItem.kind !== "review")) {
+    return <PlannedReviewsComplete feedback={feedback} />;
+  }
+
+  const current = fromToday
+    ? due.find((item) => item.memory.id === plannedItem?.resourceId)
+    : due[0];
+  if (!current) {
+    return <PlannedReviewsComplete feedback={feedback} />;
+  }
+
+  const hiddenFields = [
+    { name: "memoryItemId", value: current.memory.id },
+    ...(plannedItem ? [{ name: "sessionItemId", value: plannedItem.id }] : []),
+    ...(fromToday ? [{ name: "source", value: "today" }] : []),
+  ];
 
   return (
     <section className="lesson-player" aria-labelledby="review-title">
@@ -85,7 +126,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         action="/api/study/review/submit"
         activity={current.activity}
         operationKey={randomUUID()}
-        hiddenFields={[{ name: "memoryItemId", value: current.memory.id }]}
+        hiddenFields={hiddenFields}
         submitLabel="Responder revisão"
       />
     </section>

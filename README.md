@@ -10,9 +10,11 @@ O primeiro recorte do produto é **Português (Brasil) → Inglês**, começando
 
 O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregaram bootstrap do monorepo/web shell, CI/governança da `main`, contrato de runtime local, foundation PostgreSQL/Drizzle, autenticação/autorização por ownership, boundaries executáveis, design system, observabilidade, schemas versionados de conteúdo com pipeline de validação e infraestrutura determinística de testes.
 
-A **Fase 1 — Study Engine** já cobre #17–#20 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today e Lesson Player retomável. O PR #86 adiciona a vertical #21–#24: Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada e evidência/mastery por conceito.
+A **Fase 1 — Study Engine** já cobre #17–#24 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today, Lesson Player retomável, Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada e evidência/mastery por conceito. O PR #86 consolidou o practice learning loop das #21–#24.
 
-O conteúdo autorado continua deliberadamente pequeno: Course/Level/Unit A0/A1/A2, uma lesson de orientação A0 e uma Activity/Concept determinísticos para exercitar o loop de prática. A migração editorial das aulas reais A0→A2 continua separada. Planner completo (#25), hardening de sessão (#26), progresso completo (#27), conteúdo em escala e AI Tutor continuam fora deste PR.
+A #25 está em review no PR #87 e evolui o shell diário para `daily-session-v1`: resume, reviews vencidos, weak concepts e conteúdo novo passam a competir por um budget diário determinístico e auditável, persistido como snapshot multi-item. O hardening completo da execução desse plano continua na #26 e a UI completa de progresso/histórico continua na #27.
+
+O conteúdo autorado continua deliberadamente pequeno: Course/Level/Unit A0/A1/A2, uma lesson de orientação A0 e uma Activity/Concept determinísticos para exercitar o loop de prática. A migração editorial das aulas reais A0→A2 continua separada.
 
 Stack inicial fixada:
 
@@ -158,7 +160,7 @@ apps/
 content/                currículo JSON versionado e validado
 packages/
   domain/               contratos puros da jornada, sessão e progresso
-  learning/             elegibilidade, data local e futuros planner/mastery/SRS
+  learning/             elegibilidade, planner diário, mastery e SRS
   content/              schemas, parser, validação e catálogo curricular
   db/                   persistência/migrations de auth, jornada e StudySession
   ai/                   providers, prompts, guardrails e eval contracts
@@ -170,11 +172,11 @@ tests/                  testes estruturais e fluxos E2E da Fase 1
 docs/                   produto, arquitetura e operação
 ```
 
-Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria metadata técnica; `0001` identidade/credencial/sessão/ownership; `0002` `LearnerProfile + LanguageProfile + Enrollment`; e `0003` adiciona `LessonProgress`, `StudySession` e `SessionItem` sem antecipar Attempt, mastery ou SRS.
+Os packages são **boundaries explícitos**. `@lingo-pilot/domain` não depende de Next.js, React, Drizzle ou providers externos. A migration `0000` cria metadata técnica; `0001` identidade/credencial/sessão/ownership; `0002` `LearnerProfile + LanguageProfile + Enrollment`; `0003` adiciona `LessonProgress`, `StudySession` e `SessionItem`; `0004` adiciona o practice learning loop; e `0005` amplia `SessionItem` para o snapshot diário com reviews sem reinterpretar dados existentes.
 
 ## Primeiro acesso e fluxo de estudo
 
-O fluxo da primeira vertical da Fase 1 é:
+O fluxo da Fase 1 é:
 
 ```text
 /signup
@@ -189,12 +191,12 @@ Curriculum Eligibility
   ↓
 /app/today → StudySession diária
   ↓
-Lesson Player → LessonProgress
+Lesson / Review → Attempt / ReviewEvent → Evidence / Mastery
 ```
 
 A entrada pode ser A0 (`placementSource=zero`) ou A1/A2 (`placementSource=manual`). A escolha manual serve apenas para posicionar a trilha: ela não cria `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` nem completion fictício.
 
-Today calcula a data local pelo timezone do aluno e persiste uma sessão por `Enrollment + localStudyDate`. O planner V1 (`today-shell-v1`) retoma uma lesson em andamento ou seleciona a próxima elegível. O plano preserva reason code, motivo de elegibilidade e revision do conteúdo, portanto refresh não replana silenciosamente a sessão.
+Today calcula a data local pelo timezone do aluno e persiste no máximo uma sessão por `Enrollment + localStudyDate`. O planner V1 (`daily-session-v1`, em review no PR #87) combina resume, reviews muito vencidos, weak concepts e próxima lesson elegível dentro da meta diária. O snapshot preserva reason code, motivo de elegibilidade quando aplicável e revision do conteúdo, portanto refresh não replana silenciosamente uma sessão existente. Política completa: [`docs/DAILY_SESSION_PLANNER.md`](docs/DAILY_SESSION_PLANNER.md).
 
 O Lesson Player renderiza `ContentBlock` estruturado, persiste posição e exige ação explícita no último passo para concluir. Start/resume revalidam ownership, eligibility e `schemaVersion + revision`; uma URL manual ou uma revision alterada não consegue forçar progresso.
 
@@ -253,7 +255,7 @@ Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`
 ## Roadmap
 
 - **Fase 0 — Foundation:** qualidade, arquitetura, CI, design system e modelos de domínio. **Concluída; #7–#16 entregues.**
-- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17–#20 entregues; #21–#24 em review no PR #86. Após esse merge, #25 é a próxima dependência direta do loop.**
+- **Fase 1 — Study Engine:** onboarding, conteúdo A0–A2, Today, aulas, exercícios, SRS e progresso. **#17–#24 entregues; #25 em review no PR #87. Depois, #26 é a próxima dependência direta e #27 fecha a visualização de progresso/histórico.**
 - **Fase 2 — Skills + AI assessment foundation:** listening, reading, writing, speaking e infraestrutura/evals necessários às avaliações inteligentes.
 - **Fase 3 — AI Tutor & Adaptation:** tutor contextual e prática adaptativa sobre a foundation validada.
 - **Fase 4 — Product Hardening:** segurança, observabilidade, dados, performance e PWA/offline.
@@ -287,6 +289,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Autenticação e autorização](docs/AUTHENTICATION.md)
 - [Modelo de domínio](docs/DOMAIN_MODEL.md)
 - [Learning Engine](docs/LEARNING_ENGINE.md)
+- [Daily Session Planner](docs/DAILY_SESSION_PLANNER.md)
 - [Modelo de conteúdo](docs/CONTENT_MODEL.md)
 - [UX e Design](docs/UX_AND_DESIGN.md)
 - [Tutor de IA](docs/AI_TUTOR.md)

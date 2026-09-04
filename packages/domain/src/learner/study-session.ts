@@ -2,10 +2,17 @@ export type LessonProgressStatus = "in_progress" | "completed";
 export type StudySessionStatus =
   "planned" | "in_progress" | "completed" | "abandoned";
 export type SessionItemStatus = "planned" | "in_progress" | "completed";
-export type SessionItemKind = "lesson";
-export type SessionReasonCode = "NEW_ELIGIBLE_LESSON" | "RESUME_IN_PROGRESS";
+export type SessionItemKind = "lesson" | "review";
+export type SessionReasonCode =
+  | "NEW_ELIGIBLE_LESSON"
+  | "RESUME_IN_PROGRESS"
+  | "OVERDUE_REVIEW"
+  | "WEAK_CONCEPT";
 export type StoredEligibilityReason =
-  "progress-satisfied" | "placement-waived" | "resume-in-progress";
+  | "progress-satisfied"
+  | "placement-waived"
+  | "resume-in-progress"
+  | "not-applicable";
 
 export interface ContentRevisionRef {
   readonly schemaVersion: number;
