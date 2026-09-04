@@ -73,28 +73,29 @@ Antes de abrir ou atualizar um PR:
 pnpm check
 ```
 
-O gate agregado inclui:
+O gate obrigatório inclui:
 
 ```text
-format:check
-env:check
 lint
-typecheck
-test
-content:validate
-db:check
-build
+-> typecheck
+-> test
+-> content:validate
+-> build
 ```
 
 `pnpm test` inclui unitários/estruturais e integration tests PostgreSQL.
 
-Checks adicionais entram conforme risco/escopo. Exemplo para fluxo browser-first relevante:
+Checks adicionais entram conforme risco/escopo. Exemplos:
 
 ```bash
+pnpm format:check
+pnpm env:check
+pnpm db:check
+pnpm db:smoke
 pnpm test:e2e
 ```
 
-Não substitua check automatizado obrigatório por validação manual.
+Não substitua check automatizado obrigatório por validação manual e não transforme diagnóstico especializado em gate global sem decisão explícita.
 
 ## Pull Requests
 
@@ -117,7 +118,7 @@ CI / quality
 
 O job usa instalação frozen, PostgreSQL efêmero e executa o mesmo `pnpm check` usado localmente. O ruleset ativo exige o contexto `quality`.
 
-E2E não é hoje um status obrigatório separado; execute-o quando o risco da mudança justificar.
+E2E, format/env e checks específicos de banco não são hoje status obrigatórios separados; execute-os quando o risco da mudança justificar.
 
 Mudança no nome/contexto obrigatório exige coordenação com o ruleset e atualização de `docs/REPOSITORY_GOVERNANCE.md`.
 
