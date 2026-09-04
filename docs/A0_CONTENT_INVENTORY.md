@@ -102,8 +102,9 @@ Proposta inicial para revisão:
 - a ordem 001 → 043 é preservada como progressão principal;
 - dentro da Unit 01, cada lesson posterior depende da anterior para garantir uma sequência de revisão previsível;
 - a Unit 02 mantém a ponte explícita `006 → 007` e a sequência `007 → 012`; a dependência entre Lessons preserva a trilha editorial, enquanto Concept prerequisites continuam representando necessidade pedagógica real;
-- Concept prerequisites são mais seletivos: `be-negative` e `be-questions` dependem de `be-affirmative`, `be-short-answers` depende das estruturas de pergunta/negação e números 20–100 dependem de 0–20;
-- ao migrar Units 03–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 03 mantém a ponte explícita `012 → 013` e a sequência `013 → 018`; calendário e horas reutilizam Concepts numéricos apenas onde a regra depende deles, enquanto artigos/plurais não recebem dependências artificiais pela posição;
+- `months-and-dates` depende do sistema numérico até 100 porque datas podem exigir 21–31; `clock-time` depende dos números 0–20; `irregular-plurals` depende do contraste estabelecido por `regular-plurals`;
+- ao migrar Units 04–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
 ## Estado da migração em `review`
@@ -121,7 +122,7 @@ Materializada no PR #97 com:
 
 ### Unit 02 — aulas 007–012
 
-Materializada neste recorte com:
+Materializada no PR #98 com:
 
 - 6 Lessons;
 - 6 Concepts;
@@ -133,7 +134,22 @@ Materializada neste recorte com:
 
 Números 0–100 não viram dezenas de `VocabularyItem` artificiais. O conjunto numérico é modelado por Concepts + `ContentBlock` de vocabulário; chunks como `years old` e `phone number` permanecem em regra/exemplo porque o schema v1 ainda não possui entidade `PhrasePattern`. Essa decisão evita usar `VocabularyItem` como substituto semântico de um contrato inexistente.
 
-As duas Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, 12/43 aulas A0 estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+### Unit 03 — aulas 013–018
+
+Materializada no recorte 3 da #28 com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 6 Activities determinísticas;
+- conjuntos fechados de dias e meses em `ContentBlock` de vocabulário;
+- horas cheias/meias-horas, `a/an`, plural regular e dois pares essenciais de plural irregular;
+- ponte explícita da Lesson 012 para a 013 e sequência até 018;
+- Concept prerequisites seletivos para números e contraste regular/irregular;
+- revision metadata em todos os documentos.
+
+Dias e meses continuam identificados como vocabulário candidato no inventário, mas não geram 19 `VocabularyItem`s neste recorte. Como ocorre com números, o conjunto fechado fica explícito no conteúdo da Lesson enquanto a revisão editorial decide se granularidade lexical individual agrega valor ao modelo. `o'clock` e `half past` permanecem em regra/exemplo porque funcionam como chunks da estrutura de horas, não como substitutos improvisados para uma entidade de phrase pattern inexistente.
+
+As três Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **18/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
 
 ## Checklist de promoção para `published`
 
