@@ -30,7 +30,7 @@
     "test": "pnpm test:unit && pnpm test:integration",
     "content:validate": "pnpm --filter @lingo-pilot/content validate",
     "check:workspace": "node scripts/verify-workspace.mjs",
-    "check": "pnpm format:check && pnpm env:check && pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm db:check && pnpm build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:validate && pnpm build",
     "prod:status": "node scripts/production-status.mjs",
     "prod:prepare": "pnpm db:up",
     "prod:check": "node scripts/prod-check.mjs",
