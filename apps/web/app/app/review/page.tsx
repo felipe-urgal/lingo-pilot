@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
 import { getDueReviews } from "../../../server/practice/runtime";
+import { getTodayStudy } from "../../../server/study/runtime";
 import { PracticeActivityForm } from "../practice-activity-form";
 
 type ReviewPageProps = Readonly<{
@@ -57,6 +58,20 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     );
   }
 
+  const today = await getTodayStudy()(journey);
+  const plannedItem = today.session?.items.find(
+    (item) =>
+      item.kind === "review" &&
+      item.status !== "completed" &&
+      item.resourceId === current.memory.id,
+  );
+  const hiddenFields = [
+    { name: "memoryItemId", value: current.memory.id },
+    ...(plannedItem
+      ? [{ name: "sessionItemId", value: plannedItem.id }]
+      : []),
+  ];
+
   return (
     <section className="lesson-player" aria-labelledby="review-title">
       <a className="text-link lesson-player__back-link" href="/app/today">
@@ -85,7 +100,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         action="/api/study/review/submit"
         activity={current.activity}
         operationKey={randomUUID()}
-        hiddenFields={[{ name: "memoryItemId", value: current.memory.id }]}
+        hiddenFields={hiddenFields}
         submitLabel="Responder revisão"
       />
     </section>
