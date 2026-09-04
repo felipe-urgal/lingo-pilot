@@ -60,6 +60,12 @@ export type {
   SubmitAttemptResult,
 } from "./learner/practice-repository.ts";
 export type {
+  LoadProgressSnapshotInput,
+  ProgressMasterySummary,
+  ProgressRepository,
+  ProgressSnapshot,
+} from "./learner/progress-repository.ts";
+export type {
   SessionExecutionRepository,
   SessionRecoveryReason,
   SessionReviewResource,
