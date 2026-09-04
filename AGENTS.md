@@ -33,13 +33,14 @@ Ao tomar decisões, use esta ordem:
 O agente deve:
 
 1. ler a issue completa e seus comentários;
-2. ler `README.md`, este `AGENTS.md` e os documentos relacionados ao domínio alterado;
-3. inspecionar o código existente antes de propor uma nova abstração;
-4. identificar requisitos funcionais, não funcionais e critérios de aceite;
-5. listar riscos e casos de borda relevantes;
-6. confirmar dependências com outras issues ou contratos;
-7. definir um plano de implementação curto antes de editar arquivos;
-8. evitar alterações fora do escopo, exceto correções pequenas necessárias para manter qualidade.
+2. ler `README.md`, este `AGENTS.md`, `docs/DEVELOPMENT.md` e os documentos relacionados ao domínio alterado;
+3. ler `docs/PRODUCTION.md` quando a mudança afetar schema, migration, deploy, readiness, backup/restore ou operação;
+4. inspecionar o código existente antes de propor uma nova abstração;
+5. identificar requisitos funcionais, não funcionais e critérios de aceite;
+6. listar riscos e casos de borda relevantes;
+7. confirmar dependências com outras issues ou contratos;
+8. definir um plano de implementação curto antes de editar arquivos;
+9. evitar alterações fora do escopo, exceto correções pequenas necessárias para manter qualidade.
 
 Se a issue estiver ambígua de forma que possa produzir duas implementações materialmente diferentes, o agente deve registrar a ambiguidade e pedir decisão antes de codificar. Não deve inventar requisito de produto silenciosamente.
 
@@ -241,6 +242,11 @@ Checklist mínimo:
 - [ ] O PR pode ser revertido de forma segura?
 
 ## 14. Documentação é parte da implementação
+
+As entradas operacionais canônicas são:
+
+- `docs/DEVELOPMENT.md` para setup, execução local e gate antes do PR;
+- `docs/PRODUCTION.md` para preflight, migration, promoção, verify e recovery operacional.
 
 Atualizar documentação no mesmo PR quando houver mudança em:
 
