@@ -3,12 +3,17 @@ import type {
   LessonProgress,
   LoadProgressSnapshotInput,
   MasteryState,
+  ProgressModalityEvidenceSummary,
   ProgressRepository,
   SessionItem,
   StudySession,
 } from "../../../domain/src/index.ts";
 import type { Database } from "../client.ts";
-import { masteryStates, memoryItems } from "../practice-schema.ts";
+import {
+  conceptEvidence,
+  masteryStates,
+  memoryItems,
+} from "../practice-schema.ts";
 import {
   lessonProgress,
   sessionItems,
@@ -97,56 +102,72 @@ export class PostgresProgressRepository implements ProgressRepository {
       Math.max(1, Math.trunc(input.weakConceptLimit ?? 5)),
     );
 
-    const [progressRows, masteryAggregate, weakRows, dueAggregate, sessionRows] =
-      await Promise.all([
-        this.database
-          .select()
-          .from(lessonProgress)
-          .where(eq(lessonProgress.enrollmentId, input.enrollmentId)),
-        this.database
-          .select({
-            conceptCount: sql<number>`count(*)::int`,
-            averageScorePercent: sql<number | null>`round(avg(${masteryStates.scorePercent}))::int`,
-            averageConfidencePercent: sql<number | null>`round(avg(${masteryStates.confidencePercent}))::int`,
-          })
-          .from(masteryStates)
-          .where(eq(masteryStates.enrollmentId, input.enrollmentId)),
-        this.database
-          .select()
-          .from(masteryStates)
-          .where(
-            and(
-              eq(masteryStates.enrollmentId, input.enrollmentId),
-              lt(masteryStates.scorePercent, 60),
-              gte(masteryStates.confidencePercent, 20),
-            ),
-          )
-          .orderBy(
-            asc(masteryStates.scorePercent),
-            desc(masteryStates.confidencePercent),
-            asc(masteryStates.conceptId),
-          )
-          .limit(weakConceptLimit),
-        this.database
-          .select({ count: sql<number>`count(*)::int` })
-          .from(memoryItems)
-          .where(
-            and(
-              eq(memoryItems.enrollmentId, input.enrollmentId),
-              lte(memoryItems.dueAt, input.now),
-            ),
+    const [
+      progressRows,
+      masteryAggregate,
+      modalityRows,
+      weakRows,
+      dueAggregate,
+      sessionRows,
+    ] = await Promise.all([
+      this.database
+        .select()
+        .from(lessonProgress)
+        .where(eq(lessonProgress.enrollmentId, input.enrollmentId)),
+      this.database
+        .select({
+          conceptCount: sql<number>`count(*)::int`,
+          averageScorePercent: sql<number | null>`round(avg(${masteryStates.scorePercent}))::int`,
+          averageConfidencePercent: sql<number | null>`round(avg(${masteryStates.confidencePercent}))::int`,
+        })
+        .from(masteryStates)
+        .where(eq(masteryStates.enrollmentId, input.enrollmentId)),
+      this.database
+        .select({
+          modality: conceptEvidence.modality,
+          evidenceCount: sql<number>`count(*)::int`,
+          correctCount: sql<number>`count(*) filter (where ${conceptEvidence.outcome} = 'correct')::int`,
+        })
+        .from(conceptEvidence)
+        .where(eq(conceptEvidence.enrollmentId, input.enrollmentId))
+        .groupBy(conceptEvidence.modality)
+        .orderBy(asc(conceptEvidence.modality)),
+      this.database
+        .select()
+        .from(masteryStates)
+        .where(
+          and(
+            eq(masteryStates.enrollmentId, input.enrollmentId),
+            lt(masteryStates.scorePercent, 60),
+            gte(masteryStates.confidencePercent, 20),
           ),
-        this.database
-          .select()
-          .from(studySessions)
-          .where(eq(studySessions.enrollmentId, input.enrollmentId))
-          .orderBy(
-            desc(studySessions.localStudyDate),
-            desc(studySessions.createdAt),
-          )
-          .limit(historyLimit + 1)
-          .offset(historyOffset),
-      ]);
+        )
+        .orderBy(
+          asc(masteryStates.scorePercent),
+          desc(masteryStates.confidencePercent),
+          asc(masteryStates.conceptId),
+        )
+        .limit(weakConceptLimit),
+      this.database
+        .select({ count: sql<number>`count(*)::int` })
+        .from(memoryItems)
+        .where(
+          and(
+            eq(memoryItems.enrollmentId, input.enrollmentId),
+            lte(memoryItems.dueAt, input.now),
+          ),
+        ),
+      this.database
+        .select()
+        .from(studySessions)
+        .where(eq(studySessions.enrollmentId, input.enrollmentId))
+        .orderBy(
+          desc(studySessions.localStudyDate),
+          desc(studySessions.createdAt),
+        )
+        .limit(historyLimit + 1)
+        .offset(historyOffset),
+    ]);
 
     const visibleSessionRows = sessionRows.slice(0, historyLimit);
     const sessionIds = visibleSessionRows.map((row) => row.id);
@@ -176,6 +197,11 @@ export class PostgresProgressRepository implements ProgressRepository {
         averageScorePercent: mastery?.averageScorePercent ?? null,
         averageConfidencePercent: mastery?.averageConfidencePercent ?? null,
       },
+      modalityEvidence: modalityRows.map((row) => ({
+        modality: row.modality as ProgressModalityEvidenceSummary["modality"],
+        evidenceCount: row.evidenceCount,
+        correctCount: row.correctCount,
+      })),
       weakConcepts: weakRows.map(masteryFromRow),
       dueReviewCount: due?.count ?? 0,
       recentSessions: visibleSessionRows.map((row) =>
