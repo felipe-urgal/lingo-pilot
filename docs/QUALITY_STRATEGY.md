@@ -171,17 +171,36 @@ Não otimizar algoritmos sem profiling, exceto problemas óbvios de complexidade
 
 ## 12. CI gates
 
-O PR normal usa um gate enxuto e previsível:
+A interface canônica obrigatória antes do PR é:
 
-1. instalação com lockfile congelado;
-2. lint, incluindo o guard arquitetural `check:workspace`;
-3. typecheck;
-4. testes unitários e de integração;
-5. build.
+```bash
+pnpm check
+```
 
-Validações adicionais são proporcionais ao risco da mudança. E2E, content validation, checks de banco/ambiente, format check, evals e verificações operacionais continuam disponíveis, mas não devem virar custo fixo de todo PR quando não protegem o escopo alterado.
+Ela executa:
 
-Nenhum check obrigatório deve ser ignorado por conveniência. Ao mesmo tempo, um teste ou gate só deve ser obrigatório quando protege um contrato material.
+```text
+format:check
+-> env:check
+-> lint
+-> typecheck
+-> test
+-> content:validate
+-> db:check
+-> build
+```
+
+`pnpm test` inclui testes unitários/estruturais e integration tests PostgreSQL. O CI usa PostgreSQL efêmero e o mesmo `pnpm check`, evitando manter listas paralelas de comandos entre package scripts, documentação e workflow.
+
+E2E continua proporcional ao risco da mudança e deve ser executado quando um fluxo browser-first relevante for alterado:
+
+```bash
+pnpm test:e2e
+```
+
+Evals online, performance/a11y avançados e verificações operacionais permanecem checks especializados conforme a fase/risco. Eles não devem virar custo fixo de todo PR sem proteger um contrato material.
+
+Nenhum check obrigatório deve ser ignorado por conveniência.
 
 ## 13. Flaky tests
 
@@ -246,7 +265,7 @@ Use `pnpm test:coverage` quando a análise de cobertura ajudar a identificar lac
 
 Antes de release relevante:
 
-- CI verde;
+- `pnpm check`/CI verde no head final;
 - migrations verificadas;
 - smoke flow executado;
 - rollback conhecido;
@@ -256,4 +275,4 @@ Antes de release relevante:
 
 ## 20. Definition of Done
 
-A estratégia de teste é apenas uma parte. Consulte `DEFINITION_OF_DONE.md` para conclusão integral.
+A estratégia de teste é apenas uma parte. Consulte `DEFINITION_OF_DONE.md` para conclusão integral e `DEVELOPMENT.md` para o fluxo operacional canônico.
