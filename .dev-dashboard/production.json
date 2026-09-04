@@ -5,7 +5,7 @@
     "strategy": "git-managed",
     "provider": "vercel",
     "branch": "main",
-    "documentation": "docs/PRODUCTION_STATUS.md",
+    "documentation": "docs/PRODUCTION.md",
     "commands": {
       "status": "prod:status",
       "prepare": "prod:prepare",
