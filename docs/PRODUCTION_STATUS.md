@@ -1,8 +1,8 @@
 # Status de produção
 
-A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md): Vercel para aplicação, Neon PostgreSQL para dados e promoção `git-managed` pela branch `main`. A política mais recente de acionamento automático da integração Git está registrada no [`ADR 0004`](ADR/0004-vercel-main-only-automatic-deployments.md).
+Este documento registra o estado factual/evidências da capacidade de produção do LingoPilot. O procedimento operacional canônico está em [`PRODUCTION.md`](PRODUCTION.md); o contrato técnico detalhado permanece em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md).
 
-> **Estado atual:** Production capability habilitada em 2026-09-01 após validação real de check isolado, migration, deployment Vercel, readiness, backup e restore-check. O manifesto `.dev-dashboard/production.json` está ativo e mapeia explicitamente o projeto Vercel `lingo-pilot`.
+> **Estado atual:** Production capability habilitada desde 2026-09-01 após validação real de check isolado, migration, deployment Vercel, readiness, backup e restore-check. O manifesto `.dev-dashboard/production.json` está ativo e mapeia explicitamente o projeto Vercel `lingo-pilot`.
 
 ## Infraestrutura validada
 
@@ -17,24 +17,20 @@ A topologia do LingoPilot segue o contrato definido em [`PRODUCTION_DEPLOYMENT.m
 - readiness canônica: `https://lingo-pilot.vercel.app/api/health/ready`;
 - migrations permanecem fora do build da Vercel.
 
-O ambiente Production da Vercel recebe apenas a configuração de runtime necessária. `DATABASE_URL` usa a conexão pooled da branch Neon `main`. Credenciais administrativas de migration/backup não são colocadas no runtime da aplicação.
+O ambiente Production da Vercel recebe somente configuração de runtime necessária. `DATABASE_URL` usa conexão pooled da branch Neon `main`; credenciais administrativas de migration/backup não ficam no runtime da aplicação.
 
-Preview Deployments automáticos para branches de trabalho estão desabilitados. A branch Neon `preview` permanece provisionada e isolada para uso explícito caso um preview manual seja necessário no futuro; qualquer preview criado manualmente deve usar configuração própria e nunca receber a conexão da `main`. Quando um Preview existir, `VERCEL_URL` pode fornecer sua origem pública automática se `NEXT_PUBLIC_APP_URL` não estiver definida.
+Preview Deployments automáticos para branches de trabalho estão desabilitados. A branch Neon `preview` permanece isolada para Preview explícito/manual quando necessário e nunca deve receber a conexão da `main`.
 
 ### Neon PostgreSQL
 
-Em 2026-09-01 foi provisionado o projeto `lingo-pilot-production`, PostgreSQL 18, com duas branches permanentes e isoladas:
+O projeto `lingo-pilot-production` usa PostgreSQL 18 com branches permanentes e isoladas:
 
-- `main` — dados e schema de Production;
-- `preview` — ambiente não produtivo reservado para Preview explícito/manual quando necessário.
+- `main` — dados/schema de Production;
+- `preview` — ambiente não produtivo reservado para Preview explícito/manual.
 
-A branch `preview` foi criada a partir da `main` depois da primeira migration, portanto nasceu com o schema versionado atual. Ela não é consumida automaticamente por pushes de branches enquanto a política do ADR 0004 estiver vigente. Local e CI continuam usando bancos próprios e não reutilizam nenhuma dessas branches.
-
-A primeira migration versionada foi aplicada com sucesso em `main` usando a conexão administrativa direta/unpooled. A readiness publicada confirmou conectividade com PostgreSQL e presença do schema mínimo `app_metadata`.
+Local e CI usam bancos próprios e não reutilizam essas branches.
 
 ## Interface operacional validada
-
-Os comandos canônicos são:
 
 ```bash
 pnpm prod:status
@@ -46,56 +42,56 @@ pnpm prod:backup
 pnpm prod:restore-check -- <backup.dump>
 ```
 
-`prod:prepare` é o hook de preparação local do LingoPilot. Ele executa `pnpm db:up`, garantindo que o PostgreSQL local definido pelo próprio projeto esteja disponível antes do `prod:check`. Essa decisão permanece no repositório consumidor; o Dev Dashboard conhece apenas o alias canônico `prod:prepare` e não interpreta Docker ou PostgreSQL.
+`prod:prepare` continua sendo hook real do Production Contract e executa `pnpm db:up` para preparar a fronteira local do preflight. Ele não deve ser removido apenas por parecer um wrapper fino: o Dev Dashboard conhece o alias, não Docker/PostgreSQL.
 
-`prod:check` usa somente `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL`, dois bancos de check distintos. Ele não carrega `.env.local` nem recebe credenciais administrativas/provider. No fluxo do Dev Dashboard, `prod:prepare` e `prod:check` usam a fronteira local de check, não o ambiente local de produção.
+`prod:check` usa somente `CHECK_DATABASE_URL` e `CHECK_TEST_DATABASE_URL`, dois bancos distintos e não produtivos. Não carrega credenciais administrativas/provider e não faz fallback para Production.
 
-As operações reais usam configuração local separada:
+Operações reais usam configuração local separada em:
 
 ```text
 <Project.path>/.dev-dashboard/.env.production.local
 ```
 
-Variáveis operacionais principais:
+Variáveis principais:
 
 ```text
 DATABASE_DIRECT_URL=<conexão direta de migration/backup>
 LINGO_PRODUCTION_READY_URL=https://lingo-pilot.vercel.app/api/health/ready
 ```
 
-Restore-check usa adicionalmente `RESTORE_CHECK_DATABASE_URL` e a confirmação explícita `RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check`.
+Restore-check usa adicionalmente `RESTORE_CHECK_DATABASE_URL` e `RESTORE_CHECK_CONFIRM=lingo-pilot-restore-check`.
 
-## Evidências da ativação de 2026-09-01
+## Evidências da ativação
 
-- `prod:check` concluído com dois bancos PostgreSQL locais isolados;
-- conexão administrativa Direct/unpooled do Neon validada sem expor segredo;
-- migration de produção aplicada com sucesso;
-- backup PostgreSQL em formato custom criado com `prod:backup`;
-- restore executado com sucesso em branch Neon descartável separado da `main`;
-- validação pós-restore confirmou `app_metadata`;
-- projeto Vercel criado e ligado ao GitHub/`main`;
-- primeiro deployment Production ficou `Ready` no domínio canônico;
-- `prod:verify` confirmou readiness real em produção;
-- isolamento de Preview foi validado com branch Neon permanente `preview`, sem acesso ao banco de Production; desde o ADR 0004, o acionamento automático de Preview por branches de trabalho está desabilitado.
+Em 2026-09-01 foram validados:
+
+- `prod:check` com dois bancos PostgreSQL locais isolados;
+- conexão administrativa Direct/unpooled do Neon sem exposição de segredo;
+- migration de produção;
+- backup PostgreSQL em formato custom;
+- restore em branch Neon descartável separada da `main`;
+- presença de `app_metadata` após restore;
+- projeto Vercel ligado ao GitHub/`main`;
+- Production Deployment `Ready` no domínio canônico;
+- `prod:verify` com readiness real;
+- isolamento de Preview sem acesso ao banco de Production.
 
 ## Health/readiness
 
-- `GET /api/health/live` — liveness mínima, sem diagnóstico sensível;
-- `GET /api/health/ready` — readiness do core, validando conexão PostgreSQL e existência de `app_metadata`.
+- `GET /api/health/live` — liveness mínima;
+- `GET /api/health/ready` — readiness do core, validando PostgreSQL e schema mínimo `app_metadata`.
 
 Falha de PostgreSQL ou ausência do schema retorna `503`. Providers opcionais de IA não participam da readiness do core.
 
 ## Backup e restore-check
 
-`prod:backup` gera dump PostgreSQL em `.dev-dashboard/backups/`, caminho ignorado pelo Git. A senha não entra na linha de comando do `pg_dump`.
+`prod:backup` gera dump em `.dev-dashboard/backups/`, caminho ignorado pelo Git. A senha não entra na linha de comando do `pg_dump`.
 
-`prod:restore-check` exige destino separado de Production e confirmação explícita. Quando `DATABASE_DIRECT_URL` também está presente, o comando compara host, porta e database e recusa executar se o destino do restore for o mesmo banco de produção. Após o restore, valida a presença do schema mínimo.
-
-O primeiro exercício real de backup/restore foi concluído em branch Neon temporário e não alterou a branch de produção.
+`prod:restore-check` exige destino não produtivo e confirmação explícita. Quando `DATABASE_DIRECT_URL` também está presente, o comando compara endpoint e recusa o mesmo banco de Production. Após restore, valida o schema mínimo.
 
 ## Production Contract ativo
 
-O manifesto do Dev Dashboard está habilitado com:
+O manifesto do Dev Dashboard declara:
 
 ```text
 strategy = git-managed
@@ -104,8 +100,19 @@ branch = main
 external.project = lingo-pilot
 prepare = prod:prepare
 health = https://lingo-pilot.vercel.app/api/health/ready
+documentation = docs/PRODUCTION.md
 ```
 
-O `vercel.json` complementa esse contrato restringindo deployments automáticos da integração Git à `main`. Deployments manuais continuam fora desse bloqueio e devem respeitar os mesmos contratos de isolamento e segurança.
+Políticas:
 
-Não existem mais blockers de ativação no manifesto. A issue #45 continua sendo a referência para hardening operacional mais amplo, incluindo runbooks e critérios adicionais de incident response que não são pré-requisito para manter a capability de Production habilitada.
+```text
+backup = required-before-migration
+migrations = before-deploy
+rollback = provider-only-when-schema-compatible
+```
+
+Não existe `prod:deploy` local. A promoção continua sendo merge/push em `main` + integração Git da Vercel, seguida de `prod:verify`.
+
+## Hardening futuro
+
+A issue #45 continua referência para hardening operacional adicional que não é pré-requisito para manter a capability já validada. Mudanças futuras de provider, migration policy, backup/restore ou readiness devem atualizar [`PRODUCTION.md`](PRODUCTION.md), o contrato técnico e este status quando a evidência factual mudar.

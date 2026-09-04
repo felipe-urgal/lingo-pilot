@@ -2,6 +2,8 @@
 
 Uma issue só está concluída quando todos os itens aplicáveis abaixo forem atendidos.
 
+A receita operacional para setup, execução local e gate antes do PR está em [`DEVELOPMENT.md`](DEVELOPMENT.md). Produção segue [`PRODUCTION.md`](PRODUCTION.md).
+
 ## Produto
 
 - [ ] Resolve o problema descrito na issue.
@@ -56,14 +58,17 @@ Uma issue só está concluída quando todos os itens aplicáveis abaixo forem at
 - [ ] Ação duplicada é prevenível ou segura.
 - [ ] Reduced motion considerado quando há animação.
 
-## Testes
+## Testes e gate
 
 - [ ] Regras novas possuem testes no nível adequado.
 - [ ] Bug possui teste de regressão quando automatizável.
 - [ ] Integration test cobre persistência/transaction quando relevante.
 - [ ] Fluxo crítico possui E2E quando justificável.
 - [ ] Testes não dependem de relógio real quando regra é temporal.
-- [ ] Suite aplicável está verde.
+- [ ] `pnpm check` passa no head final.
+- [ ] Checks especializados relevantes ao escopo foram executados.
+
+`pnpm check` é o gate obrigatório e cobre lint, typecheck, unit/integration, content validation e build. Formatação, configuração/runtime, consistência/smoke de banco e E2E são verificações direcionadas quando o escopo exigir.
 
 ## Conteúdo pedagógico
 
@@ -92,7 +97,7 @@ Uma issue só está concluída quando todos os itens aplicáveis abaixo forem at
 
 ## Documentação
 
-- [ ] README/docs foram atualizados quando comportamento/contrato mudou.
+- [ ] `README.md`, `DEVELOPMENT.md`, `PRODUCTION.md` e docs especializadas afetadas foram reconciliadas quando necessário.
 - [ ] ADR criado/atualizado quando aplicável.
 - [ ] `.env.example` atualizado sem secrets quando necessário.
 - [ ] Issue/PR descrevem decisões relevantes.
@@ -102,9 +107,9 @@ Uma issue só está concluída quando todos os itens aplicáveis abaixo forem at
 - [ ] Branch segue padrão.
 - [ ] Commits não contêm secrets ou artefatos indevidos.
 - [ ] Template do PR foi preenchido.
-- [ ] Evidência visual existe para UI.
+- [ ] Evidência visual existe para UI quando aplicável.
 - [ ] Auto code review foi concluído.
-- [ ] CI está verde.
+- [ ] `CI / quality` está verde no head final.
 - [ ] Feedback de review foi resolvido ou respondido.
 - [ ] Estratégia de rollback/forward-fix é conhecida para mudança de risco.
 

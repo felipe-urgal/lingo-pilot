@@ -31,9 +31,11 @@ Stack inicial fixada:
 
 O status operacional e a sequência do backlog ficam em [`docs/ISSUE_INDEX.md`](docs/ISSUE_INDEX.md) e [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-## Primeira execução
+## Desenvolvimento local
 
-Pré-requisitos: Node.js 24.x, Corepack, Docker Engine e Docker Compose.
+A receita canônica para instalar, preparar banco/ambiente, subir a aplicação, testar e validar antes do PR está em [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+
+Quickstart:
 
 ```bash
 nvm use
@@ -48,29 +50,21 @@ pnpm db:smoke
 pnpm dev
 ```
 
-`pnpm env:init` cria `.env.local` na raiz do repositório a partir de `.env.example` somente quando o arquivo ainda não existe; nunca sobrescreve configuração local existente. Se o arquivo foi criado antes da foundation de banco, adicione manualmente `DATABASE_URL` e `TEST_DATABASE_URL` seguindo `.env.example`. `pnpm env:check` valida o mesmo contrato usado pelos comandos de runtime.
-
-Os comandos raiz que precisam de configuração, como `pnpm build`, `pnpm start`, `pnpm db:migrate`, `pnpm db:smoke` e os testes de integração, carregam explicitamente `.env.local` antes de iniciar processos filhos. Variáveis já fornecidas pelo shell, CI ou provider têm precedência sobre o arquivo local. O projeto não copia `.env.local` para `apps/web`.
-
 Aplicação local:
 
 ```text
 http://127.0.0.1:5400
 ```
 
-O servidor E2E fica reservado para:
+Antes do PR:
 
-```text
-http://127.0.0.1:5401
+```bash
+pnpm check
 ```
 
-O PostgreSQL local é publicado exclusivamente em:
+`pnpm check` é o gate canônico e cobre lint, typecheck, unit/integration, content validation e build. Formatação, configuração/runtime, consistência/smoke de banco e E2E são checks direcionados conforme o escopo.
 
-```text
-127.0.0.1:5435
-```
-
-O LingoPilot **não escolhe outra porta automaticamente**. Se `5400` estiver ocupada, `pnpm dev` falha de forma explícita. O Compose também fixa `127.0.0.1:5435 -> postgres:5432`, preservando os PostgreSQL já usados por outros projetos. O contrato completo está em [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).
+O contrato especializado de portas/profiles fica em [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).
 
 ## Comandos
 
@@ -93,14 +87,15 @@ pnpm typecheck         executa TypeScript strict
 pnpm test:unit         executa unitários/estruturais via node:test + Vitest
 pnpm test:coverage     gera coverage informativo do Vitest
 pnpm test:integration  executa integração via TEST_DATABASE_URL
-pnpm test:e2e          executa smoke Playwright isolado em 127.0.0.1:5401
+pnpm test:e2e          executa Playwright isolado em 127.0.0.1:5401
 pnpm test              executa unit + integration
 pnpm content:validate  valida schemas e integridade do grafo de conteúdo JSON
 pnpm check:workspace   valida boundaries estruturais
 pnpm format            normaliza formatação com Prettier
 pnpm format:check      verifica formatação sem alterar arquivos
-pnpm check             gate agregado do repositório
+pnpm check             gate obrigatório agregado do repositório
 pnpm prod:status       mostra o contrato/status operacional de produção
+pnpm prod:prepare      prepara a infraestrutura local do preflight
 pnpm prod:check        executa preflight isolado sem mutar produção
 pnpm prod:migrate      aplica migrations de produção explicitamente
 pnpm prod:verify       valida readiness HTTPS de produção
@@ -133,24 +128,27 @@ Contratos: [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md), [`d
 
 Pull requests para `main` executam o workflow permanente `CI` sem depender de secrets reais.
 
-Status checks estáveis:
+Status obrigatório atual:
 
 ```text
 CI / quality
-CI / build
 ```
 
-`CI / quality` usa instalação com lockfile frozen, sobe PostgreSQL 17 efêmero isolado e executa format check, environment config, smoke de banco, lint, typecheck, testes unitários + integração, consistência de migrations e content validation. O job `CI / e2e` executa os fluxos Playwright críticos antes do build. `CI / build` roda somente depois dos gates anteriores ficarem verdes e valida o build de produção, além de confirmar que comandos oficiais não alteraram arquivos rastreados.
-
-Para reproduzir os gates que dependem de persistência localmente:
+O job usa instalação frozen, PostgreSQL 17 efêmero e executa o mesmo gate local:
 
 ```bash
-pnpm db:up
 pnpm check
+```
+
+O ruleset ativo da `main` exige o contexto `quality`. A simplificação do CI de 2026-09-04 removeu deliberadamente format/env/db checks e E2E do custo fixo de todo PR; esses comandos continuam disponíveis conforme risco/escopo.
+
+Para fluxo browser-first relevante:
+
+```bash
 pnpm test:e2e
 ```
 
-O contrato completo de branch protection, merge policy, segurança de Actions e evolução dos checks está em [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md).
+Governança completa: [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md).
 
 ## Estrutura do monorepo
 
@@ -230,7 +228,9 @@ A direção completa está em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`
 
 ## Produção
 
-A topologia operacional é:
+A receita canônica de preflight, migration, promoção e verify está em [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
+
+A topologia ativa é:
 
 ```text
 GitHub main
@@ -242,15 +242,20 @@ Next.js / LingoPilot
 Neon PostgreSQL
 ```
 
-Essa topologia está ativa desde **2026-09-01**. A #63 implementou os comandos operacionais, backup/restore-check e health/readiness; a #64 ativou o Production Contract depois de validar Vercel, Neon, migration, readiness, backup e restore real; a #65 alinhou o manifesto ativo ao contrato do Dev Dashboard.
+Fluxo resumido:
 
-O deploy é `git-managed` pela `main`, migrations permanecem explícitas e fora do build da Vercel, Production usa a branch Neon `main` e Preview usa a branch Neon `preview` isolada. Configuração administrativa de migration/backup continua fora do runtime e fora do Git.
+```text
+pnpm prod:prepare
+-> pnpm prod:check
+-> pnpm prod:backup / prod:migrate quando aplicável
+-> merge em main
+-> Vercel Production
+-> pnpm prod:verify
+```
 
-O projeto permanece orientado a custo recorrente zero enquanto os free tiers atenderem ao uso. Nenhum serviço pago recorrente deve ser introduzido sem decisão explícita.
+Não existe `prod:deploy` local. Migrations permanecem explícitas e fora do build da Vercel. Production usa a branch Neon `main`; Preview, quando explicitamente usado, permanece isolado.
 
-Auth/signup não deve receber tráfego público amplo antes de rate limit adequado à topologia serverless e hardening operacional correspondente.
-
-Contratos: [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
+Detalhes técnicos e evidências ficam em [`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md) e [`docs/PRODUCTION_STATUS.md`](docs/PRODUCTION_STATUS.md).
 
 ## Roadmap
 
@@ -265,22 +270,20 @@ Veja [`docs/ROADMAP.md`](docs/ROADMAP.md) e [`docs/ISSUE_INDEX.md`](docs/ISSUE_I
 
 ## Desenvolvimento
 
-Antes de alterar código, leia obrigatoriamente:
+Antes de alterar código, comece por:
 
-- [`AGENTS.md`](AGENTS.md) — contrato operacional para agentes de IA e desenvolvedores;
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow de contribuição;
-- [`docs/DEVELOPMENT_WORKFLOW.md`](docs/DEVELOPMENT_WORKFLOW.md) — processo de desenvolvimento e revisão;
-- [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — critérios mínimos de conclusão;
-- [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md) — contrato de portas e ambiente local;
-- [`docs/RUNTIME_CONFIGURATION.md`](docs/RUNTIME_CONFIGURATION.md) — configuração pública/server-only, profiles e evolução;
-- [`docs/DATABASE.md`](docs/DATABASE.md) — PostgreSQL, Drizzle, migrations, reset e testes de integração;
-- [`docs/AUTHENTICATION.md`](docs/AUTHENTICATION.md) — identidade, sessão, login/logout e ownership;
-- [`docs/REPOSITORY_GOVERNANCE.md`](docs/REPOSITORY_GOVERNANCE.md) — CI, branch protection e merge policy.
+- [`AGENTS.md`](AGENTS.md) — contrato operacional para agentes;
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — setup, execução local e gate antes do PR;
+- [`docs/PRODUCTION.md`](docs/PRODUCTION.md) — quando a mudança afetar deploy, migration, readiness ou operação.
+
+Docs especializadas continuam disponíveis para arquitetura, domínio, banco, runtime, qualidade e governança.
 
 **Nenhuma funcionalidade é considerada pronta apenas porque funciona localmente.** Ela precisa estar coerente com o domínio, testada no nível adequado, revisada, observável quando necessário e documentada.
 
 ## Documentação principal
 
+- [Desenvolvimento](docs/DEVELOPMENT.md)
+- [Produção](docs/PRODUCTION.md)
 - [Visão do produto](docs/VISION.md)
 - [Product Requirements](docs/PRODUCT_REQUIREMENTS.md)
 - [Roadmap](docs/ROADMAP.md)
@@ -300,7 +303,7 @@ Antes de alterar código, leia obrigatoriamente:
 - [Arquivos gerados](docs/GENERATED_FILES.md)
 - [Governança do repositório](docs/REPOSITORY_GOVERNANCE.md)
 - [Observabilidade](docs/OBSERVABILITY.md)
-- [Deploy e produção](docs/PRODUCTION_DEPLOYMENT.md)
+- [Contrato técnico de produção](docs/PRODUCTION_DEPLOYMENT.md)
 - [Status de produção](docs/PRODUCTION_STATUS.md)
 - [Workflow de desenvolvimento](docs/DEVELOPMENT_WORKFLOW.md)
 - [Definition of Done](docs/DEFINITION_OF_DONE.md)
