@@ -85,18 +85,41 @@ function sessionInput(enrollmentId, suffix) {
   };
 }
 
-test("creates only one daily session under concurrent generation", async () => {
+test("returns the single persisted daily snapshot when two tabs plan concurrently", async () => {
   const enrollmentId = await createEnrollment();
   const repository = new PostgresStudyRepository(client.db);
+  const firstInput = sessionInput(enrollmentId, `tab-a-${randomUUID()}`);
+  const secondInput = sessionInput(enrollmentId, `tab-b-${randomUUID()}`);
 
   const [first, second] = await Promise.all([
-    repository.ensureDailySession(sessionInput(enrollmentId, randomUUID())),
-    repository.ensureDailySession(sessionInput(enrollmentId, randomUUID())),
+    repository.ensureDailySession(firstInput),
+    repository.ensureDailySession(secondInput),
   ]);
 
   assert.equal(first.id, second.id);
-  assert.equal(first.items.length, 1);
-  assert.equal(second.items.length, 1);
+  assert.deepEqual(
+    first.items.map((item) => item.id),
+    second.items.map((item) => item.id),
+  );
+  assert.ok(
+    first.id === firstInput.sessionId || first.id === secondInput.sessionId,
+    "the returned session must be one of the two proposed snapshots",
+  );
+  assert.ok(
+    first.items[0]?.id === firstInput.items[0]?.id ||
+      first.items[0]?.id === secondInput.items[0]?.id,
+    "the losing tab must receive the winner's persisted item, not its own proposal",
+  );
+
+  const persisted = await repository.findDailySession(
+    enrollmentId,
+    firstInput.localStudyDate,
+  );
+  assert.equal(persisted?.id, first.id);
+  assert.deepEqual(
+    persisted?.items.map((item) => item.id),
+    first.items.map((item) => item.id),
+  );
 
   const counts = await client.pool.query(
     `select
@@ -143,7 +166,7 @@ test("persists an ordered multi-item planner snapshot atomically", async () => {
   );
 });
 
-test("persists safe resume position and explicit completion against the authored revision", async () => {
+test("reloads the same in-progress item and saved lesson position after refresh", async () => {
   const enrollmentId = await createEnrollment();
   const repository = new PostgresStudyRepository(client.db);
   const session = await repository.ensureDailySession(
@@ -174,6 +197,20 @@ test("persists safe resume position and explicit completion against the authored
   });
   assert.equal(saved.ok, true);
   if (saved.ok) assert.equal(saved.value.currentBlockIndex, 1);
+
+  const reloadedSession = await repository.findDailySession(
+    enrollmentId,
+    session.localStudyDate,
+  );
+  assert.equal(reloadedSession?.id, session.id);
+  assert.equal(reloadedSession?.status, "in_progress");
+  assert.equal(reloadedSession?.items[0]?.id, item.id);
+  assert.equal(reloadedSession?.items[0]?.status, "in_progress");
+
+  const reloadedProgress = await repository.listLessonProgress(enrollmentId);
+  assert.equal(reloadedProgress[0]?.lessonId, item.resourceId);
+  assert.equal(reloadedProgress[0]?.status, "in_progress");
+  assert.equal(reloadedProgress[0]?.currentBlockIndex, 1);
 
   const duplicate = await repository.saveLessonPosition({
     enrollmentId,
