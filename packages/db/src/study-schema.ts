@@ -146,7 +146,10 @@ export const sessionItems = pgTable(
     ),
     check("session_items_id_not_blank", sql`length(btrim(${table.id})) > 0`),
     check("session_items_position_non_negative", sql`${table.position} >= 0`),
-    check("session_items_kind_supported", sql`${table.kind} = 'lesson'`),
+    check(
+      "session_items_kind_supported",
+      sql`${table.kind} in ('lesson', 'review')`,
+    ),
     check(
       "session_items_resource_id_not_blank",
       sql`length(btrim(${table.resourceId})) > 0`,
@@ -157,11 +160,11 @@ export const sessionItems = pgTable(
     ),
     check(
       "session_items_reason_supported",
-      sql`${table.reasonCode} in ('NEW_ELIGIBLE_LESSON', 'RESUME_IN_PROGRESS')`,
+      sql`${table.reasonCode} in ('NEW_ELIGIBLE_LESSON', 'RESUME_IN_PROGRESS', 'OVERDUE_REVIEW', 'WEAK_CONCEPT')`,
     ),
     check(
       "session_items_eligibility_reason_supported",
-      sql`${table.eligibilityReason} in ('progress-satisfied', 'placement-waived', 'resume-in-progress')`,
+      sql`${table.eligibilityReason} in ('progress-satisfied', 'placement-waived', 'resume-in-progress', 'not-applicable')`,
     ),
     check(
       "session_items_estimated_minutes_positive",
