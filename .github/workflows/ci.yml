@@ -62,17 +62,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Tests
-        run: pnpm test
-
-      - name: Content validation
-        run: pnpm content:validate
-
-      - name: Build
-        run: pnpm build
+      - name: Quality gate
+        run: pnpm check
