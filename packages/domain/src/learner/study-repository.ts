@@ -1,21 +1,28 @@
 import type {
+  ContentRevisionRef,
   LessonProgress,
   SessionItem,
+  SessionItemKind,
+  SessionReasonCode,
   StoredEligibilityReason,
   StudySession,
 } from "./study-session.ts";
 
+export interface EnsureDailySessionItemInput extends ContentRevisionRef {
+  readonly id: string;
+  readonly kind: SessionItemKind;
+  readonly resourceId: string;
+  readonly reasonCode: SessionReasonCode;
+  readonly eligibilityReason: StoredEligibilityReason;
+  readonly estimatedMinutes: number;
+}
+
 export interface EnsureDailySessionInput {
   readonly sessionId: string;
-  readonly itemId: string;
   readonly enrollmentId: string;
   readonly localStudyDate: string;
   readonly plannerVersion: string;
-  readonly lessonId: string;
-  readonly contentSchemaVersion: number;
-  readonly contentRevision: number;
-  readonly estimatedMinutes: number;
-  readonly eligibilityReason: StoredEligibilityReason;
+  readonly items: readonly EnsureDailySessionItemInput[];
   readonly now: Date;
 }
 
