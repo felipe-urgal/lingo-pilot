@@ -7,6 +7,8 @@ import conceptFamily from "../../../content/courses/pt-BR_en/levels/a0/review/co
 import conceptHaveHas from "../../../content/courses/pt-BR_en/levels/a0/review/concepts/have-has.json" with { type: "json" };
 import conceptColors from "../../../content/courses/pt-BR_en/levels/a0/review/concepts/colors.json" with { type: "json" };
 import conceptObjects from "../../../content/courses/pt-BR_en/levels/a0/review/concepts/everyday-objects.json" with { type: "json" };
+import lesson012 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/012-age-and-phone.json" with { type: "json" };
+import lesson017 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/017-regular-plurals.json" with { type: "json" };
 import lesson019 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/019-demonstratives.json" with { type: "json" };
 import lesson020 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/020-possessive-adjectives.json" with { type: "json" };
 import lesson021 from "../../../content/courses/pt-BR_en/levels/a0/review/lessons/021-family.json" with { type: "json" };
@@ -132,23 +134,34 @@ describe("A0 editorial review Unit 04", () => {
     expect(conceptObjects.prerequisiteConceptIds).toEqual([]);
   });
 
-  it("introduces lexical vocabulary only in family, color and object lessons", () => {
-    const byLesson = new Map<string, string[]>();
-    for (const item of vocabulary) {
-      const ids = byLesson.get(item.introducedInLessonId) ?? [];
-      ids.push(item.id);
-      byLesson.set(item.introducedInLessonId, ids);
-    }
+  it("preserves first lexical introduction when Unit 04 reuses earlier words", () => {
+    expect(vocabPhone.introducedInLessonId).toBe(lesson012.id);
+    expect(lesson012.revision).toBe(2);
+    expect(lesson012.vocabularyIds).toContain(vocabPhone.id);
 
-    expect(byLesson.get(lesson021.id)?.sort()).toEqual(
-      [...lesson021.vocabularyIds].sort(),
+    expect(vocabBook.introducedInLessonId).toBe(lesson017.id);
+    expect(lesson017.revision).toBe(2);
+    expect(lesson017.vocabularyIds).toContain(vocabBook.id);
+
+    expect(vocabKey.introducedInLessonId).toBe(lesson024.id);
+    expect(vocabBag.introducedInLessonId).toBe(lesson024.id);
+    expect([...lesson024.vocabularyIds].sort()).toEqual(
+      [vocabPhone.id, vocabKey.id, vocabBag.id, vocabBook.id].sort(),
     );
-    expect(byLesson.get(lesson023.id)?.sort()).toEqual(
-      [...lesson023.vocabularyIds].sort(),
-    );
-    expect(byLesson.get(lesson024.id)?.sort()).toEqual(
-      [...lesson024.vocabularyIds].sort(),
-    );
+  });
+
+  it("introduces family and color vocabulary in their own lessons", () => {
+    const introducedIn021 = vocabulary
+      .filter((item) => item.introducedInLessonId === lesson021.id)
+      .map((item) => item.id)
+      .sort();
+    const introducedIn023 = vocabulary
+      .filter((item) => item.introducedInLessonId === lesson023.id)
+      .map((item) => item.id)
+      .sort();
+
+    expect(introducedIn021).toEqual([...lesson021.vocabularyIds].sort());
+    expect(introducedIn023).toEqual([...lesson023.vocabularyIds].sort());
     expect(lesson019.vocabularyIds).toEqual([]);
     expect(lesson020.vocabularyIds).toEqual([]);
     expect(lesson022.vocabularyIds).toEqual([]);
