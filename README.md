@@ -12,7 +12,7 @@ O repositório concluiu a **Fase 0 — Foundation**. As issues #7–#16 entregar
 
 A **Fase 1 — Study Engine** já cobre #17–#26 em `main`: signup/onboarding, catálogo/elegibilidade, `StudySession` diária, Today, Lesson Player retomável, Exercise Engine determinístico, Attempts transacionais/idempotentes, fila de revisão espaçada, evidência/mastery por conceito, planner diário e hardening de resume/concorrência/stale items.
 
-A #27 tem o escopo funcional de progresso/weak concepts/histórico entregue nos PRs #95 e #96 e permanece aberta apenas pela pendência processual de evidência visual/E2E registrada na própria issue. A #28 está ativa na migração editorial A0: 12/43 aulas estão materializadas em `status=review` em `main`, ainda fora do catálogo/runtime até revisão humana explícita. A expansão A1/A2 continua separada na #29.
+A #27 tem o escopo funcional de progresso/weak concepts/histórico entregue nos PRs #95 e #96 e permanece aberta apenas pela pendência processual de evidência visual/E2E registrada na própria issue. A #28 está ativa na migração editorial A0: 24/43 aulas ficam materializadas em `status=review` após este recorte, ainda fora do catálogo/runtime até revisão humana explícita. A expansão A1/A2 continua separada na #29.
 
 A capability de Production está ativa em Vercel + Neon. Desde o PR #102, a integração Git da Vercel não dispara deployments automaticamente; `main` continua sendo a fonte versionada do release e o Dev Dashboard aciona explicitamente o `provider-deploy` pela API da Vercel.
 

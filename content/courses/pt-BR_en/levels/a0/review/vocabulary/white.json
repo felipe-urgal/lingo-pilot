@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.white",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "white",
+  "language": "en",
+  "partOfSpeech": "adjective",
+  "translations": { "pt-BR": "branco" },
+  "introducedInLessonId": "lesson.a0.023.colors"
+}

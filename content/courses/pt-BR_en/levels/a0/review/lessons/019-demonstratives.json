@@ -1,0 +1,56 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.019.demonstratives",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "This / That / These / Those" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.019.choose-demonstrative",
+      "description": {
+        "pt-BR": "Escolher this, that, these ou those em contrastes simples de número e distância."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.018.irregular-plurals"],
+  "introducesConceptIds": ["concept.a0.grammar.demonstratives"],
+  "reinforcesConceptIds": ["concept.a0.grammar.regular-plurals"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.019.demonstratives.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use this/these para algo perto e that/those para algo mais distante. This/that são singulares; these/those são plurais."
+      }
+    },
+    {
+      "id": "block.a0.019.demonstratives.comparison",
+      "type": "comparison",
+      "language": "en",
+      "text": {
+        "en": "near: this book · these books | farther: that book · those books"
+      }
+    },
+    {
+      "id": "block.a0.019.demonstratives.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "This is a book. These are books. That is a book. Those are books."
+      }
+    },
+    {
+      "id": "block.a0.019.demonstratives.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Antes de escolher, verifique duas coisas: singular/plural e perto/longe."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.019.choose-demonstrative"]
+}

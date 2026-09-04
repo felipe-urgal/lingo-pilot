@@ -1,0 +1,32 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.021.name-family",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.021.family",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: Ela é minha irmã."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "She is my sister.",
+      "She is my sister",
+      "She's my sister.",
+      "She's my sister",
+      "She’s my sister.",
+      "She’s my sister"
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.lexicon.family",
+    "concept.a0.grammar.possessive-adjectives",
+    "concept.a0.grammar.be-affirmative"
+  ],
+  "objectiveIds": ["objective.a0.021.name-family"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

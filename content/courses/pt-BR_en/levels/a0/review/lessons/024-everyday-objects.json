@@ -1,0 +1,64 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.024.everyday-objects",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "Objetos do dia a dia" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.024.name-everyday-objects",
+      "description": {
+        "pt-BR": "Nomear phone, key, bag e book e combiná-los com artigos, cores e estruturas já estudadas."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.023.colors"],
+  "introducesConceptIds": ["concept.a0.lexicon.everyday-objects"],
+  "reinforcesConceptIds": [
+    "concept.a0.lexicon.colors",
+    "concept.a0.grammar.indefinite-articles"
+  ],
+  "vocabularyIds": [
+    "vocab.phone",
+    "vocab.key",
+    "vocab.bag",
+    "vocab.book"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.024.objects.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Feche a Unit com quatro objetos cotidianos e combine o vocabulário novo com artigos e cores já vistos."
+      }
+    },
+    {
+      "id": "block.a0.024.objects.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": {
+        "en": "phone · key · bag · book"
+      }
+    },
+    {
+      "id": "block.a0.024.objects.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "a blue bag · a black key · a red book · a white phone"
+      }
+    },
+    {
+      "id": "block.a0.024.objects.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Monte combinações curtas variando objeto e cor; não memorize apenas uma frase fixa."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.024.name-everyday-objects"]
+}

@@ -1,0 +1,13 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.lexicon.everyday-objects",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": { "pt-BR": "Objetos do dia a dia" },
+  "description": {
+    "pt-BR": "Reconhecer e nomear objetos cotidianos frequentes em estruturas já estudadas."
+  },
+  "prerequisiteConceptIds": []
+}
