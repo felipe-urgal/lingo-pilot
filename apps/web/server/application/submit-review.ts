@@ -142,14 +142,9 @@ export function createSubmitReview(dependencies: SubmitReviewDependencies) {
     }
 
     if (input.sessionItemId) {
-      await dependencies.execution.finalizeSessionIfTerminal({
+      await dependencies.execution.finalizeSessionContainingItem({
         enrollmentId: input.journey.enrollment.id,
-        sessionId:
-          (
-            await dependencies.execution.findLatestOpenSession(
-              input.journey.enrollment.id,
-            )
-          )?.id ?? "",
+        itemId: input.sessionItemId,
         now,
       });
     }
