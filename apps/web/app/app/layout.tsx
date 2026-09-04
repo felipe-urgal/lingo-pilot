@@ -18,6 +18,15 @@ export default async function ProtectedLayout({
           <a className="app-brand" href="/app">
             LingoPilot
           </a>
+          <nav aria-label="Navegação principal">
+            <a className="text-link" href="/app/today">
+              Hoje
+            </a>{" "}
+            ·{" "}
+            <a className="text-link" href="/app/progress">
+              Progresso
+            </a>
+          </nav>
           <form action="/api/auth/logout" method="post">
             <Button type="submit" variant="secondary">
               Sair
