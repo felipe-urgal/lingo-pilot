@@ -51,8 +51,8 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 - #22 Transactional attempt submission and feedback pipeline — **Concluída no PR #86**
 - #23 Spaced repetition engine and review queue — **Concluída no PR #86**
 - #24 Concept evidence and mastery model v1 — **Concluída no PR #86**
-- #25 Daily Session Planner v1 — **Em review no PR #87**
-- #26 Session execution, resume and idempotency hardening
+- #25 Daily Session Planner v1 — **Concluída no PR #87**
+- #26 Session execution, resume and idempotency hardening — **Em implementação no PR #91 (recorte 1)**
 - #27 Progress, weak concepts and study history
 - #28 Migrate and editorially review A0 course content
 - #49 14-day A0 dogfood validation and learning-loop review
@@ -114,9 +114,9 @@ ConceptEvidence + MasteryState
 
 O scheduler e o mastery são versionados, a UI nunca envia grade/correct como autoridade e o histórico pedagógico relevante permanece auditável.
 
-### Planner diário em review — #25 / PR #87
+### Planner diário entregue — #25 / PR #87
 
-O PR #87 evolui o shell diário para `daily-session-v1`, combinando fatos reais de currículo, review queue e mastery dentro da meta diária.
+O PR #87, mergeado em 2026-09-04, evoluiu o shell diário para `daily-session-v1`, combinando fatos reais de currículo, review queue e mastery dentro da meta diária.
 
 Prioridade V1:
 
@@ -134,7 +134,7 @@ demais reviews que couberem no budget
 
 O snapshot é persistido como `SessionItem[]` ordenado com `lesson|review`, reason codes estáveis e revision do conteúdo. Dívida extrema pode suspender conteúdo novo, mas não cria sessão infinita. Política completa: `docs/DAILY_SESSION_PLANNER.md`.
 
-A #25 não absorve o hardening completo de execução; duas abas, stale session, mudança de dia, retry/recovery e resume multi-item continuam na #26.
+A #26 agora é a frente ativa. O primeiro recorte no PR #91 cobre refresh/resume persistido, submit repetido, convergência de duas abas e retry seguro após falha de rede. Mudança de dia/timezone, stale content recovery, summary final e demais critérios continuam na própria #26.
 
 ### Estratégia de entrega
 
@@ -153,9 +153,9 @@ exercise → attempt                           ✅ #21/#22
       ↓          ↓
     content   SRS → mastery                  ✅ #23/#24
       ↓                 ↓
-Today/session ───────→ planner               review #25 / PR #87
+Today/session ───────→ planner               ✅ #25 / PR #87
       ↓                 ↓
-resume ────────────→ hardening               #26
+resume ────────────→ hardening               ativa #26 / PR #91
       ↓
 progress/history                             #27
       ↓
@@ -168,17 +168,13 @@ A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especia
 
 ### Sequência atual recomendada
 
-Enquanto o PR #87 estiver em review, a frente ativa é:
-
-```text
-#25 Daily Session Planner v1
-```
-
-Após o merge e a validação dos gates, a próxima dependência direta é:
+A frente ativa é:
 
 ```text
 #26 Session execution, resume and idempotency hardening
 ```
+
+O PR #91 implementa o primeiro recorte coeso da #26. A issue permanece aberta até que todos os critérios de aceite de hardening estejam atendidos.
 
 A #27 depende de #24, #25 e #26 e permanece depois do hardening de sessão.
 
@@ -292,4 +288,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86. A frente ativa é **#25 — Daily Session Planner v1**, em review no **PR #87**. Após esse merge, **#26** passa a ser a próxima dependência direta, seguida por **#27**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86 e o planner diário **#25 está concluído em `main`** pelo PR #87. A frente ativa é **#26 — Session execution, resume and idempotency hardening**; o primeiro recorte está no **PR #91**. A #27 continua bloqueada até o hardening necessário da #26. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
