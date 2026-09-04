@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.005.complete-we-are",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.005.be-affirmative",
+  "type": "fill-blank",
+  "prompt": {
+    "pt-BR": "Complete: We ___ students."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["are"]
+  },
+  "conceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
+  "objectiveIds": ["objective.a0.005.use-be-affirmative"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

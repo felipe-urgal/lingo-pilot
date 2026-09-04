@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.002.complete-morning-greeting",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.002.essential-greetings",
+  "type": "fill-blank",
+  "prompt": {
+    "pt-BR": "Complete o cumprimento usado pela manhã: Good ___."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["morning"]
+  },
+  "conceptIds": ["concept.a0.communication.greetings"],
+  "objectiveIds": ["objective.a0.002.use-basic-greeting"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

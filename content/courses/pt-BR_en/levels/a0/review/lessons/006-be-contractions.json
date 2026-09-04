@@ -1,0 +1,57 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.006.be-contractions",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Verb to be - contrações"
+  },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.006.use-be-contractions",
+      "description": {
+        "pt-BR": "Reconhecer e reescrever formas afirmativas frequentes de be usando contrações."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.005.be-affirmative"],
+  "introducesConceptIds": ["concept.a0.grammar.be-contractions"],
+  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.006.contractions.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Na conversa e na escrita informal, am, is e are aparecem frequentemente contraídos com o sujeito. Aprenda a reconhecer tanto a forma completa quanto a contraída."
+      }
+    },
+    {
+      "id": "block.a0.006.contractions.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "I am → I'm · you are → you're · he is → he's · she is → she's · it is → it's · we are → we're · they are → they're"
+      }
+    },
+    {
+      "id": "block.a0.006.contractions.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "I'm Ana. She's my friend. We're ready."
+      }
+    },
+    {
+      "id": "block.a0.006.contractions.common-error",
+      "type": "common-error",
+      "text": {
+        "pt-BR": "O apóstrofo faz parte da contração: escreva I'm, não Im."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.006.contract-i-am"]
+}

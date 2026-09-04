@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.001.spell-short-name",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.001.alphabet-spelling",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Escreva a soletração de Ana usando hífens entre as letras."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["A-N-A", "a-n-a"]
+  },
+  "conceptIds": ["concept.a0.spelling.letter-names"],
+  "objectiveIds": ["objective.a0.001.spell-short-name"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

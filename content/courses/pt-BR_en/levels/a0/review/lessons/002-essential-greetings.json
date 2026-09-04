@@ -1,0 +1,50 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.002.essential-greetings",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Cumprimentos essenciais"
+  },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.002.use-basic-greeting",
+      "description": {
+        "pt-BR": "Escolher e usar um cumprimento ou despedida básica em uma troca curta."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.001.alphabet-spelling"],
+  "introducesConceptIds": ["concept.a0.communication.greetings"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": ["vocab.hello", "vocab.hi", "vocab.good-morning", "vocab.goodbye"],
+  "blocks": [
+    {
+      "id": "block.a0.002.greetings.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use hello como cumprimento neutro e hi em situações mais informais. Good morning é comum pela manhã. Para encerrar uma conversa, goodbye é uma opção clara e neutra."
+      }
+    },
+    {
+      "id": "block.a0.002.greetings.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "Good morning! — Good morning!"
+      }
+    },
+    {
+      "id": "block.a0.002.greetings.common-error",
+      "type": "common-error",
+      "text": {
+        "pt-BR": "Good night costuma ser usado ao se despedir à noite. Para iniciar uma conversa à noite, good evening é mais natural."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.002.complete-morning-greeting"]
+}

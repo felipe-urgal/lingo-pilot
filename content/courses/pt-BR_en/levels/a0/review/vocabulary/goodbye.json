@@ -1,0 +1,15 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.goodbye",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "goodbye",
+  "language": "en",
+  "partOfSpeech": "interjection",
+  "translations": {
+    "pt-BR": "tchau; até logo"
+  },
+  "introducedInLessonId": "lesson.a0.002.essential-greetings"
+}

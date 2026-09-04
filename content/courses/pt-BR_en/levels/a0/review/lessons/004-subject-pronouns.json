@@ -1,0 +1,50 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.004.subject-pronouns",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Pronomes sujeito"
+  },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.004.choose-subject-pronoun",
+      "description": {
+        "pt-BR": "Escolher I, you, he, she, it, we ou they para um referente simples."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.003.self-introduction"],
+  "introducesConceptIds": ["concept.a0.grammar.subject-pronouns"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.004.pronouns.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "I = eu; you = você/vocês; he = ele; she = ela; it é usado para coisas e, conforme o contexto, animais; we = nós; they = eles/elas."
+      }
+    },
+    {
+      "id": "block.a0.004.pronouns.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "Ana is my friend. She is from Brazil."
+      }
+    },
+    {
+      "id": "block.a0.004.pronouns.common-error",
+      "type": "common-error",
+      "text": {
+        "pt-BR": "Em inglês, o sujeito normalmente aparece de forma explícita. Escolha o pronome antes de decidir a forma do verbo."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.004.choose-she"]
+}

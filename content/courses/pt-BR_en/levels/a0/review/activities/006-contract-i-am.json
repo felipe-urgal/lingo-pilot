@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.006.contract-i-am",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.006.be-contractions",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Reescreva I am Ana usando a contração, sem ponto final."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["I'm Ana", "I’m Ana"]
+  },
+  "conceptIds": ["concept.a0.grammar.be-contractions", "concept.a0.grammar.be-affirmative"],
+  "objectiveIds": ["objective.a0.006.use-be-contractions"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.from",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "from",
+  "language": "en",
+  "partOfSpeech": "preposition",
+  "translations": {
+    "pt-BR": "de; proveniente de"
+  },
+  "introducedInLessonId": "lesson.a0.003.self-introduction"
+}
