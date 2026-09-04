@@ -17,7 +17,11 @@ export type RecoverSessionItemResult =
     }>
   | Readonly<{
       ok: false;
-      reason: "not-found" | "invalid-state" | "not-recoverable";
+      reason:
+        | "invalid-input"
+        | "not-found"
+        | "invalid-state"
+        | "not-recoverable";
     }>;
 
 export interface RecoverSessionItemDependencies {
@@ -28,12 +32,17 @@ export interface RecoverSessionItemDependencies {
   readonly telemetry: TelemetryHooks;
 }
 
+function isSafeIdentifier(value: string): boolean {
+  return value.trim().length > 0 && value.length <= 200;
+}
+
 async function recoveryReason(
   dependencies: RecoverSessionItemDependencies,
   journey: LearnerJourney,
   item: NonNullable<
     Awaited<ReturnType<StudyRepository["findSessionItem"]>>
   >,
+  now: Date,
 ): Promise<SessionRecoveryReason | null> {
   if (item.kind === "lesson") {
     const lesson = dependencies.catalog.lessonById.get(item.resourceId);
@@ -65,7 +74,7 @@ async function recoveryReason(
   ) {
     return "revision-conflict";
   }
-  if (memory.dueAt.getTime() > dependencies.clock.now().getTime()) {
+  if (memory.dueAt.getTime() > now.getTime()) {
     return "review-no-longer-due";
   }
   return null;
@@ -79,6 +88,10 @@ export function createRecoverSessionItem(
     readonly sessionId: string;
     readonly itemId: string;
   }): Promise<RecoverSessionItemResult> {
+    if (!isSafeIdentifier(input.sessionId) || !isSafeIdentifier(input.itemId)) {
+      return { ok: false, reason: "invalid-input" };
+    }
+
     const session = await dependencies.study.findSession(
       input.journey.enrollment.id,
       input.sessionId,
@@ -101,14 +114,20 @@ export function createRecoverSessionItem(
       return { ok: false, reason: "invalid-state" };
     }
 
-    const reason = await recoveryReason(dependencies, input.journey, item);
+    const now = dependencies.clock.now();
+    const reason = await recoveryReason(
+      dependencies,
+      input.journey,
+      item,
+      now,
+    );
     if (!reason) return { ok: false, reason: "not-recoverable" };
 
     const result = await dependencies.execution.skipSessionItem({
       enrollmentId: input.journey.enrollment.id,
       sessionId: input.sessionId,
       itemId: input.itemId,
-      now: dependencies.clock.now(),
+      now,
     });
     if (!result.ok) return result;
 
