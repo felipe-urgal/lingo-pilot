@@ -2,7 +2,7 @@
   "kind": "lesson",
   "id": "lesson.a0.017.regular-plurals",
   "schemaVersion": 1,
-  "revision": 1,
+  "revision": 2,
   "status": "review",
   "levelId": "level.a0",
   "unitId": "unit.a0.03.time-and-basic-nouns",
@@ -19,7 +19,7 @@
   "prerequisiteLessonIds": ["lesson.a0.016.articles-a-an"],
   "introducesConceptIds": ["concept.a0.grammar.regular-plurals"],
   "reinforcesConceptIds": [],
-  "vocabularyIds": [],
+  "vocabularyIds": ["vocab.book"],
   "blocks": [
     {
       "id": "block.a0.017.plural.explanation",
