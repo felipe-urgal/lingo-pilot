@@ -1,0 +1,15 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.good-morning",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "good morning",
+  "language": "en",
+  "partOfSpeech": "expression",
+  "translations": {
+    "pt-BR": "bom dia"
+  },
+  "introducedInLessonId": "lesson.a0.002.essential-greetings"
+}

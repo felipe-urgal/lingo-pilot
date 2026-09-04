@@ -1,0 +1,25 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.003.translate-name-introduction",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.003.self-introduction",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: Meu nome é Ana. Eu sou do Brasil."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "My name is Ana. I'm from Brazil.",
+      "My name is Ana. I’m from Brazil.",
+      "My name is Ana. I am from Brazil."
+    ]
+  },
+  "conceptIds": ["concept.a0.communication.self-introduction"],
+  "objectiveIds": ["objective.a0.003.introduce-name-origin"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

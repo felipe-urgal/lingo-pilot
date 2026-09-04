@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.002.complete-morning-greeting",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.002.essential-greetings",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Escreva em inglês: Bom dia! Tchau!"
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["Good morning! Goodbye!", "Good morning. Goodbye.", "Good morning, goodbye"]
+  },
+  "conceptIds": ["concept.a0.communication.greetings"],
+  "objectiveIds": ["objective.a0.002.use-basic-greeting"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

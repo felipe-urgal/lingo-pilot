@@ -1,0 +1,15 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.brazil",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "Brazil",
+  "language": "en",
+  "partOfSpeech": "proper-noun",
+  "translations": {
+    "pt-BR": "Brasil"
+  },
+  "introducedInLessonId": "lesson.a0.003.self-introduction"
+}

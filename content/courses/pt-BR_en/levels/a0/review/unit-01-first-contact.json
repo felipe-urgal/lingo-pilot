@@ -1,0 +1,19 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.01.first-contact",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Primeiro contato"
+  },
+  "lessonIds": [
+    "lesson.a0.001.alphabet-spelling",
+    "lesson.a0.002.essential-greetings",
+    "lesson.a0.003.self-introduction",
+    "lesson.a0.004.subject-pronouns",
+    "lesson.a0.005.be-affirmative",
+    "lesson.a0.006.be-contractions"
+  ]
+}

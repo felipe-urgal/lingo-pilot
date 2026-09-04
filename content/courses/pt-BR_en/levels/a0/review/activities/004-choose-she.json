@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.004.choose-she",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.004.subject-pronouns",
+  "type": "fill-blank",
+  "prompt": {
+    "pt-BR": "Complete: Maria is from Brazil. ___ is from Brazil."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["she"]
+  },
+  "conceptIds": ["concept.a0.grammar.subject-pronouns"],
+  "objectiveIds": ["objective.a0.004.choose-subject-pronoun"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

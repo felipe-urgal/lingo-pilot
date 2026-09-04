@@ -1,0 +1,50 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.003.self-introduction",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Apresentar-se"
+  },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.003.introduce-name-origin",
+      "description": {
+        "pt-BR": "Apresentar-se dizendo nome e origem em duas frases curtas."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.002.essential-greetings"],
+  "introducesConceptIds": ["concept.a0.communication.self-introduction"],
+  "reinforcesConceptIds": ["concept.a0.communication.greetings"],
+  "vocabularyIds": ["vocab.name", "vocab.from", "vocab.brazil"],
+  "blocks": [
+    {
+      "id": "block.a0.003.introduction.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "No início, trate My name is... e I'm from... como blocos úteis para se apresentar. A gramática de am/is/are será organizada nas próximas aulas."
+      }
+    },
+    {
+      "id": "block.a0.003.introduction.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "Hi! My name is Ana. I'm from Brazil."
+      }
+    },
+    {
+      "id": "block.a0.003.introduction.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Troque Ana e Brazil pelos seus próprios dados e produza as duas frases em voz alta."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.003.translate-name-introduction"]
+}

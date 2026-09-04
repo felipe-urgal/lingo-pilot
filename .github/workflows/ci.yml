@@ -71,5 +71,8 @@ jobs:
       - name: Tests
         run: pnpm test
 
+      - name: Content validation
+        run: pnpm content:validate
+
       - name: Build
         run: pnpm build

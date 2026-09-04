@@ -1,0 +1,50 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.001.alphabet-spelling",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Alfabeto e soletração"
+  },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.001.spell-short-name",
+      "description": {
+        "pt-BR": "Reconhecer nomes de letras em inglês e soletrar um nome curto."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": [],
+  "introducesConceptIds": ["concept.a0.spelling.letter-names"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.001.spelling.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Para soletrar, use o nome das letras em inglês. O objetivo aqui é reconhecer a sequência e produzir uma soletração curta, sem tentar aprender pronúncia de palavras inteiras ao mesmo tempo."
+      }
+    },
+    {
+      "id": "block.a0.001.spelling.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "Ana — A-N-A."
+      }
+    },
+    {
+      "id": "block.a0.001.spelling.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Antes de avançar, tente escrever a soletração de Ana sem copiar o exemplo."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.001.spell-short-name"]
+}

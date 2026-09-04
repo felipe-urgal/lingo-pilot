@@ -1,0 +1,57 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.005.be-affirmative",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.01.first-contact",
+  "title": {
+    "pt-BR": "Verb to be - afirmativa"
+  },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.005.use-be-affirmative",
+      "description": {
+        "pt-BR": "Completar frases afirmativas simples escolhendo am, is ou are de acordo com o sujeito."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.004.subject-pronouns"],
+  "introducesConceptIds": ["concept.a0.grammar.be-affirmative"],
+  "reinforcesConceptIds": ["concept.a0.grammar.subject-pronouns", "concept.a0.communication.self-introduction"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.005.be.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use am com I, is com he/she/it e are com you/we/they. Nesta aula, mantenha o foco apenas em frases afirmativas curtas."
+      }
+    },
+    {
+      "id": "block.a0.005.be.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "I am · he/she/it is · you/we/they are"
+      }
+    },
+    {
+      "id": "block.a0.005.be.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "I am Ana. She is from Brazil. We are from Brazil."
+      }
+    },
+    {
+      "id": "block.a0.005.be.common-error",
+      "type": "common-error",
+      "text": {
+        "pt-BR": "Não misture as formas: diga I am, she is e we are."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.005.complete-we-are"]
+}
