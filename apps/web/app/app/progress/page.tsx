@@ -35,6 +35,21 @@ function sessionStatus(status: string): string {
   return "Planejada";
 }
 
+function lessonStatus(status: string): string {
+  if (status === "completed") return "Concluída";
+  if (status === "in_progress") return "Em andamento";
+  if (status === "available") return "Disponível";
+  if (status === "waived") return "Dispensada pelo ponto de entrada";
+  return "Bloqueada";
+}
+
+function modalityLabel(modality: string): string {
+  if (modality === "reading") return "Leitura";
+  if (modality === "listening") return "Escuta";
+  if (modality === "writing") return "Escrita";
+  return "Fala";
+}
+
 export default async function ProgressPage({ searchParams }: ProgressPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
@@ -121,6 +136,78 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
               </p>
             )}
           </article>
+        </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="progress-modalities">
+        <p className="eyebrow">Habilidades</p>
+        <h2 id="progress-modalities">Evidência observada por modalidade</h2>
+        <p className={styles.muted}>
+          A taxa abaixo descreve apenas as respostas registradas em cada
+          modalidade. Ela não é um segundo score de mastery; o tamanho da amostra
+          aparece junto para manter a leitura honesta.
+        </p>
+        {overview.modalities.length > 0 ? (
+          <div className={styles.modalityGrid}>
+            {overview.modalities.map((item) => (
+              <article className={styles.modality} key={item.modality}>
+                <p className={styles.statLabel}>{modalityLabel(item.modality)}</p>
+                <strong>{item.correctPercent}% corretas</strong>
+                <p>
+                  {item.evidenceCount} evidência
+                  {item.evidenceCount === 1 ? "" : "s"} observada
+                  {item.evidenceCount === 1 ? "" : "s"}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.muted}>
+            Ainda não há evidência específica de leitura, escuta, escrita ou fala.
+          </p>
+        )}
+      </section>
+
+      <section className={styles.section} aria-labelledby="progress-trail">
+        <p className="eyebrow">Trilha</p>
+        <h2 id="progress-trail">Status das aulas</h2>
+        <p className={styles.muted}>
+          O status vem da progressão curricular real. Aulas dispensadas pelo ponto
+          de entrada continuam diferentes de aulas concluídas.
+        </p>
+        <div className={styles.trail}>
+          {overview.curriculum.map((level) => (
+            <details
+              className={styles.levelDetails}
+              key={level.id}
+              open={level.id === overview.location.level?.id}
+            >
+              <summary>
+                <span>
+                  {level.cefr} · {level.title}
+                </span>
+                <span>
+                  {level.completedLessons}/{level.totalLessons} concluída
+                  {level.completedLessons === 1 ? "" : "s"}
+                </span>
+              </summary>
+              <div className={styles.levelContent}>
+                {level.units.map((unit) => (
+                  <section className={styles.unit} key={unit.id}>
+                    <h3>{unit.title}</h3>
+                    <ul className={styles.lessonList}>
+                      {unit.lessons.map((lesson) => (
+                        <li className={styles.lessonRow} key={lesson.id}>
+                          <span>{lesson.title}</span>
+                          <strong>{lessonStatus(lesson.status)}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            </details>
+          ))}
         </div>
       </section>
 
