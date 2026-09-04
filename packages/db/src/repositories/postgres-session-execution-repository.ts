@@ -233,4 +233,34 @@ export class PostgresSessionExecutionRepository
       ),
     );
   }
+
+  async finalizeSessionContainingItem(input: {
+    readonly enrollmentId: string;
+    readonly itemId: string;
+    readonly now: Date;
+  }): Promise<StudySession | null> {
+    return this.database.transaction(async (transaction) => {
+      const [owned] = await transaction
+        .select({ sessionId: studySessions.id })
+        .from(sessionItems)
+        .innerJoin(
+          studySessions,
+          eq(studySessions.id, sessionItems.studySessionId),
+        )
+        .where(
+          and(
+            eq(sessionItems.id, input.itemId),
+            eq(studySessions.enrollmentId, input.enrollmentId),
+          ),
+        )
+        .limit(1);
+      if (!owned) return null;
+      return finalizeSession(
+        transaction,
+        input.enrollmentId,
+        owned.sessionId,
+        input.now,
+      );
+    });
+  }
 }
