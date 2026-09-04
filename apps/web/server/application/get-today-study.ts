@@ -3,7 +3,6 @@ import type {
   IdGenerator,
   LearnerJourney,
   PracticeRepository,
-  StoredEligibilityReason,
   StudyRepository,
   StudySession,
 } from "../../../../packages/domain/src/index.ts";
@@ -63,7 +62,7 @@ function lessonForSession(
 
 function storedEligibilityReason(
   item: LessonEligibility,
-): StoredEligibilityReason {
+): PlannerLessonCandidate["eligibilityReason"] {
   if (item.reason === "placement-waived") return "placement-waived";
   if (item.reason === "resume-in-progress") return "resume-in-progress";
   return "progress-satisfied";
