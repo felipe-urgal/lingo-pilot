@@ -26,6 +26,23 @@ export {
   type LessonProgressSnapshot,
   type LessonProgressStatus,
 } from "./curriculum-eligibility.ts";
+export {
+  DAILY_SESSION_PLANNER_VERSION,
+  EXTREME_REVIEW_DEBT_MULTIPLIER,
+  HEAVILY_OVERDUE_MS,
+  REVIEW_BUDGET_RATIO,
+  REVIEW_ESTIMATED_MINUTES,
+  planDailySession,
+  type DailySessionPlan,
+  type DailySessionPlanDiagnostics,
+  type DailySessionPlannerInput,
+  type PlannedSessionItem,
+  type PlannerEligibilityReason,
+  type PlannerLessonCandidate,
+  type PlannerModality,
+  type PlannerReasonCode,
+  type PlannerReviewCandidate,
+} from "./daily-session-planner.ts";
 export { localStudyDate } from "./local-study-date.ts";
 export {
   MASTERY_ALGORITHM_VERSION,

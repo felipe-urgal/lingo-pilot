@@ -61,18 +61,26 @@ async function createEnrollment() {
   return journey.enrollment.id;
 }
 
+function lessonItem(id) {
+  return {
+    id,
+    kind: "lesson",
+    resourceId: "lesson.a0.bootstrap.orientation",
+    schemaVersion: 1,
+    revision: 1,
+    reasonCode: "NEW_ELIGIBLE_LESSON",
+    eligibilityReason: "progress-satisfied",
+    estimatedMinutes: 3,
+  };
+}
+
 function sessionInput(enrollmentId, suffix) {
   return {
     sessionId: `session-${suffix}`,
-    itemId: `item-${suffix}`,
     enrollmentId,
     localStudyDate: "2026-09-03",
-    plannerVersion: "today-shell-v1",
-    lessonId: "lesson.a0.bootstrap.orientation",
-    contentSchemaVersion: 1,
-    contentRevision: 1,
-    estimatedMinutes: 3,
-    eligibilityReason: "progress-satisfied",
+    plannerVersion: "daily-session-v1",
+    items: [lessonItem(`item-${suffix}`)],
     now: new Date("2026-09-03T12:30:00.000Z"),
   };
 }
@@ -98,6 +106,41 @@ test("creates only one daily session under concurrent generation", async () => {
   );
   assert.equal(counts.rows[0]?.sessions, 1);
   assert.equal(counts.rows[0]?.items, 1);
+});
+
+test("persists an ordered multi-item planner snapshot atomically", async () => {
+  const enrollmentId = await createEnrollment();
+  const repository = new PostgresStudyRepository(client.db);
+  const suffix = randomUUID();
+  const session = await repository.ensureDailySession({
+    sessionId: `session-${suffix}`,
+    enrollmentId,
+    localStudyDate: "2026-09-04",
+    plannerVersion: "daily-session-v1",
+    items: [
+      {
+        id: `review-${suffix}`,
+        kind: "review",
+        resourceId: `memory-${suffix}`,
+        schemaVersion: 1,
+        revision: 1,
+        reasonCode: "OVERDUE_REVIEW",
+        eligibilityReason: "not-applicable",
+        estimatedMinutes: 2,
+      },
+      lessonItem(`lesson-${suffix}`),
+    ],
+    now: new Date("2026-09-04T12:30:00.000Z"),
+  });
+
+  assert.equal(session.plannerVersion, "daily-session-v1");
+  assert.deepEqual(
+    session.items.map((item) => [item.position, item.kind, item.reasonCode]),
+    [
+      [0, "review", "OVERDUE_REVIEW"],
+      [1, "lesson", "NEW_ELIGIBLE_LESSON"],
+    ],
+  );
 });
 
 test("persists safe resume position and explicit completion against the authored revision", async () => {

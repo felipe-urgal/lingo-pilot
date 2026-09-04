@@ -108,15 +108,21 @@ function attemptInput(enrollmentId, overrides = {}) {
 function sessionInput(enrollmentId, suffix) {
   return {
     sessionId: `session-${suffix}`,
-    itemId: `item-${suffix}`,
     enrollmentId,
     localStudyDate: "2026-09-03",
-    plannerVersion: "today-shell-v1",
-    lessonId: "lesson.a0.bootstrap.orientation",
-    contentSchemaVersion: 1,
-    contentRevision: 1,
-    estimatedMinutes: 3,
-    eligibilityReason: "progress-satisfied",
+    plannerVersion: "daily-session-v1",
+    items: [
+      {
+        id: `item-${suffix}`,
+        kind: "lesson",
+        resourceId: "lesson.a0.bootstrap.orientation",
+        schemaVersion: 1,
+        revision: 1,
+        reasonCode: "NEW_ELIGIBLE_LESSON",
+        eligibilityReason: "progress-satisfied",
+        estimatedMinutes: 3,
+      },
+    ],
     now: new Date("2026-09-03T12:30:00.000Z"),
   };
 }
@@ -214,6 +220,77 @@ test("idempotently persists attempt, progress, review state, evidence and master
     evidence: 2,
     review_count: 1,
   });
+});
+
+test("completes a planned review item in the same transaction as the review event", async () => {
+  const enrollmentId = await createEnrollment();
+  const practice = new PostgresPracticeRepository(client.db);
+  const study = new PostgresStudyRepository(client.db);
+  const attempted = await practice.submitAttempt(
+    attemptInput(enrollmentId),
+    reduceMastery,
+  );
+  assert.equal(attempted.ok, true);
+
+  const [memory] = await practice.listDueReviewItems(
+    enrollmentId,
+    new Date("2026-09-03T13:00:00.000Z"),
+    10,
+  );
+  assert.ok(memory);
+  const suffix = randomUUID();
+  const session = await study.ensureDailySession({
+    sessionId: `session-review-${suffix}`,
+    enrollmentId,
+    localStudyDate: "2026-09-03",
+    plannerVersion: "daily-session-v1",
+    items: [
+      {
+        id: `item-review-${suffix}`,
+        kind: "review",
+        resourceId: memory.id,
+        schemaVersion: 1,
+        revision: 1,
+        reasonCode: "OVERDUE_REVIEW",
+        eligibilityReason: "not-applicable",
+        estimatedMinutes: 2,
+      },
+    ],
+    now: new Date("2026-09-03T13:01:00.000Z"),
+  });
+  const item = session.items[0];
+  assert.ok(item);
+
+  const result = await practice.recordReview(
+    {
+      reviewEventId: `review-planned-${suffix}`,
+      enrollmentId,
+      memoryItemId: memory.id,
+      sessionItemId: item.id,
+      operationKey: `review-planned-op-${suffix}`,
+      expectedReviewCount: memory.reviewCount,
+      grade: "good",
+      correct: true,
+      hintCount: 0,
+      nextDueAt: new Date("2026-09-04T13:00:00.000Z"),
+      intervalSeconds: 86_400,
+      algorithmVersion: "review-scheduler-v1",
+      modality: "reading",
+      supportLevel: 0,
+      now: new Date("2026-09-03T13:05:00.000Z"),
+    },
+    reduceMastery,
+  );
+  assert.equal(result.ok, true);
+
+  const persisted = await study.findSession(enrollmentId, session.id);
+  assert.equal(persisted?.status, "completed");
+  assert.equal(persisted?.items[0]?.status, "completed");
+  const eventCount = await client.pool.query(
+    "select count(*)::int as count from review_events where enrollment_id = $1 and id = $2",
+    [enrollmentId, `review-planned-${suffix}`],
+  );
+  assert.equal(eventCount.rows[0]?.count, 1);
 });
 
 test("rolls back the whole attempt transaction when mastery projection fails", async () => {

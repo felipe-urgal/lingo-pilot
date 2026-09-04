@@ -61,6 +61,7 @@ export interface RecordReviewInput {
   readonly reviewEventId: string;
   readonly enrollmentId: string;
   readonly memoryItemId: string;
+  readonly sessionItemId?: string | null;
   readonly operationKey: string;
   readonly expectedReviewCount: number;
   readonly grade: ReviewGrade;
@@ -93,6 +94,7 @@ export interface PracticeRepository {
     limit: number,
     offset?: number,
   ): Promise<readonly DueReviewItem[]>;
+  countDueReviewItems?(enrollmentId: string, now: Date): Promise<number>;
   findReviewByOperation(
     enrollmentId: string,
     operationKey: string,

@@ -19,9 +19,10 @@ function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
-function reviewRedirect(status: string): NextResponse {
+function reviewRedirect(status: string, source: string): NextResponse {
   const url = new URL("/app/review", serverConfig.public.appUrl);
   url.searchParams.set("result", status);
+  if (source === "today") url.searchParams.set("source", "today");
   return NextResponse.redirect(url, 303);
 }
 
@@ -42,8 +43,10 @@ export function POST(request: NextRequest): Promise<NextResponse> {
 
       const formData = await request.formData();
       const memoryItemId = formValue(formData.get("memoryItemId"));
+      const sessionItemId = formValue(formData.get("sessionItemId"));
       const operationKey = formValue(formData.get("operationKey"));
       const activityId = formValue(formData.get("activityId"));
+      const source = formValue(formData.get("source"));
       const activity = getPracticeActivity(
         getEnglishCourseCatalog(),
         activityId,
@@ -58,12 +61,13 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           activityId,
           studyReason: "invalid-input",
         });
-        return reviewRedirect("error");
+        return reviewRedirect("error", source);
       }
 
       const result = await getSubmitReview()({
         journey,
         memoryItemId,
+        sessionItemId: sessionItemId || undefined,
         operationKey,
         answer,
         hintCount: formData.get("hintUsed") === "1" ? 1 : 0,
@@ -79,6 +83,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
           result.reason === "stale-review" || result.reason === "not-due"
             ? "stale"
             : "error",
+          source,
         );
       }
 
@@ -91,7 +96,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
         duplicate: result.duplicate,
         nextDueAt: result.nextDueAt.toISOString(),
       });
-      return reviewRedirect(result.correct ? "correct" : "incorrect");
+      return reviewRedirect(result.correct ? "correct" : "incorrect", source);
     },
   );
 }

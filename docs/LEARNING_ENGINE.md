@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-O Learning Engine decide **o que estudar, quando revisar, quando avançar e onde reforçar**. Ele deve ser determinístico, testável e auditável. IA pode gerar variações de prática, mas não é responsável pela regra central de progressão.
+O Learning Engine decide **o que estudar, quando revisar, quando avançar e onde reforçar**. Ele deve ser determinístico, testável e auditável. IA pode gerar variações de prática no futuro, mas não é responsável pela regra central de progressão.
 
 ## 2. Componentes
 
@@ -22,89 +22,91 @@ Attempts / Review Events
 Evidence → Mastery / SRS updates
 ```
 
-### Baseline executável das #18–#20
+### Estado executável em 2026-09-04
 
-A primeira vertical implementa somente a parte necessária para ir de matrícula até uma lesson estruturada:
+As #18–#24 estão em `main` e formam a baseline determinística do Study Engine:
 
 ```text
 Enrollment
    ↓
 Curriculum Catalog + Eligibility
    ↓
-Today planner v1
+Lesson / Activity
    ↓
-StudySession + SessionItem
+Attempt → MemoryItem / ReviewEvent
    ↓
-Lesson Player
-   ↓
-LessonProgress
+ConceptEvidence → MasteryState
 ```
 
-Ainda não existem neste recorte Review Scheduler, Mastery Model, Attempts, SRS ou planner completo. Esses componentes continuam nas issues próprias; o código atual não fabrica evidência para preencher essas lacunas.
+A #25 está em review no PR #87 e adiciona o `daily-session-v1`, conectando currículo, review queue e mastery ao snapshot diário persistido. A política detalhada e versionada está em `docs/DAILY_SESSION_PLANNER.md`.
 
 ## 3. Daily Session Planner
 
-### Entradas-alvo
+### Entradas
+
+O V1 usa:
 
 - meta diária em minutos;
-- timezone e data local;
-- conteúdo desbloqueado;
-- lessons em andamento;
-- reviews vencidos/próximos;
-- mastery recente;
-- erros recorrentes;
-- histórico das últimas sessões;
-- disponibilidade das modalidades;
-- preferências/acessibilidade relevantes.
+- clock e data local derivada do timezone do aluno;
+- lessons publicadas/elegíveis;
+- lesson em andamento;
+- reviews vencidos;
+- weak concepts derivados de mastery real;
+- disponibilidade das modalidades executáveis.
+
+Histórico de modalidades/skill balance só deve alterar a decisão quando existirem modalidades completas e evidência representativa. Não adicionar heurística decorativa apenas para preencher esse campo-alvo.
 
 ### Saída
 
-`StudySession` com lista ordenada de `SessionItem` e metadata de seleção.
+`StudySession` com lista ordenada de `SessionItem` e metadata de seleção:
 
-### Planner V1 executável
+```text
+plannerVersion = daily-session-v1
+kind           = lesson | review
+reasonCode     = motivo estável da seleção
+revision       = schemaVersion + revision do conteúdo
+```
 
-O recorte da #19 usa `plannerVersion=today-shell-v1`. Ele deliberadamente não implementa a prioridade completa abaixo. Para a primeira vertical ele faz apenas:
+O snapshot é persistido antes do CTA e não é replanejado silenciosamente no refresh.
 
-1. calcular `localStudyDate` no timezone do aluno;
-2. reler a sessão já persistida para `Enrollment + localStudyDate`, se existir;
-3. caso não exista, priorizar uma lesson `in_progress`;
-4. senão selecionar a primeira lesson `available` do catálogo validado;
-5. persistir a sessão e o item com reason/revision antes de apresentar o CTA.
+### Ordem de prioridade V1
 
-A constraint de unicidade no banco garante que requests concorrentes para a mesma data local convergem para a mesma `StudySession`.
-
-### Ordem de prioridade alvo da #25
-
-1. recuperar sessão em andamento;
-2. reviews muito vencidos;
-3. reforço de conceito frágil;
+1. recuperar lesson em andamento;
+2. reviews vencidos há pelo menos 24 horas;
+3. reviews vencidos de weak concepts;
 4. conteúdo novo elegível;
-5. prática intercalada;
-6. skill practice necessária;
-7. reviews ainda dentro da janela, se houver orçamento.
+5. demais reviews vencidos que ainda couberem no orçamento.
 
-A prioridade completa será calibrada com dados e deve permanecer função versionada/testável.
+Tie-breakers:
+
+- lessons: ordem curricular, depois ID;
+- reviews: `dueAt`, depois ID.
+
+Conteúdo locked é removido pela elegibilidade antes de chegar ao planner.
 
 ## 4. Orçamento de tempo
 
-O planner completo não deve preencher indefinidamente uma sessão.
+O planner não deve preencher indefinidamente uma sessão.
 
-Exemplo de meta de 30 minutos:
+Parâmetros do `daily-session-v1`:
 
 ```text
-5–10 min  reviews
-10–15 min conteúdo novo + prática
-5–10 min  skill/retrieval
+reviewEstimatedMinutes = 2
+normalReviewBudget      = 40% da meta diária
+extremeReviewDebt       = dívida estimada >= 2x a meta diária
+heavilyOverdue          = atraso >= 24h
 ```
 
-Regras-alvo:
+Regras:
 
-- backlog de review não deve consumir automaticamente 100% da sessão por vários dias;
-- reviews críticos têm prioridade, mas o sistema aplica limite de carga;
-- conteúdo novo pode ser suspenso quando a dívida de revisão exceder um threshold;
-- duração é estimativa, não promessa exata.
+- nenhum item é adicionado se fizer o total estimado ultrapassar a meta diária normalizada;
+- em dívida normal, reviews usam no máximo 40% da meta;
+- conteúdo novo pode ser suspenso em dívida extrema;
+- em dívida extrema, reviews podem usar o budget diário inteiro, mas nunca transformar a fila em sessão infinita;
+- uma lesson já em andamento continua tendo prioridade sobre replanejamento;
+- duração continua sendo estimativa, não promessa exata.
 
-O `today-shell-v1` ainda usa apenas `estimatedMinutes` da lesson selecionada; não distribui orçamento entre categorias.
+A meta é normalizada para pelo menos o custo de uma review.
 
 ## 5. Elegibilidade curricular
 
@@ -118,7 +120,7 @@ Uma lesson pode ser elegível quando:
 - ou pré-requisitos anteriores ao `entryPointLevel` foram dispensados por placement;
 - não existe `LessonProgress in_progress` apontando para revision incompatível.
 
-Resultados de disponibilidade iniciais:
+Resultados de disponibilidade:
 
 ```text
 locked
@@ -171,36 +173,35 @@ A V1 deve manter progressão compreensível e evitar algoritmos opacos para libe
 
 SRS agenda **MemoryItems**. Mastery estima domínio de **Concepts**. São mecanismos relacionados, mas não idênticos.
 
-### Algoritmo
+### Algoritmo atual
 
-A implementação inicial deve usar um algoritmo de repetição espaçada validado, preferencialmente FSRS, encapsulado atrás de interface:
+O `review-scheduler-v1`, entregue pela #23, é determinístico, versionado e encapsulado atrás de `ReviewScheduler`. Ele é uma baseline explícita, **não FSRS**.
 
-```ts
-interface ReviewScheduler {
-  grade(input: ReviewGradeInput): ReviewScheduleResult
-  preview(input: ReviewPreviewInput): ReviewScheduleResult[]
-}
+A fila de review é ordenada por:
+
+```text
+dueAt, id
 ```
 
-Persistir versão/parâmetros do algoritmo relevantes para reproduzir comportamento.
+Review concorrente usa `expectedReviewCount` como compare-and-set e retry com a mesma `operationKey` retorna o evento original.
 
 ### Ratings
 
-Não expor necessariamente os nomes internos do algoritmo ao iniciante. A UI pode usar respostas implícitas e transformar resultado em grade.
+A UI não precisa expor nomes internos do algoritmo. Resultado/hints são convertidos server-side para grade.
 
-Exemplos de sinais:
+Sinais relevantes:
 
 - correto sem pista;
 - correto após pista;
 - incorreto;
-- tempo anormalmente alto;
-- reconhecimento versus produção.
+- reconhecimento versus produção;
+- delayed retrieval.
 
-A conversão para grade deve ser documentada e testada.
+A conversão para grade é documentada/testada no practice engine e na ADR 0005.
 
 ## 8. Mastery
 
-Mastery não deve ser atualizado por uma única resposta de forma binária.
+Mastery não é atualizado por uma única resposta de forma binária.
 
 ### Evidências
 
@@ -224,14 +225,11 @@ Sinais negativos:
 - incapacidade de recuperar após intervalo;
 - erro em uso independente.
 
-### Estado
+### Estado atual
 
-A primeira implementação pode usar score normalizado e confidence, desde que:
+`mastery-v1` mantém score e confidence separados e recomputa a projeção a partir de `ConceptEvidence` imutável. A fórmula é explícita/versionada e delayed retrieval pesa mais do que prática guiada.
 
-- fórmula seja explícita;
-- algoritmo tenha versão;
-- testes cubram sequências de evidência;
-- alterações futuras possam recalcular ou migrar significado.
+Lesson completion, mastery e SRS permanecem estados distintos.
 
 ## 9. Interleaving
 
@@ -244,6 +242,8 @@ Princípios:
 - itens parecidos podem ser contrastados intencionalmente;
 - dificuldade deve crescer gradualmente.
 
+O `daily-session-v1` já intercala categorias pela prioridade do plano, mas não cria microprática sintética para weak concepts.
+
 ## 10. Retrieval practice
 
 Conteúdo novo deve gerar recuperação futura sem exposição da resposta.
@@ -255,20 +255,20 @@ Lesson: I am / You are
   ↓
 Guided exercise
   ↓
-Same-day quick retrieval
+MemoryItem
   ↓
 SRS review
   ↓
-Mixed sentence production
+Mixed sentence production futura
   ↓
-Speaking or writing context
+Speaking or writing context futura
 ```
 
 ## 11. Error reinforcement
 
-O sistema deve registrar `ErrorCategory` e conceito quando possível.
+O sistema deve registrar categoria/conceito quando possível.
 
-Erros recorrentes podem gerar:
+Erros recorrentes podem futuramente gerar:
 
 - review adicional;
 - explicação curta;
@@ -276,93 +276,107 @@ Erros recorrentes podem gerar:
 - prática de discriminação;
 - produção em novo contexto.
 
-Evitar punir o aluno com dezenas de repetições imediatas do mesmo item.
+Evitar punir o aluno com dezenas de repetições imediatas do mesmo item. A #25 não fabrica microprática apenas porque um conceito está fraco; `WEAK_CONCEPT` prioriza somente `MemoryItem` real e vencido.
 
 ## 12. Modalidades
 
-Modalidades iniciais:
+Modalidades do modelo:
 
 - recognition;
 - reading;
 - listening;
 - writing;
-- speaking.
+- speaking;
+- mixed quando a Activity representa combinação suportada.
 
 O mesmo conceito pode ter evidências diferentes por modalidade. Mastery global não deve esconder completamente fraqueza de speaking/listening.
 
+No runtime atual do planner, as modalidades executáveis são `reading`, `writing` e `mixed`. `listening` e `speaking` entram quando suas foundations existirem. Reviews de modalidade indisponível não entram no snapshot e são contabilizadas no diagnóstico.
+
 ## 13. Sessão persistida
 
-A foundation atual persiste:
+O snapshot diário persiste:
 
 - `plannerVersion`;
 - `localStudyDate`;
-- item selecionado e ordem;
+- lista ordenada de itens;
+- `kind=lesson|review`;
 - `reasonCode`;
-- `eligibilityReason`;
+- `eligibilityReason` quando aplicável;
 - estimativa de duração;
 - `schemaVersion + revision` do conteúdo;
 - status/timestamps da sessão e item.
 
+Para lesson, `resourceId` é o ID da lesson. Para review, `resourceId` é o ID do `MemoryItem` e a revision preservada corresponde à Activity fonte.
+
 Isso permite responder “por que esse item apareceu?” e impede reconstruir silenciosamente uma sessão com conteúdo/regras que já mudaram.
 
-Inputs resumidos mais ricos do planner entram quando #25 realmente usar reviews, mastery, dívida e preferências na seleção.
+Geração concorrente continua idempotente por `Enrollment + localStudyDate`: o primeiro snapshot persistido vence; o request concorrente relê exatamente a sessão vencedora.
 
 ## 14. Reason codes
 
-Implementados na primeira vertical:
+Implementados no `daily-session-v1`:
 
 ```text
 RESUME_IN_PROGRESS
+OVERDUE_REVIEW
+WEAK_CONCEPT
 NEW_ELIGIBLE_LESSON
 ```
 
-Reservados para evolução quando existirem os respectivos inputs:
+Possíveis evoluções futuras, somente quando existirem inputs/contratos correspondentes:
 
 ```text
-OVERDUE_REVIEW
-WEAK_CONCEPT
 SKILL_BALANCE
 RECENT_ERROR_REINFORCEMENT
 UNIT_CHECKPOINT
 ```
 
-Reason codes devem ser estáveis para analytics.
+Reason codes devem permanecer estáveis para auditoria e analytics. Alterar semântica requer versionamento.
 
 ## 15. Casos de borda
 
-A foundation das #18–#20 já cobre ou trata explicitamente:
+Cobertos pelo Study Engine atual e pela #25:
 
 - primeiro dia sem histórico;
-- zero conteúdo novo elegível;
+- zero conteúdo novo elegível com reviews disponíveis;
 - sessão existente na mesma data local;
-- dois dispositivos abrindo Today simultaneamente;
+- dois requests gerando Today simultaneamente;
 - timezone boundaries;
+- centenas de reviews atrasados limitados pelo budget;
+- dívida extrema suspendendo conteúdo novo;
+- weak concept com MemoryItem real;
+- modalidade indisponível;
 - lesson revisionada/indisponível enquanto em andamento;
 - refresh no meio da lesson;
 - refresh no último bloco sem completion;
 - POST duplicado/stale de navegação;
-- acesso a session/item de outro Enrollment.
+- acesso a session/item de outro Enrollment;
+- review planejada vinculada ao Enrollment e concluída transacionalmente.
 
-Continuam para o planner/engines seguintes:
+Continuam para #26 e engines seguintes:
 
-- centenas de reviews atrasados;
-- sessão abandonada ontem e policy de retomada cross-day;
-- usuário completando sessão após meia-noite local;
-- modalidades indisponíveis;
-- IA indisponível;
-- balancing entre review/conteúdo novo/skills.
+- regra completa para sessão iniciada antes e concluída depois da meia-noite local;
+- stale session cross-day;
+- duas abas/dispositivos executando itens simultaneamente;
+- retry/recovery UX de rede instável;
+- avanço/summary final multi-item;
+- IA indisponível quando IA fizer parte de uma atividade;
+- skill balance histórico entre modalidades completas.
 
 ## 16. Concorrência
 
-Gerar `StudySession` para uma mesma data local é idempotente por constraint `Enrollment + localStudyDate` e criação transacional.
+Gerar `StudySession` para uma mesma data local é idempotente por constraint `Enrollment + localStudyDate` e criação transacional do snapshot inteiro.
 
-Start e completion são protegidos por ownership, estado e revision. Navegação de bloco exige `expectedBlockIndex`, evitando que requests duplicados avancem mais de uma posição.
+Start e completion de lesson são protegidos por ownership, estado, `kind=lesson` e revision. Navegação de bloco exige `expectedBlockIndex`, evitando que requests duplicados avancem mais de uma posição.
 
-Futuros SessionItems/Attempts devem preservar o mesmo princípio: retry não pode produzir progresso pedagógico duplicado.
+Attempt é idempotente por `operationKey` e serializa o limite por `Enrollment + Activity`. Review usa `operationKey` + compare-and-set em `reviewCount`.
+
+Quando a review veio do plano diário, o mesmo transaction boundary grava `ReviewEvent`, atualiza SRS/evidence/mastery e conclui `SessionItem/StudySession`. Não existe estado em que o review foi aceito mas o item diário ficou parcialmente concluído por uma segunda gravação independente.
 
 ## 17. Testes essenciais
 
-Cobertos nesta foundation:
+Cobertos:
 
 - unlock por progresso real;
 - placement A0/A1/A2 e conteúdo waived;
@@ -370,38 +384,41 @@ Cobertos nesta foundation:
 - revision mismatch;
 - timezone boundary;
 - geração concorrente de sessão;
+- snapshot ordenado multi-item;
 - isolamento de progresso entre enrollments;
 - resume de lesson;
 - completion explícita;
 - submit duplicado de navegação;
 - renderer/fallback dos ContentBlocks;
-- E2E onboarding → Today → Lesson Player → completion.
+- evaluator determinístico das Activities;
+- Attempt/Review idempotentes;
+- sequências de SRS/mastery;
+- primeiro dia do planner;
+- centenas de reviews vencidos;
+- prioridade de review muito vencido;
+- weak concept;
+- ausência de lesson elegível;
+- modalidade indisponível;
+- limite de minutos e suspensão de conteúdo novo;
+- mesma entrada + mesma versão → mesmo plano;
+- completion transacional de review planejada.
 
-Continuam essenciais conforme os próximos engines entrarem:
-
-- prioridade de review vencido;
-- suspensão de conteúdo novo sob dívida extrema;
-- limite de minutos;
-- equilíbrio de modalidades;
-- mesma entrada + mesma versão → mesmo plano completo;
-- sequences de mastery;
-- sequences do SRS;
-- comportamento após erro recorrente.
+O E2E existente cobre onboarding → Today → Lesson Player → completion. O hardening E2E de interrupção/resume multi-item pertence à #26.
 
 ## 18. Evolução
 
-Qualquer mudança de fórmula que altere decisões reais precisa:
+Qualquer mudança de fórmula/política que altere decisões reais precisa:
 
-1. nova versão;
+1. nova versão ou estratégia explícita de compatibilidade;
 2. testes comparativos;
 3. análise de migration/recalculation;
 4. registro em ADR quando alterar significado de progresso.
 
-O mesmo vale para semântica de eligibility, plannerVersion e migration de `LessonProgress` entre revisions publicadas.
+O mesmo vale para semântica de eligibility, plannerVersion, scheduler/mastery e migration de `LessonProgress` entre revisions publicadas.
 
 ## 19. Practice loop executável (#21–#24)
 
-O PR #86 implementa a parte antes descrita como futura:
+O PR #86, mergeado em 2026-09-03, implementou:
 
 ```text
 Activity determinística
@@ -417,6 +434,14 @@ MemoryItem → due queue → ReviewEvent
 
 O `review-scheduler-v1` é determinístico e encapsulado atrás de `ReviewScheduler`. Ele é uma baseline explícita e auditável, **não FSRS**; parâmetros/versão ficam persistidos e a ADR 0005 documenta a decisão. A fila usa `dueAt, id` como ordem estável, limite máximo e paginação por offset.
 
-`ReviewEvent`, `ActivityAttempt` e `ConceptEvidence` são históricos imutáveis. Retry com a mesma `operationKey` retorna o evento original. Review concorrente usa `expectedReviewCount` como compare-and-set. `ReviewEvent → MemoryItem` usa `ON DELETE RESTRICT` para não apagar histórico de revisão por cascata.
+`ReviewEvent`, `ActivityAttempt` e `ConceptEvidence` são históricos imutáveis. Retry com a mesma `operationKey` retorna o evento original. `ReviewEvent → MemoryItem` usa `ON DELETE RESTRICT` para não apagar histórico de revisão por cascata.
 
 `mastery-v1` recomputa score/confidence a partir de evidências reais; delayed retrieval pesa mais que prática guiada e erro recente reduz o score. Mastery continua separado de lesson completion e do estado do SRS.
+
+## 20. Daily planner executável (#25)
+
+O PR #87 introduz o `daily-session-v1` como função pura em `packages/learning` e integra os inputs reais no use case de Today.
+
+A política completa, parâmetros, reason codes, snapshot, observabilidade, testes e limites de escopo estão em [`DAILY_SESSION_PLANNER.md`](DAILY_SESSION_PLANNER.md).
+
+A #25 termina na decisão + snapshot + execução mínima de review planejada. A #26 continua sendo a dona do hardening completo de execução/resume/idempotência da sessão.

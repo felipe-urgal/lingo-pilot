@@ -41,7 +41,7 @@ function itemFromRow(row: typeof sessionItems.$inferSelect): SessionItem {
     id: row.id,
     studySessionId: row.studySessionId,
     position: row.position,
-    kind: "lesson",
+    kind: row.kind as SessionItem["kind"],
     resourceId: row.resourceId,
     schemaVersion: row.contentSchemaVersion,
     revision: row.contentRevision,
@@ -189,6 +189,10 @@ export class PostgresStudyRepository implements StudyRepository {
   async ensureDailySession(
     input: EnsureDailySessionInput,
   ): Promise<StudySession> {
+    if (input.items.length === 0) {
+      throw new Error("Daily study session requires at least one planned item");
+    }
+
     return this.database.transaction(async (transaction) => {
       const [created] = await transaction
         .insert(studySessions)
@@ -209,24 +213,23 @@ export class PostgresStudyRepository implements StudyRepository {
         .returning();
 
       if (created) {
-        await transaction.insert(sessionItems).values({
-          id: input.itemId,
-          studySessionId: created.id,
-          position: 0,
-          kind: "lesson",
-          resourceId: input.lessonId,
-          contentSchemaVersion: input.contentSchemaVersion,
-          contentRevision: input.contentRevision,
-          reasonCode:
-            input.eligibilityReason === "resume-in-progress"
-              ? "RESUME_IN_PROGRESS"
-              : "NEW_ELIGIBLE_LESSON",
-          eligibilityReason: input.eligibilityReason,
-          estimatedMinutes: input.estimatedMinutes,
-          status: "planned",
-          createdAt: input.now,
-          updatedAt: input.now,
-        });
+        await transaction.insert(sessionItems).values(
+          input.items.map((item, position) => ({
+            id: item.id,
+            studySessionId: created.id,
+            position,
+            kind: item.kind,
+            resourceId: item.resourceId,
+            contentSchemaVersion: item.schemaVersion,
+            contentRevision: item.revision,
+            reasonCode: item.reasonCode,
+            eligibilityReason: item.eligibilityReason,
+            estimatedMinutes: item.estimatedMinutes,
+            status: "planned",
+            createdAt: input.now,
+            updatedAt: input.now,
+          })),
+        );
         return loadSession(transaction, created);
       }
 
@@ -257,6 +260,7 @@ export class PostgresStudyRepository implements StudyRepository {
       if (
         !owned ||
         owned.session.id !== input.sessionId ||
+        owned.item.kind !== "lesson" ||
         owned.item.resourceId !== input.lessonId
       ) {
         return { ok: false, reason: "not-found" };
@@ -371,6 +375,7 @@ export class PostgresStudyRepository implements StudyRepository {
       if (
         !owned ||
         owned.session.id !== input.sessionId ||
+        owned.item.kind !== "lesson" ||
         owned.item.resourceId !== input.lessonId
       ) {
         return { ok: false, reason: "not-found" };
