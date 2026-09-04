@@ -157,7 +157,9 @@ describe("PracticeActivityForm", () => {
       />,
     );
 
-    const form = screen.getByRole("button", { name: "Responder" }).closest("form");
+    const form = screen
+      .getByRole("button", { name: "Responder" })
+      .closest("form");
     expect(form).not.toBeNull();
     fireEvent.submit(form!);
     fireEvent.submit(form!);
@@ -184,7 +186,9 @@ describe("PracticeActivityForm", () => {
 
     const answer = screen.getByRole("textbox", { name: "Sua resposta" });
     fireEvent.change(answer, { target: { value: "hello" } });
-    const form = screen.getByRole("button", { name: "Responder" }).closest("form");
+    const form = screen
+      .getByRole("button", { name: "Responder" })
+      .closest("form");
     expect(form).not.toBeNull();
 
     fireEvent.submit(form!);

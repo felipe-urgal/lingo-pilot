@@ -149,7 +149,12 @@ export function PracticeActivityForm({
   }
 
   return (
-    <form className="practice-activity" action={action} method="post" onSubmit={submit}>
+    <form
+      className="practice-activity"
+      action={action}
+      method="post"
+      onSubmit={submit}
+    >
       <input type="hidden" name="activityId" value={activity.content.id} />
       <input type="hidden" name="operationKey" value={operationKey} />
       {hiddenFields.map((field) => (

@@ -5,7 +5,12 @@
   "revision": 1,
   "status": "review",
   "courseId": "course.en.ptbr.v1",
-  "title": {"pt-BR": "Idade e telefone"},
-  "description": {"pt-BR": "Usar estruturas curtas e números conhecidos para informar idade e número de telefone."},
-  "prerequisiteConceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.numbers.twenty-to-hundred"]
+  "title": { "pt-BR": "Idade e telefone" },
+  "description": {
+    "pt-BR": "Usar estruturas curtas e números conhecidos para informar idade e número de telefone."
+  },
+  "prerequisiteConceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.numbers.twenty-to-hundred"
+  ]
 }

@@ -6,18 +6,52 @@
   "status": "review",
   "levelId": "level.a0",
   "unitId": "unit.a0.02.personal-information",
-  "title": {"pt-BR": "Idade e telefone"},
+  "title": { "pt-BR": "Idade e telefone" },
   "estimatedMinutes": 9,
-  "objectives": [{"id": "objective.a0.012.state-age-phone", "description": {"pt-BR": "Informar idade e número de telefone usando estruturas curtas e números já estudados."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.012.state-age-phone",
+      "description": {
+        "pt-BR": "Informar idade e número de telefone usando estruturas curtas e números já estudados."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.011.numbers-20-100"],
   "introducesConceptIds": ["concept.a0.communication.age-and-phone"],
-  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.numbers.zero-to-twenty", "concept.a0.numbers.twenty-to-hundred"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.numbers.zero-to-twenty",
+    "concept.a0.numbers.twenty-to-hundred"
+  ],
   "vocabularyIds": [],
   "blocks": [
-    {"id": "block.a0.012.personal-information.explanation", "type": "explanation", "text": {"pt-BR": "Para idade, o inglês usa be: I am 30 years old. Para telefone, use My phone number is... e leia os dígitos individualmente."}},
-    {"id": "block.a0.012.personal-information.rule", "type": "rule", "text": {"pt-BR": "Não traduza idade com have. Use I am + número + years old."}},
-    {"id": "block.a0.012.personal-information.example", "type": "example", "language": "en", "text": {"en": "I'm 30 years old. My phone number is 555-0120."}},
-    {"id": "block.a0.012.personal-information.checkpoint", "type": "checkpoint", "text": {"pt-BR": "Pratique uma idade e um telefone fictícios; não use dados pessoais reais durante o exercício."}}
+    {
+      "id": "block.a0.012.personal-information.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Para idade, o inglês usa be: I am 30 years old. Para telefone, use My phone number is... e leia os dígitos individualmente."
+      }
+    },
+    {
+      "id": "block.a0.012.personal-information.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Não traduza idade com have. Use I am + número + years old."
+      }
+    },
+    {
+      "id": "block.a0.012.personal-information.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I'm 30 years old. My phone number is 555-0120." }
+    },
+    {
+      "id": "block.a0.012.personal-information.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Pratique uma idade e um telefone fictícios; não use dados pessoais reais durante o exercício."
+      }
+    }
   ],
   "activityIds": ["activity.a0.012.state-age-phone"]
 }

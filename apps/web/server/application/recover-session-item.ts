@@ -18,10 +18,7 @@ export type RecoverSessionItemResult =
   | Readonly<{
       ok: false;
       reason:
-        | "invalid-input"
-        | "not-found"
-        | "invalid-state"
-        | "not-recoverable";
+        "invalid-input" | "not-found" | "invalid-state" | "not-recoverable";
     }>;
 
 export interface RecoverSessionItemDependencies {
@@ -39,14 +36,16 @@ function isSafeIdentifier(value: string): boolean {
 async function recoveryReason(
   dependencies: RecoverSessionItemDependencies,
   journey: LearnerJourney,
-  item: NonNullable<
-    Awaited<ReturnType<StudyRepository["findSessionItem"]>>
-  >,
+  item: NonNullable<Awaited<ReturnType<StudyRepository["findSessionItem"]>>>,
   now: Date,
 ): Promise<SessionRecoveryReason | null> {
   if (item.kind === "lesson") {
     const lesson = dependencies.catalog.lessonById.get(item.resourceId);
-    if (!lesson || lesson.status !== "published" || lesson.blocks.length === 0) {
+    if (
+      !lesson ||
+      lesson.status !== "published" ||
+      lesson.blocks.length === 0
+    ) {
       return "content-unavailable";
     }
     if (
@@ -115,12 +114,7 @@ export function createRecoverSessionItem(
     }
 
     const now = dependencies.clock.now();
-    const reason = await recoveryReason(
-      dependencies,
-      input.journey,
-      item,
-      now,
-    );
+    const reason = await recoveryReason(dependencies, input.journey, item, now);
     if (!reason) return { ok: false, reason: "not-recoverable" };
 
     const result = await dependencies.execution.skipSessionItem({

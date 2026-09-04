@@ -6,9 +6,21 @@
   "status": "review",
   "lessonId": "lesson.a0.007.be-negative",
   "type": "translation",
-  "prompt": {"pt-BR": "Traduza para o inglês: Eu não sou do Brasil. Ela não é do Brasil."},
-  "evaluation": {"type": "deterministic", "acceptedAnswers": ["I am not from Brazil. She is not from Brazil.", "I'm not from Brazil. She's not from Brazil.", "I’m not from Brazil. She’s not from Brazil."]},
-  "conceptIds": ["concept.a0.grammar.be-negative", "concept.a0.grammar.be-affirmative"],
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: Eu não sou do Brasil. Ela não é do Brasil."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "I am not from Brazil. She is not from Brazil.",
+      "I'm not from Brazil. She's not from Brazil.",
+      "I’m not from Brazil. She’s not from Brazil."
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.be-negative",
+    "concept.a0.grammar.be-affirmative"
+  ],
   "objectiveIds": ["objective.a0.007.negate-with-be"],
   "modality": "writing",
   "supportLevel": 1,

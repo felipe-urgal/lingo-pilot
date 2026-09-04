@@ -1,9 +1,7 @@
 import type { StudySession } from "./study-session.ts";
 
 export type SessionRecoveryReason =
-  | "content-unavailable"
-  | "revision-conflict"
-  | "review-no-longer-due";
+  "content-unavailable" | "revision-conflict" | "review-no-longer-due";
 
 export interface SessionReviewResource {
   readonly id: string;

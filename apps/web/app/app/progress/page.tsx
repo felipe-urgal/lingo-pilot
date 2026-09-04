@@ -50,7 +50,9 @@ function modalityLabel(modality: string): string {
   return "Fala";
 }
 
-export default async function ProgressPage({ searchParams }: ProgressPageProps) {
+export default async function ProgressPage({
+  searchParams,
+}: ProgressPageProps) {
   const user = await requireCurrentUser();
   const journey = await getLearnerJourneyRepository().findForUser(user.id);
   if (!journey) redirect("/app/onboarding");
@@ -144,14 +146,16 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         <h2 id="progress-modalities">Evidência observada por modalidade</h2>
         <p className={styles.muted}>
           A taxa abaixo descreve apenas as evidências registradas em cada
-          modalidade. Ela não é um segundo score de mastery; o tamanho da amostra
-          aparece junto para manter a leitura honesta.
+          modalidade. Ela não é um segundo score de mastery; o tamanho da
+          amostra aparece junto para manter a leitura honesta.
         </p>
         {overview.modalities.length > 0 ? (
           <div className={styles.modalityGrid}>
             {overview.modalities.map((item) => (
               <article className={styles.modality} key={item.modality}>
-                <p className={styles.statLabel}>{modalityLabel(item.modality)}</p>
+                <p className={styles.statLabel}>
+                  {modalityLabel(item.modality)}
+                </p>
                 <strong>{item.correctPercent}% corretas</strong>
                 <p>
                   {item.evidenceCount} evidência
@@ -163,7 +167,8 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
           </div>
         ) : (
           <p className={styles.muted}>
-            Ainda não há evidência específica de leitura, escuta, escrita ou fala.
+            Ainda não há evidência específica de leitura, escuta, escrita ou
+            fala.
           </p>
         )}
       </section>
@@ -172,8 +177,8 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         <p className="eyebrow">Trilha</p>
         <h2 id="progress-trail">Status das aulas</h2>
         <p className={styles.muted}>
-          O status vem da progressão curricular real. Aulas dispensadas pelo ponto
-          de entrada continuam diferentes de aulas concluídas.
+          O status vem da progressão curricular real. Aulas dispensadas pelo
+          ponto de entrada continuam diferentes de aulas concluídas.
         </p>
         <div className={styles.trail}>
           {overview.curriculum.map((level) => (

@@ -91,9 +91,7 @@ function catalog() {
       introducesConceptIds: ["concept.present"],
       reinforcesConceptIds: [],
       vocabularyIds: [],
-      blocks: [
-        { id: "b.a1", type: "example", text: { "pt-BR": "I work" } },
-      ],
+      blocks: [{ id: "b.a1", type: "example", text: { "pt-BR": "I work" } }],
       activityIds: [],
     },
     {
@@ -279,7 +277,9 @@ describe("progress overview", () => {
       { modality: "listening", evidenceCount: 2, correctPercent: 100 },
     ]);
     expect(result.curriculum[0]?.units[0]?.lessons[0]?.status).toBe("waived");
-    expect(result.curriculum[1]?.units[0]?.lessons[0]?.status).toBe("completed");
+    expect(result.curriculum[1]?.units[0]?.lessons[0]?.status).toBe(
+      "completed",
+    );
     expect(result.weakConcepts).toEqual([
       {
         id: "concept.present",

@@ -13,7 +13,10 @@
     "type": "deterministic",
     "acceptedAnswers": ["I am Ana. She is from Brazil. We are from Brazil."]
   },
-  "conceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
+  "conceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.grammar.subject-pronouns"
+  ],
   "objectiveIds": ["objective.a0.005.use-be-affirmative"],
   "modality": "writing",
   "supportLevel": 1,

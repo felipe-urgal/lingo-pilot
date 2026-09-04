@@ -2,10 +2,7 @@ export type LessonProgressStatus = "in_progress" | "completed";
 export type StudySessionStatus =
   "planned" | "in_progress" | "completed" | "abandoned";
 export type SessionItemStatus =
-  | "planned"
-  | "in_progress"
-  | "completed"
-  | "skipped";
+  "planned" | "in_progress" | "completed" | "skipped";
 export type SessionItemKind = "lesson" | "review";
 export type SessionReasonCode =
   | "NEW_ELIGIBLE_LESSON"

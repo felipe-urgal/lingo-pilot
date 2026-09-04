@@ -21,7 +21,12 @@ const DEFAULT_HISTORY_PAGE_SIZE = 5;
 const MAX_HISTORY_PAGE = 100;
 const MAX_HISTORY_PAGE_SIZE = 10;
 const WEAK_CONCEPT_LIMIT = 5;
-const CORE_MODALITIES = ["reading", "listening", "writing", "speaking"] as const;
+const CORE_MODALITIES = [
+  "reading",
+  "listening",
+  "writing",
+  "speaking",
+] as const;
 
 export interface ProgressLocation {
   readonly entryPointLevel: "A0" | "A1" | "A2";
@@ -154,7 +159,9 @@ function unitForLesson(
   lesson: Lesson | null,
 ): Unit | null {
   if (!lesson) return null;
-  return catalog.units.find((candidate) => candidate.id === lesson.unitId) ?? null;
+  return (
+    catalog.units.find((candidate) => candidate.id === lesson.unitId) ?? null
+  );
 }
 
 function modalitySignals(
@@ -209,8 +216,9 @@ function curriculumBreakdown(
       id: level.id,
       cefr: level.cefr,
       title: localized(level.title, locale),
-      completedLessons: lessons.filter((lesson) => lesson.status === "completed")
-        .length,
+      completedLessons: lessons.filter(
+        (lesson) => lesson.status === "completed",
+      ).length,
       totalLessons: lessons.length,
       units,
     };
@@ -229,7 +237,8 @@ function historyItem(
     status: session.status,
     completedLessons: completed.filter((item) => item.kind === "lesson").length,
     completedReviews: completed.filter((item) => item.kind === "review").length,
-    skippedItems: session.items.filter((item) => item.status === "skipped").length,
+    skippedItems: session.items.filter((item) => item.status === "skipped")
+      .length,
   };
 }
 
@@ -271,7 +280,8 @@ export function createGetProgressOverview(
     const current = nextEligibleLesson(eligibility);
     const lesson = current?.lesson ?? null;
     const locationLesson =
-      lesson ?? lastProgressedLesson(dependencies.catalog, snapshot.lessonProgress);
+      lesson ??
+      lastProgressedLesson(dependencies.catalog, snapshot.lessonProgress);
     const level = levelForLesson(
       dependencies.catalog,
       locationLesson,
@@ -316,7 +326,11 @@ export function createGetProgressOverview(
         averageConfidencePercent: snapshot.mastery.averageConfidencePercent,
       },
       modalities: modalitySignals(snapshot),
-      curriculum: curriculumBreakdown(dependencies.catalog, eligibility, locale),
+      curriculum: curriculumBreakdown(
+        dependencies.catalog,
+        eligibility,
+        locale,
+      ),
       dueReviewCount: snapshot.dueReviewCount,
       weakConcepts: snapshot.weakConcepts.flatMap((state) => {
         const concept = dependencies.catalog.conceptById.get(state.conceptId);

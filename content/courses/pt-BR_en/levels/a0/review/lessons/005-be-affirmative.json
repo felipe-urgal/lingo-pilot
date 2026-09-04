@@ -20,7 +20,10 @@
   ],
   "prerequisiteLessonIds": ["lesson.a0.004.subject-pronouns"],
   "introducesConceptIds": ["concept.a0.grammar.be-affirmative"],
-  "reinforcesConceptIds": ["concept.a0.grammar.subject-pronouns", "concept.a0.communication.self-introduction"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.subject-pronouns",
+    "concept.a0.communication.self-introduction"
+  ],
   "vocabularyIds": [],
   "blocks": [
     {

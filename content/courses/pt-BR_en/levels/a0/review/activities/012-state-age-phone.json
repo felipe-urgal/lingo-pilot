@@ -6,9 +6,22 @@
   "status": "review",
   "lessonId": "lesson.a0.012.age-and-phone",
   "type": "translation",
-  "prompt": {"pt-BR": "Traduza para o inglês: Tenho 30 anos. Meu número de telefone é 555-0120."},
-  "evaluation": {"type": "deterministic", "acceptedAnswers": ["I am 30 years old. My phone number is 555-0120.", "I'm 30 years old. My phone number is 555-0120.", "I’m 30 years old. My phone number is 555-0120."]},
-  "conceptIds": ["concept.a0.communication.age-and-phone", "concept.a0.grammar.be-affirmative", "concept.a0.numbers.twenty-to-hundred"],
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: Tenho 30 anos. Meu número de telefone é 555-0120."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "I am 30 years old. My phone number is 555-0120.",
+      "I'm 30 years old. My phone number is 555-0120.",
+      "I’m 30 years old. My phone number is 555-0120."
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.communication.age-and-phone",
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.numbers.twenty-to-hundred"
+  ],
   "objectiveIds": ["objective.a0.012.state-age-phone"],
   "modality": "writing",
   "supportLevel": 1,

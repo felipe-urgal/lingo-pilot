@@ -6,18 +6,53 @@
   "status": "review",
   "levelId": "level.a0",
   "unitId": "unit.a0.02.personal-information",
-  "title": {"pt-BR": "Respostas curtas com be"},
+  "title": { "pt-BR": "Respostas curtas com be" },
   "estimatedMinutes": 8,
-  "objectives": [{"id": "objective.a0.009.answer-with-be", "description": {"pt-BR": "Responder uma pergunta simples com be usando Yes/No + pronome sujeito + be."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.009.answer-with-be",
+      "description": {
+        "pt-BR": "Responder uma pergunta simples com be usando Yes/No + pronome sujeito + be."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.008.be-questions"],
   "introducesConceptIds": ["concept.a0.grammar.be-short-answers"],
-  "reinforcesConceptIds": ["concept.a0.grammar.be-questions", "concept.a0.grammar.be-negative"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.be-questions",
+    "concept.a0.grammar.be-negative"
+  ],
   "vocabularyIds": ["vocab.yes", "vocab.no"],
   "blocks": [
-    {"id": "block.a0.009.be-short-answers.explanation", "type": "explanation", "text": {"pt-BR": "Respostas curtas repetem o pronome e a forma de be sem repetir todo o complemento da pergunta."}},
-    {"id": "block.a0.009.be-short-answers.rule", "type": "rule", "text": {"pt-BR": "Use Yes, + pronome + be. Na negativa, use No, + pronome + be + not."}},
-    {"id": "block.a0.009.be-short-answers.example", "type": "example", "language": "en", "text": {"en": "Is she from Brazil? Yes, she is. Are they from Brazil? No, they are not."}},
-    {"id": "block.a0.009.be-short-answers.checkpoint", "type": "checkpoint", "text": {"pt-BR": "Mantenha o pronome da pergunta na resposta e escolha a forma correspondente de be."}}
+    {
+      "id": "block.a0.009.be-short-answers.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Respostas curtas repetem o pronome e a forma de be sem repetir todo o complemento da pergunta."
+      }
+    },
+    {
+      "id": "block.a0.009.be-short-answers.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Use Yes, + pronome + be. Na negativa, use No, + pronome + be + not."
+      }
+    },
+    {
+      "id": "block.a0.009.be-short-answers.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "Is she from Brazil? Yes, she is. Are they from Brazil? No, they are not."
+      }
+    },
+    {
+      "id": "block.a0.009.be-short-answers.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Mantenha o pronome da pergunta na resposta e escolha a forma correspondente de be."
+      }
+    }
   ],
   "activityIds": ["activity.a0.009.answer-no-with-be"]
 }

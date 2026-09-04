@@ -37,5 +37,11 @@ export function getDueReviews() {
 
 export function getSubmitReview() {
   const { clock, idGenerator, catalog, practice, execution } = dependencies();
-  return createSubmitReview({ clock, idGenerator, catalog, practice, execution });
+  return createSubmitReview({
+    clock,
+    idGenerator,
+    catalog,
+    practice,
+    execution,
+  });
 }
