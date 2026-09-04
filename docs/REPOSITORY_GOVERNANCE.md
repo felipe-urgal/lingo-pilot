@@ -1,12 +1,12 @@
 # Governança do repositório — LingoPilot
 
-Este documento define o contrato de governança do repositório GitHub do LingoPilot. Ele complementa `CONTRIBUTING.md`, `docs/DEVELOPMENT_WORKFLOW.md`, `docs/QUALITY_STRATEGY.md` e `docs/DEFINITION_OF_DONE.md`.
+Este documento define o contrato atual de governança do repositório GitHub do LingoPilot. Ele complementa `CONTRIBUTING.md`, `docs/DEVELOPMENT.md`, `docs/DEVELOPMENT_WORKFLOW.md`, `docs/QUALITY_STRATEGY.md` e `docs/DEFINITION_OF_DONE.md`.
 
 ## 1. Objetivo
 
-A `main` deve permanecer integrável. Pull request é o caminho normal de mudança e nenhum merge deve depender apenas de confiança manual no autor.
+A `main` deve permanecer integrável e deployable. Pull request é o caminho normal de mudança e nenhum merge deve depender apenas de confiança manual no autor.
 
-A governança precisa equilibrar quatro objetivos:
+A governança equilibra:
 
 1. impedir regressões técnicas básicas;
 2. manter o fluxo viável para um repositório pessoal com um único maintainer;
@@ -15,68 +15,55 @@ A governança precisa equilibrar quatro objetivos:
 
 ## 2. Workflow oficial de CI
 
-O workflow permanente é `.github/workflows/ci.yml` e executa três jobs visíveis no PR:
+O workflow permanente é `.github/workflows/ci.yml` e expõe um único job obrigatório no PR:
 
 ```text
 CI / quality
-CI / e2e
-CI / build
 ```
 
-Os contextos diretamente exigidos pelo ruleset do GitHub continuam:
-
-```text
-quality
-build
-```
-
-`e2e` é um gate intermediário obrigatório no grafo do workflow: ele depende de `quality`, e `build` depende de `quality + e2e`. Portanto, um E2E vermelho impede o check obrigatório `build` de ficar verde mesmo sem adicionar um terceiro contexto ao ruleset.
-
-### `CI / quality`
-
-Executa, nesta ordem:
+O job executa:
 
 1. checkout do commit do PR;
 2. Node definido por `.nvmrc`;
 3. package manager definido por `package.json#packageManager` via Corepack;
 4. `pnpm install --frozen-lockfile`;
-5. `pnpm format:check`;
-6. `pnpm env:check`;
-7. `pnpm db:smoke` contra PostgreSQL efêmero do job;
-8. `pnpm lint`;
-9. `pnpm typecheck`;
-10. `pnpm test` — unitários/estruturais + integration tests PostgreSQL;
-11. `pnpm db:check`;
-12. `pnpm content:validate`.
+5. PostgreSQL `17-alpine` efêmero e isolado;
+6. `pnpm check`.
 
-O job sobe PostgreSQL `17-alpine` como service isolado, publicado apenas no runner em `5435`, usando credenciais sintéticas.
+`pnpm check` é a interface canônica do gate e executa:
 
-### `CI / e2e`
+```text
+format:check
+-> env:check
+-> lint
+-> typecheck
+-> test
+-> content:validate
+-> db:check
+-> build
+```
 
-Só inicia depois de `quality` ficar verde e executa:
+`pnpm test` inclui unitários/estruturais e integration tests PostgreSQL.
 
-1. checkout e setup de Node/Corepack;
-2. instalação frozen;
-3. instalação do Chromium usado pelo Playwright;
-4. `pnpm test:e2e` contra servidor reservado em `127.0.0.1:5401` e PostgreSQL efêmero próprio.
+Não manter listas paralelas de lint/typecheck/test/build no workflow. Se o gate obrigatório mudar, altere primeiro o script canônico e reconcilie CI/documentação no mesmo PR.
 
-A suíte E2E usa banco explicitamente identificado como teste, reinicializado pelo harness antes da execução. Ela cobre fluxos browser-first críticos sem reutilizar Development, Preview ou Production.
+## 3. E2E e checks especializados
 
-### `CI / build`
+E2E não é hoje um contexto obrigatório separado da `main`.
 
-Só inicia após `quality` e `e2e` ficarem verdes e executa:
+Execute:
 
-1. checkout;
-2. setup de Node/Corepack;
-3. instalação frozen;
-4. `pnpm build`;
-5. verificação de que o build não alterou **arquivos rastreados** da working tree.
+```bash
+pnpm test:e2e
+```
 
-A separação é intencional: falhas de qualidade aparecem primeiro, E2E valida os fluxos críticos no browser e somente então o runner gasta tempo com o build final de produção.
+quando a mudança afetar fluxo browser-first crítico, autenticação, Today/Lesson Player ou quando uma regressão exigir navegador real.
 
-## 3. Ambiente sintético de CI
+AI eval online, performance/a11y avançados, security checks adicionais e verificações operacionais seguem o mesmo princípio: entram quando o risco/escopo justificar, não como custo fixo sem contrato material protegido.
 
-Os gates básicos não dependem de secrets reais. O workflow fornece configuração segura e sintética, incluindo:
+## 4. Ambiente sintético de CI
+
+O gate comum não depende de secrets reais. O workflow fornece configuração sintética, incluindo:
 
 ```text
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400
@@ -86,55 +73,24 @@ TEST_DATABASE_URL=postgresql://<synthetic>@127.0.0.1:5435/lingo_pilot_test
 LINGO_TEST_MODE=false
 ```
 
-O PostgreSQL de cada job que precisa de persistência é efêmero e nunca representa Production. `TEST_DATABASE_URL` é o destino dos integration/E2E tests; o smoke usa explicitamente o banco de teste do service. Build continua sem abrir conexão nem aplicar migration.
+O PostgreSQL do CI é efêmero e nunca representa Preview ou Production. Integration tests usam `TEST_DATABASE_URL`; build/config validation não devem abrir conexão nem executar migration de Production.
 
-O profile E2E sobrescreve a configuração web para `127.0.0.1:5401`, `LINGO_PROFILE=e2e` e `LINGO_TEST_MODE=true` somente no processo correspondente.
-
-## 4. Segurança do GitHub Actions
+## 5. Segurança do GitHub Actions
 
 Contrato mínimo:
 
-- `GITHUB_TOKEN` com `contents: read` apenas;
-- checks básicos não dependem de secrets;
-- actions reutilizadas devem ser pinadas por commit SHA, com versão humana indicada em comentário;
-- jobs possuem timeout explícito;
-- PRs antigos da mesma branch são cancelados por `concurrency` quando um novo commit chega;
-- push em `main` não deve ser cancelado por outro push apenas por conveniência;
-- não executar código de fork com token de escrita;
-- não usar `pull_request_target` para CI comum.
+- `GITHUB_TOKEN` com `contents: read` apenas no CI comum;
+- gate obrigatório sem secrets reais;
+- actions pinadas por commit SHA, com versão humana em comentário;
+- timeout explícito;
+- PRs antigos da mesma branch cancelados por `concurrency` quando um novo commit chega;
+- push em `main` não cancelado por conveniência;
+- não usar `pull_request_target` para CI comum;
+- não executar código de fork com token de escrita.
 
-Checkout e setup-node usam actions oficiais do GitHub pinadas por SHA.
+## 6. Ruleset ativa da `main`
 
-## 5. Cache
-
-Não há cache explícito nesta fase.
-
-A instalação limpa é curta e o repositório ainda é pequeno. Cache de pnpm/Turbo pode ser adicionado quando medições mostrarem benefício claro, preservando lockfile como chave e evitando compartilhar artefatos mutáveis inseguros.
-
-## 6. Content validation hook
-
-`pnpm content:validate` é gate permanente desde Foundation.
-
-A #15 implementou schemas, referências e validação do grafo mantendo o mesmo comando estável usado pelo CI. Evoluções de conteúdo devem preservar esse ponto de integração para não quebrar workflow/ruleset desnecessariamente.
-
-## 7. Database validation baseline
-
-A #10 adicionou a baseline real de persistência ao CI e as issues posteriores a estendem pelo mesmo contrato.
-
-O contrato atual inclui:
-
-- PostgreSQL efêmero por job que precisa de dados;
-- smoke de conexão;
-- integration tests usando `TEST_DATABASE_URL` isolada;
-- E2E com banco de teste reinicializado e isolado;
-- `pnpm db:check` para consistência de migrations;
-- nenhuma migration/conexão durante o build da aplicação.
-
-Qualquer mudança nesse contrato deve manter local, CI e `docs/DATABASE.md` sincronizados.
-
-## 8. Ruleset ativa da `main`
-
-O repositório possui o ruleset:
+Estado validado em 2026-09-04:
 
 ```text
 Name: main protection
@@ -153,130 +109,109 @@ Regras ativas:
 - Require status checks to pass;
 - Require branches to be up to date before merging;
 - Require linear history;
-- Allowed merge method: somente `squash`;
-- Additional approval for unattributed Copilot changes: desabilitado.
+- Allowed merge method: somente `squash`.
 
-Checks obrigatórios do ruleset:
+Contexto obrigatório atual:
 
 ```text
 quality
-build
 ```
 
-O job `e2e` não precisa ser um terceiro contexto obrigatório porque `build` possui dependência explícita de `e2e`; se o E2E falhar ou for cancelado, `build` não conclui com sucesso.
-
-A configuração foi validada pela API do GitHub após a conclusão da #8.
+Não documentar `build` ou `e2e` como status obrigatório separado enquanto o ruleset/workflow real não os expuser dessa forma.
 
 ### Por que zero approvals?
 
-Com um único maintainer, exigir aprovação humana tornaria PR próprio impossível sem bypass. O controle correto nesta fase é:
+Com um único maintainer, exigir aprovação humana tornaria PR próprio impossível sem bypass. O controle atual é:
 
 - PR obrigatório;
 - CI obrigatório;
 - branch atualizada;
 - threads resolvidas;
-- auto code review documentado no PR;
+- auto code review documentado;
 - sem bypass do ruleset.
 
-Quando existir um segundo maintainer/reviewer real, reavaliar `required_approving_review_count` para `1`.
+Quando existir um segundo maintainer/reviewer real, reavaliar approvals.
 
-## 9. Merge policy
-
-Política do repositório:
+## 7. Merge policy
 
 - squash merge como único método normal;
 - merge commits desabilitados;
 - rebase merge desabilitado;
-- branch remota apagada automaticamente após merge;
+- branch remota removida após merge quando seguro;
 - branches curtas e específicas por issue.
 
 A `main` recebe um commit semântico por PR.
 
-## 10. CODEOWNERS
+## 8. Checks locais antes do push
 
-Não adicionar `CODEOWNERS` nesta fase.
+O fluxo canônico está em [`DEVELOPMENT.md`](DEVELOPMENT.md).
 
-Com um único maintainer, ele não melhora roteamento de review e pode criar falsa impressão de revisão independente. Quando houver ownership real por área, adicionar junto da documentação da divisão.
-
-## 11. Dependabot / Renovate
-
-Não habilitar atualização automática de dependências nesta fase.
-
-Razões:
-
-- a Foundation ainda está estabilizando boundaries e contratos;
-- PRs automáticos adicionariam ruído antes de existir política madura de upgrades;
-- majors continuam exigindo avaliação explícita.
-
-Atualizações manuais continuam obrigatórias quando necessárias por segurança ou compatibilidade.
-
-## 12. Checks locais antes do push
-
-O comando canônico é:
-
-```bash
-pnpm check
-```
-
-Hoje inclui:
-
-```text
-format:check
-env:check
-lint
-typecheck
-test
-content:validate
-db:check
-build
-```
-
-Para os checks que precisam de PostgreSQL local, execute antes:
+Com PostgreSQL local disponível quando necessário:
 
 ```bash
 pnpm db:up
+pnpm check
 ```
 
-Quando a mudança toca fluxo browser-first coberto por Playwright, execute também:
+Quando o risco justificar navegador real:
 
 ```bash
 pnpm test:e2e
 ```
 
-CI continua sendo autoridade de integração porque roda em ambiente limpo, com instalação frozen, PostgreSQL efêmero próprio e Chromium controlado para os E2E.
+CI continua sendo autoridade de integração porque roda instalação frozen e ambiente limpo/sintético.
 
-## 13. Alterações de CI/configuração
+## 9. Alterações de CI/configuração
 
-Mudanças em `.github/workflows/**`, scripts de CI, `.nvmrc`, `packageManager`, runtime configuration, lint, TypeScript, banco ou test runner exigem atenção especial no PR.
+Mudanças em `.github/workflows/**`, scripts de CI, `.nvmrc`, `packageManager`, runtime configuration, lint, TypeScript, banco ou test runner exigem atenção especial.
 
 O auto review deve confirmar:
 
-- contextos `quality`/`build` não mudaram sem coordenação do ruleset;
-- dependência `quality → e2e → build` não foi enfraquecida silenciosamente;
+- o contexto obrigatório `quality` não mudou sem coordenação do ruleset;
+- `pnpm check` continua representando tudo que é sempre obrigatório;
 - permissões não aumentaram sem justificativa;
 - instalação continua frozen;
-- nenhuma secret foi adicionada ao caminho comum;
-- configuração sintética de CI continua não sensível;
+- nenhuma secret entrou no caminho comum;
 - bancos de CI/E2E continuam isolados de Preview/Production;
-- timeout e concurrency continuam adequados;
+- timeout/concurrency continuam adequados;
 - local e CI não divergiram silenciosamente;
 - action pinning continua verificável.
 
-Renomear check obrigatório é mudança de governança e deve atualizar workflow, ruleset e documentação de forma coordenada.
+Renomear o check obrigatório é mudança de governança e exige atualizar workflow, ruleset e documentação de forma coordenada.
 
-## 14. Falha ou indisponibilidade do CI
+## 10. Falha ou indisponibilidade do CI
 
 Não remover checks obrigatórios para contornar indisponibilidade transitória.
 
 Procedimento:
 
-1. identificar se é falha do código, banco efêmero, runner, browser ou GitHub Actions;
-2. reexecutar apenas quando houver motivo para esperar resultado diferente;
-3. corrigir flaky test/configuração em vez de adicionar retry global;
-4. bypass é considerado emergência e não faz parte do fluxo normal; hoje o ruleset não possui bypass actors.
+1. identificar se é falha do código, banco efêmero, runner ou GitHub Actions;
+2. reexecutar somente quando houver motivo para esperar resultado diferente;
+3. corrigir flaky test/configuração em vez de esconder com retry global;
+4. não usar bypass como fluxo normal.
 
-## 15. Evolução futura
+## 11. Content/database validation
 
-A baseline atual já inclui PostgreSQL/integration tests, schemas/validação de conteúdo e Playwright/E2E para fluxos críticos. Novos E2E devem entrar conforme o risco do fluxo, sem transformar cada detalhe visual em teste caro.
+`content:validate` e `db:check` fazem parte de `pnpm check` e, portanto, do gate obrigatório atual.
 
-AI eval online e outros pipelines dependentes de providers/secrets entram conforme as issues correspondentes forem concluídas. Novos jobs devem continuar separados entre gates rápidos/obrigatórios e pipelines mais caros ou condicionais.
+Evoluções de conteúdo e persistência devem preservar esses pontos de integração ou alterá-los de forma explícita no mesmo PR.
+
+Integration tests continuam usando `TEST_DATABASE_URL` isolada. E2E usa seu próprio fluxo de reset/migration do banco de teste e não reutiliza Development, Preview ou Production.
+
+## 12. CODEOWNERS e updates automáticos
+
+Não adicionar `CODEOWNERS` enquanto não houver ownership real por área.
+
+Não habilitar automação de dependências apenas por checklist. Upgrades relevantes continuam avaliados explicitamente, especialmente majors e mudanças de framework/ORM.
+
+## 13. Produção
+
+CI/Preview não podem usar credenciais ou banco de Production.
+
+A promoção e as operações reais estão em [`PRODUCTION.md`](PRODUCTION.md). O Production Contract do Dev Dashboard permanece git-managed pela Vercel e migrations continuam explícitas fora do build.
+
+## 14. Evolução futura
+
+Novos jobs/checks devem ser adicionados apenas quando protegerem um contrato material que justifique custo e complexidade.
+
+Se E2E voltar a ser obrigatório em todo PR, a mudança deve ser feita coordenadamente em workflow, ruleset, `QUALITY_STRATEGY.md`, `DEVELOPMENT.md` e este documento.
