@@ -15,6 +15,8 @@ import {
   studySessions,
 } from "../study-schema.ts";
 
+const MAX_HISTORY_OFFSET = 1_000;
+
 function progressFromRow(
   row: typeof lessonProgress.$inferSelect,
 ): LessonProgress {
@@ -86,7 +88,10 @@ export class PostgresProgressRepository implements ProgressRepository {
       20,
       Math.max(1, Math.trunc(input.historyLimit)),
     );
-    const historyOffset = Math.max(0, Math.trunc(input.historyOffset ?? 0));
+    const historyOffset = Math.min(
+      MAX_HISTORY_OFFSET,
+      Math.max(0, Math.trunc(input.historyOffset ?? 0)),
+    );
     const weakConceptLimit = Math.min(
       20,
       Math.max(1, Math.trunc(input.weakConceptLimit ?? 5)),
