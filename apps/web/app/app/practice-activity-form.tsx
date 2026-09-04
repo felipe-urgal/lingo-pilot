@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@lingo-pilot/ui";
+import { useState, type FormEvent } from "react";
 import type { PracticeActivity } from "../../server/practice/activity-catalog";
 
 type HiddenField = Readonly<{ name: string; value: string | number }>;
@@ -118,9 +121,35 @@ export function PracticeActivityForm({
   submitLabel = "Responder",
 }: PracticeActivityFormProps) {
   const promptId = `practice-prompt-${activity.content.id}`;
+  const [submitting, setSubmitting] = useState(false);
+  const [networkError, setNetworkError] = useState(false);
+
+  async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (submitting) return;
+
+    const form = event.currentTarget;
+    setSubmitting(true);
+    setNetworkError(false);
+
+    try {
+      const response = await fetch(action, {
+        method: "POST",
+        body: new FormData(form),
+        credentials: "same-origin",
+      });
+      if (!response.ok || !response.redirected || !response.url) {
+        throw new Error("Practice submission did not return a safe redirect");
+      }
+      window.location.assign(response.url);
+    } catch {
+      setSubmitting(false);
+      setNetworkError(true);
+    }
+  }
 
   return (
-    <form className="practice-activity" action={action} method="post">
+    <form className="practice-activity" action={action} method="post" onSubmit={submit}>
       <input type="hidden" name="activityId" value={activity.content.id} />
       <input type="hidden" name="operationKey" value={operationKey} />
       {hiddenFields.map((field) => (
@@ -153,7 +182,16 @@ export function PracticeActivityForm({
         </div>
       ) : null}
 
-      <Button type="submit">{submitLabel}</Button>
+      {networkError ? (
+        <p className="practice-feedback" role="alert">
+          A conexão falhou. Sua resposta foi preservada; tente novamente. A
+          mesma operação será reutilizada com segurança.
+        </p>
+      ) : null}
+
+      <Button disabled={submitting} type="submit">
+        {submitting ? "Enviando…" : submitLabel}
+      </Button>
     </form>
   );
 }
