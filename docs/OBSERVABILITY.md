@@ -246,22 +246,43 @@ Não bloquear liveness por provider de IA opcional.
 
 A instrumentação da Foundation preserva essa separação: `/api/health/live` não depende da configuração completa de banco; `/api/health/ready` verifica PostgreSQL e registra indisponibilidade com código seguro, sem vazar URL de conexão ou mensagem bruta de exceção.
 
-## 15. Deploy markers
+## 15. Deploy markers e correlação de incidente
 
 Toda telemetria deve permitir correlacionar incidente com versão/commit/deploy.
 
 Quando disponíveis, `VERCEL_GIT_COMMIT_SHA` e `VERCEL_DEPLOYMENT_ID` alimentam a metadata do logger. Fora da Vercel, a baseline continua funcional com versão local e sem deployment id.
 
+Para resposta operacional da #45, o conjunto mínimo compartilhável é:
+
+```text
+timestamp UTC
+commit SHA
+deployment id quando disponível
+route/useCase
+errorCode
+requestId
+```
+
+Não adicionar connection strings, cookies, tokens, email, payload livre do learner, transcript, áudio ou dump apenas para “facilitar” diagnóstico.
+
+Desde o ADR 0006, merge em `main` e deployment são eventos separados: um incidente precisa registrar o SHA esperado **e** o deployment efetivamente promovido pelo Dev Dashboard/provider.
+
 ## 16. Runbooks
 
-Antes de alertas de produção, criar procedimentos para:
+A baseline de observabilidade da #14 é consumida pelos runbooks da #45; não existe uma segunda taxonomia ou logger de incidentes.
 
-- DB degradation;
-- auth outage;
-- AI outage;
-- media processing outage;
-- deploy rollback;
-- migration failure.
+Procedimentos atuais:
+
+- [`runbooks/deploy.md`](runbooks/deploy.md);
+- [`runbooks/migration-failure.md`](runbooks/migration-failure.md);
+- [`runbooks/backup-restore.md`](runbooks/backup-restore.md);
+- [`runbooks/vercel-outage.md`](runbooks/vercel-outage.md);
+- [`runbooks/database-outage.md`](runbooks/database-outage.md);
+- [`runbooks/auth-outage.md`](runbooks/auth-outage.md);
+- [`runbooks/leaked-secret.md`](runbooks/leaked-secret.md);
+- [`runbooks/data-corruption.md`](runbooks/data-corruption.md).
+
+`ai-provider-outage.md` e `storage-outage.md` continuam YAGNI até essas capabilities existirem em Production.
 
 ## 17. Regra final
 
