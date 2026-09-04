@@ -42,6 +42,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
 
       const formData = await request.formData();
       const memoryItemId = formValue(formData.get("memoryItemId"));
+      const sessionItemId = formValue(formData.get("sessionItemId"));
       const operationKey = formValue(formData.get("operationKey"));
       const activityId = formValue(formData.get("activityId"));
       const activity = getPracticeActivity(
@@ -64,6 +65,7 @@ export function POST(request: NextRequest): Promise<NextResponse> {
       const result = await getSubmitReview()({
         journey,
         memoryItemId,
+        sessionItemId: sessionItemId || undefined,
         operationKey,
         answer,
         hintCount: formData.get("hintUsed") === "1" ? 1 : 0,
