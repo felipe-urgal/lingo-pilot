@@ -88,7 +88,10 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         <div className={styles.grid}>
           <article className={styles.stat}>
             <p className={styles.statLabel}>Trilha concluída</p>
-            <strong>{overview.learning.completedLessons} aulas</strong>
+            <strong>
+              {overview.learning.completedLessons} aula
+              {overview.learning.completedLessons === 1 ? "" : "s"}
+            </strong>
             <p>
               {overview.learning.startedLessons > 0
                 ? `${overview.learning.startedLessons} aula em andamento.`
