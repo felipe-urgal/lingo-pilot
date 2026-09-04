@@ -69,8 +69,50 @@ export default async function TodayPage() {
     );
   }
 
-  const item = today.session.items[0];
-  if (!item || !today.lesson) {
+  const item = today.session.items.find(
+    (candidate) => candidate.status !== "completed",
+  );
+  if (!item) {
+    return (
+      <section className="today-card" aria-labelledby="today-title">
+        <p className="eyebrow">Hoje</p>
+        <h1 id="today-title">Não foi possível carregar sua sessão.</h1>
+        <p className="description">
+          O plano está preservado, mas nenhum item pendente foi encontrado.
+        </p>
+        <ReviewLink count={dueReviews.length} />
+      </section>
+    );
+  }
+
+  if (item.kind === "review") {
+    const plannedReviews = today.session.items.filter(
+      (candidate) =>
+        candidate.kind === "review" && candidate.status !== "completed",
+    );
+    return (
+      <section className="today-card" aria-labelledby="today-title">
+        <p className="eyebrow">Hoje · {item.estimatedMinutes} min</p>
+        <h1 id="today-title">Comece pelas revisões prioritárias.</h1>
+        <div className="today-plan" aria-label="Plano de estudo de hoje">
+          <p className="today-plan__label">Revisar</p>
+          <h2>
+            {plannedReviews.length} revisão{plannedReviews.length === 1 ? "" : "ões"}{" "}
+            no plano de hoje
+          </h2>
+          <p>O planner priorizou o que precisa ser recuperado agora.</p>
+        </div>
+        <a href="/app/review">
+          <Button>Começar revisões</Button>
+        </a>
+        <a className="text-link" href="/app/onboarding?edit=1">
+          Ajustar preferências
+        </a>
+      </section>
+    );
+  }
+
+  if (!today.lesson || today.lesson.id !== item.resourceId) {
     return (
       <section className="today-card" aria-labelledby="today-title">
         <p className="eyebrow">Hoje</p>
@@ -84,7 +126,7 @@ export default async function TodayPage() {
     );
   }
 
-  const isContinuing = today.session.status === "in_progress";
+  const isContinuing = item.status === "in_progress";
 
   return (
     <section className="today-card" aria-labelledby="today-title">
