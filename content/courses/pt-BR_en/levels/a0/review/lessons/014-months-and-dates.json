@@ -1,0 +1,57 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.014.months-and-dates",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "Meses e datas" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.014.write-basic-date",
+      "description": {
+        "pt-BR": "Nomear meses e representar datas básicas com mês e número do dia."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.013.days-of-week"],
+  "introducesConceptIds": ["concept.a0.calendar.months-and-dates"],
+  "reinforcesConceptIds": [
+    "concept.a0.numbers.zero-to-twenty",
+    "concept.a0.numbers.twenty-to-hundred"
+  ],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.014.months.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Os meses também começam com letra maiúscula em inglês. Neste recorte, a data é praticada na forma escrita mês + número."
+      }
+    },
+    {
+      "id": "block.a0.014.months.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": {
+        "en": "January · February · March · April · May · June · July · August · September · October · November · December"
+      }
+    },
+    {
+      "id": "block.a0.014.date.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Para esta prática inicial, leia e escreva datas curtas como May 12. Formas faladas com ordinais ficam para revisão editorial posterior."
+      }
+    },
+    {
+      "id": "block.a0.014.date.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "May 12" }
+    }
+  ],
+  "activityIds": ["activity.a0.014.write-basic-date"]
+}

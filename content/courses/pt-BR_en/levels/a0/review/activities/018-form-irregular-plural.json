@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.018.form-irregular-plural",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.018.irregular-plurals",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: duas crianças."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["two children"]
+  },
+  "conceptIds": ["concept.a0.grammar.irregular-plurals"],
+  "objectiveIds": ["objective.a0.018.use-irregular-plurals"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

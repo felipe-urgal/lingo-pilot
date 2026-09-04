@@ -1,0 +1,53 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.016.articles-a-an",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "A / An" },
+  "estimatedMinutes": 8,
+  "objectives": [
+    {
+      "id": "objective.a0.016.choose-a-an",
+      "description": {
+        "pt-BR": "Escolher a ou an antes de substantivos singulares simples."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.015.telling-time"],
+  "introducesConceptIds": ["concept.a0.grammar.indefinite-articles"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.016.articles.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use a ou an antes de um substantivo singular quando estiver falando de uma unidade não específica."
+      }
+    },
+    {
+      "id": "block.a0.016.articles.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Neste nível, pratique a antes de som consonantal e an antes de som vocálico com palavras simples."
+      }
+    },
+    {
+      "id": "block.a0.016.articles.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "a book · an apple" }
+    },
+    {
+      "id": "block.a0.016.articles.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Escolha o artigo pelo som inicial da palavra seguinte; exceções e casos avançados ficam fora deste recorte A0."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.016.choose-an"]
+}

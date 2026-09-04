@@ -1,0 +1,21 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.017.form-regular-plural",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.017.regular-plurals",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: dois livros."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["two books"]
+  },
+  "conceptIds": ["concept.a0.grammar.regular-plurals"],
+  "objectiveIds": ["objective.a0.017.form-regular-plurals"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}
