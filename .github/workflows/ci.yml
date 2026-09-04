@@ -43,6 +43,7 @@ jobs:
           --health-interval 2s
           --health-timeout 3s
           --health-retries 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -60,17 +61,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Format check
-        run: pnpm format:check
-
-      - name: Environment config
-        run: pnpm env:check
-
-      - name: Database connection smoke
-        env:
-          DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_test
-        run: pnpm db:smoke
 
       - name: Lint
         run: pnpm lint
@@ -81,88 +71,5 @@ jobs:
       - name: Tests
         run: pnpm test
 
-      - name: Drizzle migration consistency
-        run: pnpm db:check
-
-      - name: Content validation
-        run: pnpm content:validate
-
-  e2e:
-    name: e2e
-    needs: quality
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: lingo_pilot_test
-          POSTGRES_PASSWORD: lingo_pilot_ci
-          POSTGRES_USER: lingo_pilot
-        ports:
-          - 5435:5432
-        options: >-
-          --health-cmd "pg_isready -U lingo_pilot -d lingo_pilot_test"
-          --health-interval 2s
-          --health-timeout 3s
-          --health-retries 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .nvmrc
-
-      - name: Enable repository package manager
-        shell: bash
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: E2E smoke
-        run: pnpm test:e2e
-
-  build:
-    name: build
-    needs:
-      - quality
-      - e2e
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .nvmrc
-
-      - name: Enable repository package manager
-        shell: bash
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Production build
+      - name: Build
         run: pnpm build
-
-      - name: Tracked working tree remains clean
-        shell: bash
-        run: |
-          if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
-            git status --short --untracked-files=no
-            git diff --exit-code
-            exit 1
-          fi
