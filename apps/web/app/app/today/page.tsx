@@ -1,5 +1,5 @@
 import { Button } from "@lingo-pilot/ui";
-import type { StudySession } from "../../../../packages/domain/src/index.ts";
+import type { StudySession } from "../../../../../packages/domain/src/index.ts";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
