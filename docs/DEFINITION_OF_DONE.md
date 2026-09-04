@@ -66,9 +66,9 @@ A receita operacional para setup, execução local e gate antes do PR está em [
 - [ ] Fluxo crítico possui E2E quando justificável.
 - [ ] Testes não dependem de relógio real quando regra é temporal.
 - [ ] `pnpm check` passa no head final.
-- [ ] `pnpm test:e2e` foi executado quando o risco/escopo justificou.
+- [ ] Checks especializados relevantes ao escopo foram executados.
 
-`pnpm check` é o gate obrigatório e cobre formatação, ambiente, lint, typecheck, unit/integration, conteúdo, consistência de migrations e build.
+`pnpm check` é o gate obrigatório e cobre lint, typecheck, unit/integration, content validation e build. Formatação, configuração/runtime, consistência/smoke de banco e E2E são verificações direcionadas quando o escopo exigir.
 
 ## Conteúdo pedagógico
 
