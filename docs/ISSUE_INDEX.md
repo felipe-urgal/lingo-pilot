@@ -264,7 +264,7 @@ A infraestrutura compartilhada de IA entra **antes** das avaliações por IA de 
 
 ### AI evaluation foundation — prerequisite compartilhado
 
-- #35 Provider abstraction, structured outputs and prompt registry
+- #35 Provider abstraction, structured outputs and prompt registry — **Concluída no PR #106**
 - #36 LearnerContext builder and pedagogical constraints
 - #41 Versioned AI evaluation harness and quality gates
 
@@ -362,4 +362,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87, o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92 e o escopo funcional de progresso **#27 está em `main`** pelos PRs #95 e #96, permanecendo a issue aberta somente pela pendência explícita de evidência de DoD.
 
-A frente funcional ativa é **#28 — conteúdo A0**. Os PRs #97, #98, #103 e #105 materializam Units 01–04 e **24/43 aulas em `review`**; o próximo recorte é **Unit 05 / aulas 025–030**. Nenhuma Unit assistida por IA deve ser promovida para `published` antes de revisão editorial humana, validação completa e smoke pedagógico. Depois de A0 utilizável ponta a ponta, seguem dogfood #49 e expansão A1/A2 #29. A foundation compartilhada de IA começa pela #35 e deve permanecer desacoplada dos use cases até os contratos de contexto/eval (#36/#41) estarem prontos.
+A frente funcional ativa é **#28 — conteúdo A0**. Os PRs #97, #98, #103 e #105 materializam Units 01–04 e **24/43 aulas em `review`**; o próximo recorte é **Unit 05 / aulas 025–030**. Nenhuma Unit assistida por IA deve ser promovida para `published` antes de revisão editorial humana, validação completa e smoke pedagógico. Depois de A0 utilizável ponta a ponta, seguem dogfood #49 e expansão A1/A2 #29. A foundation compartilhada de IA tem a #35 concluída no PR #106; #36 e #41 permanecem como próximos gates antes de qualquer consumer de IA voltado ao aluno.
