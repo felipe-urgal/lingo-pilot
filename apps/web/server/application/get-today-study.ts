@@ -3,6 +3,7 @@ import type {
   IdGenerator,
   LearnerJourney,
   PracticeRepository,
+  SessionExecutionRepository,
   StudyRepository,
   StudySession,
 } from "../../../../packages/domain/src/index.ts";
@@ -39,6 +40,7 @@ export interface GetTodayStudyDependencies {
   readonly catalog: CurriculumCatalog;
   readonly study: StudyRepository;
   readonly practice: PracticeRepository;
+  readonly execution: SessionExecutionRepository;
   readonly availableModalities: readonly PlannerModality[];
   readonly telemetry: TelemetryHooks;
 }
@@ -47,7 +49,12 @@ function lessonForSession(
   catalog: CurriculumCatalog,
   session: StudySession,
 ): Lesson | null {
-  const item = session.items.find((candidate) => candidate.kind === "lesson");
+  const item =
+    session.items.find(
+      (candidate) =>
+        candidate.kind === "lesson" &&
+        (candidate.status === "planned" || candidate.status === "in_progress"),
+    ) ?? session.items.find((candidate) => candidate.kind === "lesson");
   if (!item) return null;
   const lesson = catalog.lessonById.get(item.resourceId);
   if (!lesson || lesson.status !== "published") return null;
@@ -148,6 +155,26 @@ function recordPlannerMetrics(
   }
 }
 
+function recordResumeMetric(
+  telemetry: TelemetryHooks,
+  session: StudySession,
+  currentLocalStudyDate: string,
+): void {
+  telemetry.recordMetric({
+    name: "study.session.resume",
+    value: 1,
+    unit: "count",
+    attributes: {
+      source:
+        session.localStudyDate === currentLocalStudyDate
+          ? "same-day"
+          : "day-boundary",
+      sessionLocalStudyDate: session.localStudyDate,
+      currentLocalStudyDate,
+    },
+  });
+}
+
 async function buildPlan(
   dependencies: GetTodayStudyDependencies,
   journey: LearnerJourney,
@@ -198,6 +225,20 @@ export function createGetTodayStudy(dependencies: GetTodayStudyDependencies) {
       progress,
     });
     const studyDate = localStudyDate(now, journey.learnerProfile.timezone);
+
+    const openSession = await dependencies.execution.findLatestOpenSession(
+      journey.enrollment.id,
+    );
+    if (openSession) {
+      recordResumeMetric(dependencies.telemetry, openSession, studyDate);
+      return {
+        localStudyDate: studyDate,
+        eligibility,
+        session: openSession,
+        lesson: lessonForSession(dependencies.catalog, openSession),
+      };
+    }
+
     const existing = await dependencies.study.findDailySession(
       journey.enrollment.id,
       studyDate,
