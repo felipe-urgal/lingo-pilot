@@ -172,7 +172,7 @@ export const sessionItems = pgTable(
     ),
     check(
       "session_items_status_supported",
-      sql`${table.status} in ('planned', 'in_progress', 'completed')`,
+      sql`${table.status} in ('planned', 'in_progress', 'completed', 'skipped')`,
     ),
   ],
 );
