@@ -52,7 +52,7 @@ Sequência recomendada:
 7. atualizar documentação;
 8. subir a aplicação e validar manualmente o fluxo alterado quando aplicável;
 9. executar `pnpm check`;
-10. executar `pnpm test:e2e` quando o risco justificar;
+10. executar checks direcionados quando o risco/escopo justificar;
 11. revisar a diff inteira.
 
 Nem toda feature exige essa ordem literal, mas regras não devem nascer escondidas na UI.
@@ -61,7 +61,7 @@ Nem toda feature exige essa ordem literal, mas regras não devem nascer escondid
 
 `pnpm install` executa `prepare`, que instala de forma idempotente o hook local gerenciado de `pre-commit`. O hook usa `pnpm format:staged` com a versão de Prettier fixada no repositório.
 
-O hook é conveniência local. O gate autoritativo continua sendo `pnpm format:check`, já incluído em `pnpm check`.
+O hook é conveniência local. `pnpm format:check` continua disponível para auditoria explícita, mas não faz parte do gate obrigatório simplificado atual.
 
 Commits não devem incluir secrets, logs temporários ou artefatos gerados desnecessários.
 
@@ -111,7 +111,7 @@ pnpm check
 
 O ruleset da `main` exige o contexto `quality` e branch atualizada antes do merge.
 
-E2E é direcionado por risco/escopo e não é hoje um status obrigatório separado. Não documente ou crie job extra apenas para satisfazer checklist genérico.
+Format/env/db-specific checks e E2E são direcionados por risco/escopo e não são hoje status obrigatórios separados. Não recrie jobs extras apenas para satisfazer checklist genérico.
 
 CI/Preview nunca podem usar credenciais nem banco de Production.
 
@@ -159,6 +159,7 @@ Criar ADR quando a decisão for estrutural, difícil de reverter ou possuir alte
 Antes de release/redeploy importante:
 
 - CI verde no head final;
+- checks direcionados aplicáveis executados;
 - revision/commit identificado;
 - migrations compatíveis na ordem correta;
 - backup/checkpoint quando o risco exigir;
@@ -176,7 +177,7 @@ Hotfix é urgência, não atalho de qualidade:
 2. branch `hotfix/`;
 3. menor correção segura;
 4. teste de regressão;
-5. `pnpm check`;
+5. `pnpm check` + checks direcionados aplicáveis;
 6. PR prioritário;
 7. promoção conforme [`PRODUCTION.md`](PRODUCTION.md);
 8. smoke/readiness;
