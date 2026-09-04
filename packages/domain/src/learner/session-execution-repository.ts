@@ -32,4 +32,9 @@ export interface SessionExecutionRepository {
     readonly sessionId: string;
     readonly now: Date;
   }): Promise<StudySession | null>;
+  finalizeSessionContainingItem(input: {
+    readonly enrollmentId: string;
+    readonly itemId: string;
+    readonly now: Date;
+  }): Promise<StudySession | null>;
 }
