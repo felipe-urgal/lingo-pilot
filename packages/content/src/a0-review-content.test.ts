@@ -33,6 +33,7 @@ import activity003 from "../../../content/courses/pt-BR_en/levels/a0/review/acti
 import activity004 from "../../../content/courses/pt-BR_en/levels/a0/review/activities/004-choose-she.json" with { type: "json" };
 import activity005 from "../../../content/courses/pt-BR_en/levels/a0/review/activities/005-complete-we-are.json" with { type: "json" };
 import activity006 from "../../../content/courses/pt-BR_en/levels/a0/review/activities/006-contract-i-am.json" with { type: "json" };
+import type { Activity, Lesson } from "./model.ts";
 import type { ContentInput } from "./validator.ts";
 import { validateContentInputs } from "./validator.ts";
 
@@ -95,10 +96,12 @@ describe("A0 editorial review content", () => {
     const result = validateContentInputs(inputs);
     const documents = result.documents.map((loaded) => loaded.document);
     const activities = documents.filter(
-      (document) => document.kind === "activity" && document.status === "review",
+      (document): document is Activity =>
+        document.kind === "activity" && document.status === "review",
     );
     const lessons = documents.filter(
-      (document) => document.kind === "lesson" && document.status === "review",
+      (document): document is Lesson =>
+        document.kind === "lesson" && document.status === "review",
     );
 
     expect(lessons).toHaveLength(6);
@@ -109,7 +112,11 @@ describe("A0 editorial review content", () => {
           .filter((activity) => activity.lessonId === lesson.id)
           .flatMap((activity) => activity.objectiveIds),
       );
-      expect(lesson.objectives.every((objective) => coveredObjectives.has(objective.id))).toBe(true);
+      expect(
+        lesson.objectives.every((objective) =>
+          coveredObjectives.has(objective.id),
+        ),
+      ).toBe(true);
     }
   });
 });
