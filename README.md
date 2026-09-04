@@ -62,7 +62,7 @@ Antes do PR:
 pnpm check
 ```
 
-`pnpm check` é o gate canônico e cobre formatação, ambiente, lint, typecheck, unit/integration, conteúdo, consistência de migrations e build.
+`pnpm check` é o gate canônico e cobre lint, typecheck, unit/integration, content validation e build. Formatação, configuração/runtime, consistência/smoke de banco e E2E são checks direcionados conforme o escopo.
 
 O contrato especializado de portas/profiles fica em [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).
 
@@ -140,7 +140,9 @@ O job usa instalação frozen, PostgreSQL 17 efêmero e executa o mesmo gate loc
 pnpm check
 ```
 
-O ruleset ativo da `main` exige o contexto `quality`. E2E continua direcionado por risco/escopo e deve ser executado quando um fluxo browser-first relevante for alterado:
+O ruleset ativo da `main` exige o contexto `quality`. A simplificação do CI de 2026-09-04 removeu deliberadamente format/env/db checks e E2E do custo fixo de todo PR; esses comandos continuam disponíveis conforme risco/escopo.
+
+Para fluxo browser-first relevante:
 
 ```bash
 pnpm test:e2e
