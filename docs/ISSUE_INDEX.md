@@ -52,8 +52,8 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 - #23 Spaced repetition engine and review queue — **Concluída no PR #86**
 - #24 Concept evidence and mastery model v1 — **Concluída no PR #86**
 - #25 Daily Session Planner v1 — **Concluída no PR #87**
-- #26 Session execution, resume and idempotency hardening — **Recorte 1 concluído no PR #91; recorte final em review no PR #92**
-- #27 Progress, weak concepts and study history
+- #26 Session execution, resume and idempotency hardening — **Concluída nos PRs #91 e #92**
+- #27 Progress, weak concepts and study history — **Recorte 1 em review no PR #95**
 - #28 Migrate and editorially review A0 course content
 - #49 14-day A0 dogfood validation and learning-loop review
 - #29 Migrate and editorially review A1 and A2 course content
@@ -136,16 +136,31 @@ O snapshot é persistido como `SessionItem[]` ordenado com `lesson|review`, reas
 
 ### Hardening de execução — #26 / PRs #91 e #92
 
-O PR #91, mergeado em 2026-09-04, entregou refresh/resume persistido, proteção de submit concorrente, convergência de duas abas e retry seguro reutilizando a mesma `operationKey`.
+Os PRs #91 e #92, mergeados em 2026-09-04, concluíram o hardening da sessão diária:
 
-O PR #92 fecha os critérios restantes sem replanejamento silencioso:
-
+- refresh/resume relê o estado persistido e não avança por re-render;
+- submit concorrente/retry preserva idempotência e a mesma `operationKey`;
+- duas abas convergem para o mesmo snapshot diário;
 - sessão aberta atravessa mudança de dia/timezone preservando o `localStudyDate` original;
 - conteúdo/review stale recebe recovery server-side explícito via estado terminal `skipped`, sem fabricar evidence/mastery/completion pedagógica;
 - a sessão fica completa somente quando todos os itens persistidos estão terminais;
 - Today mostra summary derivado de `completed|skipped`;
 - E2E interrompe no meio da lesson, faz logout/login e retoma no mesmo bloco persistido;
-- observabilidade cobre `resume` e `session failure reason`.
+- observabilidade cobre duplicate prevention, `resume` e `session failure reason`.
+
+### Progresso baseado em evidência — #27 / PR #95
+
+O primeiro recorte da #27 cria uma leitura de progresso sem XP como proxy:
+
+- completion curricular vem exclusivamente de `LessonProgress.completed`;
+- placement A1/A2 continua sem fabricar completion ou mastery;
+- domínio agregado e weak concepts vêm de `MasteryState` real;
+- backlog usa `MemoryItem` vencido;
+- histórico recente é ownership-scoped, limitado/paginável e busca itens em lote para evitar N+1;
+- datas de sessão usam o `localStudyDate` já calculado no timezone do aluno;
+- `/app/progress` separa visualmente “trilha concluída” de “domínio estimado”.
+
+Breakdown por modalidade, drill-down detalhado de lesson e histórico avançado permanecem na própria #27 após este recorte.
 
 ### Estratégia de entrega
 
@@ -166,9 +181,9 @@ exercise → attempt                           ✅ #21/#22
       ↓                 ↓
 Today/session ───────→ planner               ✅ #25 / PR #87
       ↓                 ↓
-resume ────────────→ hardening               review final #26 / PR #92
+resume ────────────→ hardening               ✅ #26 / PRs #91/#92
       ↓
-progress/history                             #27
+progress/history                             ativa #27 / PR #95
       ↓
 A0 dogfood
       ↓
@@ -182,14 +197,10 @@ A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especia
 A frente ativa é:
 
 ```text
-#26 Session execution, resume and idempotency hardening — PR #92
+#27 Progress, weak concepts and study history — PR #95
 ```
 
-Com merge + gates verdes do PR #92, a #26 pode ser fechada e a próxima dependência direta passa a ser:
-
-```text
-#27 Progress, weak concepts and study history
-```
+O PR #95 implementa o primeiro recorte coeso da #27. A issue permanece aberta até que os critérios de modalidade, drill-down e demais itens ainda não cobertos sejam concluídos.
 
 ## Fase 2 — Skills + AI Evaluation Foundation
 
@@ -301,4 +312,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87 e o primeiro recorte de hardening **#26 está concluído em `main`** pelo PR #91. O recorte final da #26 está em review no **PR #92**. Após merge e checks verdes, a frente passa para **#27 — Progress, weak concepts and study history**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87 e o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92. A frente ativa é **#27 — Progress, weak concepts and study history**, com o primeiro recorte no **PR #95**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
