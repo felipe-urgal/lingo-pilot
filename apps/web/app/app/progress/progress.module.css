@@ -1,0 +1,121 @@
+.page {
+  width: min(100%, 52rem);
+  display: grid;
+  gap: var(--lp-space-5);
+}
+
+.header {
+  display: grid;
+  gap: var(--lp-space-3);
+  padding: clamp(var(--lp-space-5), 5vw, var(--lp-space-8));
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-xl);
+  background: var(--lp-color-surface);
+  box-shadow: var(--lp-shadow-card);
+}
+
+.header :global(.eyebrow),
+.header :global(.description) {
+  margin: 0;
+}
+
+.section {
+  display: grid;
+  gap: var(--lp-space-3);
+  padding: clamp(var(--lp-space-5), 5vw, var(--lp-space-7));
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-xl);
+  background: var(--lp-color-surface);
+}
+
+.section :global(.eyebrow),
+.section h2,
+.section p {
+  margin: 0;
+}
+
+.section h2 {
+  font-size: var(--lp-font-size-lg);
+}
+
+.muted,
+.stat p,
+.history p,
+.list span {
+  color: var(--lp-color-text-muted);
+  line-height: var(--lp-line-height-body);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--lp-space-3);
+}
+
+.stat {
+  display: grid;
+  align-content: start;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-4);
+  border-radius: var(--lp-radius-lg);
+  background: var(--lp-color-surface-muted);
+}
+
+.stat strong {
+  font-size: var(--lp-font-size-xl);
+}
+
+.statLabel {
+  font-size: var(--lp-font-size-sm);
+  font-weight: 700;
+}
+
+.list,
+.history {
+  display: grid;
+  gap: var(--lp-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li,
+.history li {
+  display: grid;
+  gap: var(--lp-space-1);
+  padding: var(--lp-space-4);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-lg);
+}
+
+.list span {
+  font-size: var(--lp-font-size-sm);
+}
+
+.history li > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--lp-space-2);
+}
+
+.history time {
+  font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--lp-space-4);
+}
+
+@media (max-width: 36rem) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header,
+  .section {
+    padding: var(--lp-space-5);
+  }
+}
