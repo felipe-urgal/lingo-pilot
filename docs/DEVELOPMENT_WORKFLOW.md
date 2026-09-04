@@ -90,6 +90,8 @@ Commits não devem incluir secrets ou artefatos gerados desnecessários.
 
 `format:staged` formata o snapshot que já está no index do Git em vez de executar `git add` sobre o arquivo inteiro. Assim partial staging não incorpora silenciosamente mudanças que ainda estavam fora do commit. Quando o conteúdo do working tree é exatamente igual ao staged, o arquivo local também é sincronizado com a versão formatada.
 
+O mesmo mecanismo pode ser executado manualmente com `pnpm format:staged` antes de um commit.
+
 Se já existir um `.git/hooks/pre-commit` não gerenciado pelo LingoPilot, a instalação automática não sobrescreve o hook existente e apenas emite um aviso. Nesse caso, o desenvolvedor continua responsável por integrar `pnpm format:staged` ao hook próprio ou executar `pnpm format` antes do commit.
 
 O hook é conveniência local, não substitui o gate `pnpm format:check` do CI.
