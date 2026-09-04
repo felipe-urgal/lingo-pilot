@@ -105,7 +105,7 @@ Exemplos:
 
 ## 7. Testes de conteúdo
 
-CI deve tratar conteúdo como código.
+Conteúdo deve ser tratado como código quando a alteração tocar esse domínio.
 
 Validar:
 
@@ -171,19 +171,17 @@ Não otimizar algoritmos sem profiling, exceto problemas óbvios de complexidade
 
 ## 12. CI gates
 
-PR deve executar, conforme fase do projeto:
+O PR normal usa um gate enxuto e previsível:
 
-1. install lockfile frozen;
-2. format/check;
-3. lint;
-4. typecheck;
-5. unit tests;
-6. content validation;
-7. integration tests;
-8. build;
-9. E2E smoke em pipeline apropriado.
+1. instalação com lockfile congelado;
+2. lint, incluindo o guard arquitetural `check:workspace`;
+3. typecheck;
+4. testes unitários e de integração;
+5. build.
 
-Nenhum check obrigatório deve ser ignorado por conveniência.
+Validações adicionais são proporcionais ao risco da mudança. E2E, content validation, checks de banco/ambiente, format check, evals e verificações operacionais continuam disponíveis, mas não devem virar custo fixo de todo PR quando não protegem o escopo alterado.
+
+Nenhum check obrigatório deve ser ignorado por conveniência. Ao mesmo tempo, um teste ou gate só deve ser obrigatório quando protege um contrato material.
 
 ## 13. Flaky tests
 
@@ -240,9 +238,9 @@ Se PR muda algoritmo crítico, revisor deve entender exemplos de entrada/saída 
 
 ## 18. Cobertura
 
-Não perseguir porcentagem arbitrária como objetivo único.
+Coverage é diagnóstico, não objetivo percentual nem gate por si só.
 
-Exigir cobertura alta nas regras críticas e testes comportamentais significativos. Cobertura global pode ser monitorada para detectar quedas, mas não substitui qualidade dos casos.
+Use `pnpm test:coverage` quando a análise de cobertura ajudar a identificar lacunas, especialmente em regras críticas. Não adicionar testes apenas para elevar porcentagem global e não afrouxar assertions corretas para preservar um número. O critério principal continua sendo comportamento, invariantes e risco real.
 
 ## 19. Release confidence
 
