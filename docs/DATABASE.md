@@ -1,6 +1,6 @@
 # PostgreSQL e Drizzle — LingoPilot
 
-Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11, pela jornada inicial do aluno da #17 e pela foundation de currículo/sessão/aula das #18–#20.
+Este documento é normativo para a infraestrutura de persistência introduzida pela issue #10, estendida pela baseline de identidade/autorização da #11, pela jornada inicial do aluno da #17, pela foundation de currículo/sessão/aula das #18–#20, pelo practice learning loop das #21–#24 e pelo planner diário da #25.
 
 ## 1. Responsabilidade
 
@@ -65,15 +65,16 @@ Se `.env.local` já existia antes da issue #10, adicione as variáveis server-on
 
 Nenhuma dessas variáveis é pública. Nunca criar aliases `NEXT_PUBLIC_DATABASE_*`.
 
-A baseline de auth, o onboarding e a foundation de estudo não adicionam secrets de provider nem novas variáveis de ambiente.
+A baseline de auth, o onboarding e o Study Engine determinístico não adicionam secrets de provider nem novas variáveis de ambiente.
 
 ## 5. Schema e migrations
 
 Fontes do schema:
 
 ```text
-packages/db/src/schema.ts        identidade, auth e jornada
-packages/db/src/study-schema.ts  progresso de aula e sessão de estudo
+packages/db/src/schema.ts           identidade, auth e jornada
+packages/db/src/study-schema.ts     progresso de aula e sessão de estudo
+packages/db/src/practice-schema.ts  attempts, SRS, evidence e mastery
 ```
 
 Configuração Drizzle Kit:
@@ -82,7 +83,7 @@ Configuração Drizzle Kit:
 packages/db/drizzle.config.ts
 ```
 
-A configuração carrega `packages/db/src/*schema.ts`, mantendo os dois arquivos na mesma migration graph PostgreSQL.
+A configuração carrega `packages/db/src/*schema.ts`, mantendo os arquivos na mesma migration graph PostgreSQL.
 
 Migrations versionadas:
 
@@ -170,14 +171,47 @@ Invariantes importantes:
 - existe no máximo uma sessão por `Enrollment + localStudyDate`;
 - existe no máximo um progresso por `Enrollment + Lesson`;
 - itens preservam `content_schema_version + content_revision` planejados;
-- `reason_code` inicial é `NEW_ELIGIBLE_LESSON` ou `RESUME_IN_PROGRESS`;
-- `eligibility_reason` distingue `progress-satisfied`, `placement-waived` e `resume-in-progress`;
 - posição de aula é não negativa e só é atualizada quando o índice persistido ainda corresponde ao índice esperado pelo submit;
 - completion de progresso exige `completed_at`, enquanto `in_progress` exige `completed_at IS NULL`.
 
 A criação da sessão usa `INSERT ... ON CONFLICT DO NOTHING` dentro de transação e relê a sessão vencedora. Assim dois requests/dispositivos para a mesma data local convergem para o mesmo plano em vez de criar sessões independentes.
 
 `PostgresStudyRepository` sempre recebe `enrollmentId` resolvido a partir da jornada autenticada. Busca de sessão/item combina esse enrollment com o identificador do recurso, impedindo que um ID de outro aluno seja usado como autorização.
+
+### `0004_practice_learning_loop`
+
+O PR #86 adiciona:
+
+- `activity_attempts`;
+- `activity_progress`;
+- `memory_items`;
+- `review_events`;
+- `concept_evidence`;
+- `mastery_states`.
+
+Attempt é composto numa única transação com progress, `MemoryItem` inicial, evidence e mastery. A política de retry é serializada por `Enrollment + Activity` antes da contagem, evitando que requests concorrentes ultrapassem `maxAttempts`.
+
+Review usa compare-and-set em `review_count`; falha ou submit stale não produz evento/evidência parcial. `review_events.memory_item_id` usa `ON DELETE RESTRICT`, pois remover estado corrente não pode apagar histórico pedagógico. As tabelas ligadas diretamente a Enrollment seguem o lifecycle de exclusão da jornada; export/retention deve tratar Attempts/Reviews/Evidence como dados do learner.
+
+### `0005_daily_session_planner`
+
+A #25 não adiciona colunas nem reinterpreta rows existentes. A migration amplia três CHECK constraints de `session_items` para permitir o snapshot multi-item do planner:
+
+```text
+kind               lesson | review
+reason_code        NEW_ELIGIBLE_LESSON | RESUME_IN_PROGRESS |
+                   OVERDUE_REVIEW | WEAK_CONCEPT
+eligibility_reason progress-satisfied | placement-waived |
+                   resume-in-progress | not-applicable
+```
+
+Para `review`, `resource_id` armazena o ID do `MemoryItem`; `content_schema_version + content_revision` preservam a revision da Activity fonte validada no planejamento. `eligibility_reason=not-applicable` evita atribuir semântica curricular a uma revisão.
+
+`ensureDailySession` cria `StudySession + SessionItem[]` dentro da mesma transação. Se outro request vencer a unicidade `Enrollment + localStudyDate`, o request concorrente relê o snapshot vencedor; não mistura itens dos dois planos.
+
+Quando uma review pertence a um item planejado, `recordReview` valida server-side `Enrollment + SessionItem + kind=review + resourceId=MemoryItem`. `ReviewEvent`, atualização do `MemoryItem`, `ConceptEvidence`, `MasteryState`, completion do `SessionItem` e eventual completion da `StudySession` permanecem na mesma transação.
+
+A migration é compatível com todas as rows anteriores porque apenas relaxa valores permitidos. Depois que rows `kind=review` existirem, rollback de constraints deve preservar esses dados por forward-fix ou migration compatível; restaurar cegamente os checks antigos deixaria o schema incompatível com o histórico já persistido.
 
 ## 7. IDs e timestamps
 
@@ -198,7 +232,7 @@ IDs de usuário/sessão são opacos. Sessões de autenticação persistem `token
 
 `withTransaction(database, operation)` fornece a fronteira transacional injetável. Use cases/repositories podem receber `Database` ou `DatabaseTransaction` sem acessar `process.env` nem criar conexão internamente.
 
-Operações que precisam permanecer atomicamente consistentes usam esse boundary em vez de executar writes independentes. O repository da jornada inicial mantém `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes; o repository de estudo mantém criação de sessão/item, start e completion em transações próprias.
+Operações que precisam permanecer atomicamente consistentes usam esse boundary em vez de executar writes independentes. O repository da jornada inicial mantém `LearnerProfile + LanguageProfile + Enrollment` atomicamente consistentes; o repository de estudo mantém criação do snapshot de sessão, start e completion em transações próprias; o repository de prática mantém Attempt/projeções e Review/projeções atomicamente consistentes.
 
 O web app mantém um cliente de banco server-side reutilizável e não abre conexão durante import/build. Auth, ownership e persistência de estudo nunca são importados pelo bundle cliente.
 
@@ -217,7 +251,7 @@ Helpers de ownership em `packages/db/src/ownership.ts` recebem `userId` resolvid
 
 O repository PostgreSQL da jornada recebe o `userId` autenticado pelo use case/delivery e consulta `LearnerProfile`/`LanguageProfile` pela identidade do servidor; o cliente não fornece `ownerId` como prova de acesso. A matrícula é alcançada pelo `LanguageProfile` pertencente ao usuário.
 
-O fluxo de estudo parte desse `Enrollment` server-side. `StudySession`, `SessionItem` e `LessonProgress` são buscados/mutados sob o mesmo `enrollmentId`; `sessionId`, `itemId` ou `lessonId` enviados pelo browser nunca bastam isoladamente para autorizar uma operação.
+O fluxo de estudo parte desse `Enrollment` server-side. `StudySession`, `SessionItem`, `LessonProgress`, Attempts e Reviews são buscados/mutados sob o mesmo `enrollmentId`; `sessionId`, `itemId`, `memoryItemId` ou `lessonId` enviados pelo browser nunca bastam isoladamente para autorizar uma operação.
 
 É proibido transformar o padrão em:
 
@@ -225,7 +259,7 @@ O fluxo de estudo parte desse `Enrollment` server-side. `StudySession`, `Session
 2. confiar em `ownerId`/`userId` do payload como autorização;
 3. autorizar somente porque a UI escondeu uma ação.
 
-Contratos completos: `docs/AUTHENTICATION.md` e `docs/DOMAIN_MODEL.md`.
+Contratos completos: `docs/AUTHENTICATION.md`, `docs/DOMAIN_MODEL.md` e `docs/DAILY_SESSION_PLANNER.md`.
 
 ## 10. Testes de integração
 
@@ -247,9 +281,12 @@ A suíte:
 8. prova que usuário B não lê nem altera recurso de A;
 9. valida criação transacional/idempotente da jornada inicial e suas constraints de placement;
 10. valida geração concorrente idempotente de `StudySession`;
-11. valida start, posição retomável, proteção contra submit duplicado e completion explícita;
-12. prova isolamento de `LessonProgress` entre dois enrollments no mesmo currículo;
-13. confirma timezone UTC.
+11. valida persistência ordenada de snapshot multi-item `review + lesson`;
+12. valida start, posição retomável, proteção contra submit duplicado e completion explícita de lesson;
+13. valida Attempt/Review idempotentes, CAS de review, evidence e mastery;
+14. valida completion transacional de review planejada junto do `SessionItem/StudySession`;
+15. prova isolamento de recursos pedagógicos entre enrollments;
+16. confirma timezone UTC.
 
 O teste nunca recebe `DATABASE_URL` como destino de escrita.
 
@@ -275,7 +312,7 @@ pnpm db:down
 
 O projeto não depende de seed de domínio para criar contas ou jornadas reais de desenvolvimento. A #17 adiciona signup first-party que reutiliza o hashing/persistência da baseline de auth e cria a jornada somente quando o usuário conclui o onboarding.
 
-O catálogo bootstrap das #18–#20 é conteúdo versionado em Git, não seed de banco. Conteúdo pedagógico editorial A0–A2 continua sendo migrado pelas issues donas desse trabalho; não promover material não revisado por seed ou migration.
+O catálogo bootstrap das #18–#24 é conteúdo versionado em Git, não seed de banco. Conteúdo pedagógico editorial A0–A2 continua sendo migrado pelas issues donas desse trabalho; não promover material não revisado por seed ou migration.
 
 Fixtures e factories automatizadas continuam usando somente dados sintéticos/determinísticos. Quando uma issue dona de dados de desenvolvimento exigir seed, ela deve adicionar comando explícito e documentação de idempotência no mesmo PR.
 
@@ -286,11 +323,3 @@ Produção usa `DATABASE_URL` fornecida pelo provider server-side. Migrations pe
 A conexão de produção não deve reutilizar credenciais locais/teste, e a aplicação não deve executar migration implicitamente ao iniciar ou importar módulos.
 
 Antes de tráfego público, auth/signup precisam também de rate limit adequado à topologia serverless; não usar limiter local em memória como falsa garantia distribuída.
-
-## Practice learning loop — migration 0004
-
-A migration `0004_practice_learning_loop.sql` adiciona `activity_attempts`, `activity_progress`, `memory_items`, `review_events`, `concept_evidence` e `mastery_states`.
-
-Attempt é composto numa única transação com progress, MemoryItem inicial, evidence e mastery. A política de retry é serializada por Enrollment + Activity antes da contagem, evitando que requests concorrentes ultrapassem `maxAttempts`. Review usa CAS em `review_count`; falha ou submit stale não produz evento/evidência parcial.
-
-`review_events.memory_item_id` usa `ON DELETE RESTRICT`, pois remover estado corrente não pode apagar histórico pedagógico. As tabelas ligadas diretamente a Enrollment seguem o lifecycle de exclusão da jornada; export/retention deve tratar Attempts/Reviews/Evidence como dados do learner.
