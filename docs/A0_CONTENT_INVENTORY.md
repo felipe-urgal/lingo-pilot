@@ -101,22 +101,39 @@ Proposta inicial para revisão:
 
 - a ordem 001 → 043 é preservada como progressão principal;
 - dentro da Unit 01, cada lesson posterior depende da anterior para garantir uma sequência de revisão previsível;
-- Concept prerequisites são mais seletivos: por exemplo, `be-affirmative` depende de subject pronouns e `be-contractions` depende de `be-affirmative`;
-- ao migrar Units 02–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 02 mantém a ponte explícita `006 → 007` e a sequência `007 → 012`; a dependência entre Lessons preserva a trilha editorial, enquanto Concept prerequisites continuam representando necessidade pedagógica real;
+- Concept prerequisites são mais seletivos: `be-negative` e `be-questions` dependem de `be-affirmative`, `be-short-answers` depende das estruturas de pergunta/negação e números 20–100 dependem de 0–20;
+- ao migrar Units 03–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
-## Estado do recorte 1
+## Estado da migração em `review`
 
-A Unit 01 (001–006) é materializada em JSON com `status: review` para exercitar o schema completo com:
+### Unit 01 — aulas 001–006
+
+Materializada no PR #97 com:
 
 - 6 Lessons;
 - 6 Concepts;
-- VocabularyItems essenciais;
-- 1 Activity determinística por Lesson;
+- 7 VocabularyItems essenciais;
+- 6 Activities determinísticas;
 - ContentBlocks curtos;
 - revision metadata.
 
-Ela **não** entra em `level.a0.unitIds` e **não** é importada por `apps/web/server/content/runtime.ts` neste recorte.
+### Unit 02 — aulas 007–012
+
+Materializada neste recorte com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 3 VocabularyItems lexicais (`not`, `yes`, `no`);
+- 6 Activities determinísticas;
+- ContentBlocks de regra, exemplo, vocabulário fechado e checkpoint;
+- ponte explícita da Lesson 006 para a 007;
+- revision metadata em todos os documentos.
+
+Números 0–100 não viram dezenas de `VocabularyItem` artificiais. O conjunto numérico é modelado por Concepts + `ContentBlock` de vocabulário; chunks como `years old` e `phone number` permanecem em regra/exemplo porque o schema v1 ainda não possui entidade `PhrasePattern`. Essa decisão evita usar `VocabularyItem` como substituto semântico de um contrato inexistente.
+
+As duas Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, 12/43 aulas A0 estão materializadas em schema `review`; nenhuma foi promovida para `published`.
 
 ## Checklist de promoção para `published`
 
