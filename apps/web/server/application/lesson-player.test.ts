@@ -235,7 +235,7 @@ class SessionExecutionRepositoryFake implements SessionExecutionRepository {
   }
 
   async skipSessionItem() {
-    return { ok: false, reason: "invalid-state" as const };
+    return { ok: false as const, reason: "invalid-state" as const };
   }
 
   async finalizeSessionIfTerminal() {
