@@ -56,13 +56,14 @@ function CompletedToday({
         <p className="description">
           {skipped.length} item{skipped.length === 1 ? "" : "s"} indisponível
           {skipped.length === 1 ? " foi ignorado" : " foram ignorados"} com
-          recuperação explícita; nenhum deles contou como aprendizagem concluída.
+          recuperação explícita; nenhum deles contou como aprendizagem
+          concluída.
         </p>
       ) : null}
       {crossedDay ? (
         <p className="description">
-          Esta sessão manteve a data original {session.localStudyDate} mesmo após
-          a mudança para {currentLocalStudyDate}.
+          Esta sessão manteve a data original {session.localStudyDate} mesmo
+          após a mudança para {currentLocalStudyDate}.
         </p>
       ) : null}
     </>
@@ -112,8 +113,8 @@ export default async function TodayPage() {
         <p className="eyebrow">Hoje</p>
         <h1 id="today-title">Não foi possível finalizar sua sessão.</h1>
         <p className="description">
-          Os itens estão preservados. Recarregue a página; nenhuma atividade será
-          criada ou concluída automaticamente.
+          Os itens estão preservados. Recarregue a página; nenhuma atividade
+          será criada ou concluída automaticamente.
         </p>
         <ReviewLink count={dueReviews.length} />
       </section>

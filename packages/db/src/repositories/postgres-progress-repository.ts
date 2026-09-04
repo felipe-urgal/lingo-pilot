@@ -117,8 +117,12 @@ export class PostgresProgressRepository implements ProgressRepository {
       this.database
         .select({
           conceptCount: sql<number>`count(*)::int`,
-          averageScorePercent: sql<number | null>`round(avg(${masteryStates.scorePercent}))::int`,
-          averageConfidencePercent: sql<number | null>`round(avg(${masteryStates.confidencePercent}))::int`,
+          averageScorePercent: sql<
+            number | null
+          >`round(avg(${masteryStates.scorePercent}))::int`,
+          averageConfidencePercent: sql<
+            number | null
+          >`round(avg(${masteryStates.confidencePercent}))::int`,
         })
         .from(masteryStates)
         .where(eq(masteryStates.enrollmentId, input.enrollmentId)),
@@ -178,7 +182,10 @@ export class PostgresProgressRepository implements ProgressRepository {
             .select()
             .from(sessionItems)
             .where(inArray(sessionItems.studySessionId, sessionIds))
-            .orderBy(asc(sessionItems.studySessionId), asc(sessionItems.position));
+            .orderBy(
+              asc(sessionItems.studySessionId),
+              asc(sessionItems.position),
+            );
 
     const itemsBySession = new Map<string, SessionItem[]>();
     for (const row of itemRows) {

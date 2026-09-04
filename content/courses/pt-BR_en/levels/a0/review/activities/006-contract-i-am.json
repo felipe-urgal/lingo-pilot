@@ -16,7 +16,10 @@
       "I’m Ana. She’s from Brazil."
     ]
   },
-  "conceptIds": ["concept.a0.grammar.be-contractions", "concept.a0.grammar.be-affirmative"],
+  "conceptIds": [
+    "concept.a0.grammar.be-contractions",
+    "concept.a0.grammar.be-affirmative"
+  ],
   "objectiveIds": ["objective.a0.006.use-be-contractions"],
   "modality": "writing",
   "supportLevel": 1,

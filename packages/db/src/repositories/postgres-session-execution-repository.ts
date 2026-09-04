@@ -109,9 +109,7 @@ async function finalizeSession(
   return loadSession(database, session);
 }
 
-export class PostgresSessionExecutionRepository
-  implements SessionExecutionRepository
-{
+export class PostgresSessionExecutionRepository implements SessionExecutionRepository {
   private readonly database: Database;
 
   constructor(database: Database) {

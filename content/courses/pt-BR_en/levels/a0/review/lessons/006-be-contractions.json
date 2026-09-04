@@ -20,7 +20,10 @@
   ],
   "prerequisiteLessonIds": ["lesson.a0.005.be-affirmative"],
   "introducesConceptIds": ["concept.a0.grammar.be-contractions"],
-  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.grammar.subject-pronouns"
+  ],
   "vocabularyIds": [],
   "blocks": [
     {

@@ -227,7 +227,9 @@ class SessionExecutionRepositoryFake implements SessionExecutionRepository {
   constructor(private readonly study: StudyRepositoryFake) {}
 
   async findLatestOpenSession() {
-    return this.study.session.status === "completed" ? null : this.study.session;
+    return this.study.session.status === "completed"
+      ? null
+      : this.study.session;
   }
 
   async findReviewResource() {

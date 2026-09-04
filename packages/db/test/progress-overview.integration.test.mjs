@@ -141,7 +141,10 @@ test("loads bounded ownership-scoped progress history and modality evidence", as
   }
   await study.ensureDailySession(sessionInput(otherEnrollmentId, "2026-09-05"));
 
-  const activeSession = await study.findDailySession(enrollmentId, "2026-09-04");
+  const activeSession = await study.findDailySession(
+    enrollmentId,
+    "2026-09-04",
+  );
   assert.ok(activeSession?.items[0]);
   await study.startSessionItem({
     enrollmentId,
@@ -153,7 +156,10 @@ test("loads bounded ownership-scoped progress history and modality evidence", as
     now: new Date("2026-09-04T15:10:00.000Z"),
   });
 
-  assert.equal((await submitEvidence(practice, enrollmentId, "reading", false)).ok, true);
+  assert.equal(
+    (await submitEvidence(practice, enrollmentId, "reading", false)).ok,
+    true,
+  );
   assert.equal(
     (await submitEvidence(practice, otherEnrollmentId, "speaking", true)).ok,
     true,

@@ -19,7 +19,10 @@ function formValue(value: FormDataEntryValue | null): string {
 export function POST(request: NextRequest): Promise<NextResponse> {
   return observeRequest(
     request,
-    { route: "/api/study/session/recover", useCase: "study.recoverSessionItem" },
+    {
+      route: "/api/study/session/recover",
+      useCase: "study.recoverSessionItem",
+    },
     async ({ logger, requestId }) => {
       if (!isSameOriginRequest(request, serverConfig.public.appUrl)) {
         return createErrorResponse(errorCodes.authForbidden, requestId);

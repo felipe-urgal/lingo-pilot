@@ -6,18 +6,51 @@
   "status": "review",
   "levelId": "level.a0",
   "unitId": "unit.a0.02.personal-information",
-  "title": {"pt-BR": "Verb to be - perguntas"},
+  "title": { "pt-BR": "Verb to be - perguntas" },
   "estimatedMinutes": 8,
-  "objectives": [{"id": "objective.a0.008.form-be-question", "description": {"pt-BR": "Transformar uma frase afirmativa simples com be em pergunta de sim ou não."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.008.form-be-question",
+      "description": {
+        "pt-BR": "Transformar uma frase afirmativa simples com be em pergunta de sim ou não."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.007.be-negative"],
   "introducesConceptIds": ["concept.a0.grammar.be-questions"],
-  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.grammar.subject-pronouns"
+  ],
   "vocabularyIds": [],
   "blocks": [
-    {"id": "block.a0.008.be-questions.explanation", "type": "explanation", "text": {"pt-BR": "Em perguntas de sim ou não com be, mova am, is ou are para antes do sujeito."}},
-    {"id": "block.a0.008.be-questions.rule", "type": "rule", "text": {"pt-BR": "A estrutura é Am/Is/Are + sujeito + complemento? Não acrescente do ou does."}},
-    {"id": "block.a0.008.be-questions.example", "type": "example", "language": "en", "text": {"en": "She is from Brazil. → Is she from Brazil?"}},
-    {"id": "block.a0.008.be-questions.checkpoint", "type": "checkpoint", "text": {"pt-BR": "Confira se a pergunta começa com a forma de be e mantém o mesmo sujeito da frase original."}}
+    {
+      "id": "block.a0.008.be-questions.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Em perguntas de sim ou não com be, mova am, is ou are para antes do sujeito."
+      }
+    },
+    {
+      "id": "block.a0.008.be-questions.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "A estrutura é Am/Is/Are + sujeito + complemento? Não acrescente do ou does."
+      }
+    },
+    {
+      "id": "block.a0.008.be-questions.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "She is from Brazil. → Is she from Brazil?" }
+    },
+    {
+      "id": "block.a0.008.be-questions.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Confira se a pergunta começa com a forma de be e mantém o mesmo sujeito da frase original."
+      }
+    }
   ],
   "activityIds": ["activity.a0.008.form-be-question"]
 }

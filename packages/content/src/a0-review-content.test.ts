@@ -78,9 +78,18 @@ const inputs: readonly ContentInput[] = [
   { file: "review/concept-contractions.json", value: conceptContractions },
   { file: "review/concept-be-negative.json", value: conceptBeNegative },
   { file: "review/concept-be-questions.json", value: conceptBeQuestions },
-  { file: "review/concept-be-short-answers.json", value: conceptBeShortAnswers },
-  { file: "review/concept-numbers-zero-twenty.json", value: conceptNumbersZeroTwenty },
-  { file: "review/concept-numbers-twenty-hundred.json", value: conceptNumbersTwentyHundred },
+  {
+    file: "review/concept-be-short-answers.json",
+    value: conceptBeShortAnswers,
+  },
+  {
+    file: "review/concept-numbers-zero-twenty.json",
+    value: conceptNumbersZeroTwenty,
+  },
+  {
+    file: "review/concept-numbers-twenty-hundred.json",
+    value: conceptNumbersTwentyHundred,
+  },
   { file: "review/concept-age-phone.json", value: conceptAgePhone },
   { file: "review/vocab-hello.json", value: vocabHello },
   { file: "review/vocab-hi.json", value: vocabHi },

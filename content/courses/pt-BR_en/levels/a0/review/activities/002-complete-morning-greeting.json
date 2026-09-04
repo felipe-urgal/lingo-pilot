@@ -11,7 +11,11 @@
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": ["Good morning! Goodbye!", "Good morning. Goodbye.", "Good morning, goodbye"]
+    "acceptedAnswers": [
+      "Good morning! Goodbye!",
+      "Good morning. Goodbye.",
+      "Good morning, goodbye"
+    ]
   },
   "conceptIds": ["concept.a0.communication.greetings"],
   "objectiveIds": ["objective.a0.002.use-basic-greeting"],

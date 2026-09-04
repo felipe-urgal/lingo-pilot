@@ -21,7 +21,12 @@
   "prerequisiteLessonIds": ["lesson.a0.001.alphabet-spelling"],
   "introducesConceptIds": ["concept.a0.communication.greetings"],
   "reinforcesConceptIds": [],
-  "vocabularyIds": ["vocab.hello", "vocab.hi", "vocab.good-morning", "vocab.goodbye"],
+  "vocabularyIds": [
+    "vocab.hello",
+    "vocab.hi",
+    "vocab.good-morning",
+    "vocab.goodbye"
+  ],
   "blocks": [
     {
       "id": "block.a0.002.greetings.explanation",

@@ -11,7 +11,5 @@
   "description": {
     "pt-BR": "Negar frases simples com am, is ou are usando not."
   },
-  "prerequisiteConceptIds": [
-    "concept.a0.grammar.be-affirmative"
-  ]
+  "prerequisiteConceptIds": ["concept.a0.grammar.be-affirmative"]
 }
