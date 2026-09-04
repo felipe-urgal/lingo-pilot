@@ -14,7 +14,7 @@
     {
       "id": "objective.a0.006.use-be-contractions",
       "description": {
-        "pt-BR": "Reconhecer e reescrever formas afirmativas frequentes de be usando contrações."
+        "pt-BR": "Reconhecer e reescrever frases afirmativas simples usando contrações frequentes de be."
       }
     }
   ],
@@ -42,7 +42,7 @@
       "type": "example",
       "language": "en",
       "text": {
-        "en": "I'm Ana. She's my friend. We're ready."
+        "en": "I'm Ana. She's from Brazil. We're from Brazil."
       }
     },
     {

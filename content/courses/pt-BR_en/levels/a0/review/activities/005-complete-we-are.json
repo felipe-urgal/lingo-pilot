@@ -5,13 +5,13 @@
   "revision": 1,
   "status": "review",
   "lessonId": "lesson.a0.005.be-affirmative",
-  "type": "fill-blank",
+  "type": "translation",
   "prompt": {
-    "pt-BR": "Complete: We ___ students."
+    "pt-BR": "Traduza: Eu sou Ana. Ela é do Brasil. Nós somos do Brasil."
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": ["are"]
+    "acceptedAnswers": ["I am Ana. She is from Brazil. We are from Brazil."]
   },
   "conceptIds": ["concept.a0.grammar.be-affirmative", "concept.a0.grammar.subject-pronouns"],
   "objectiveIds": ["objective.a0.005.use-be-affirmative"],

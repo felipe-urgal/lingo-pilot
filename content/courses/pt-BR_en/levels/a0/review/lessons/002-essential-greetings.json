@@ -42,7 +42,7 @@
       "id": "block.a0.002.greetings.common-error",
       "type": "common-error",
       "text": {
-        "pt-BR": "Good night costuma ser usado ao se despedir à noite. Para iniciar uma conversa à noite, good evening é mais natural."
+        "pt-BR": "Goodbye é usado para encerrar uma troca. Para iniciar a conversa, escolha um cumprimento como hello, hi ou good morning conforme o contexto."
       }
     }
   ],

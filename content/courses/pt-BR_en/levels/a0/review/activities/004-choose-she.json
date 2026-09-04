@@ -7,7 +7,7 @@
   "lessonId": "lesson.a0.004.subject-pronouns",
   "type": "fill-blank",
   "prompt": {
-    "pt-BR": "Complete: Maria is my friend. ___ is from Brazil."
+    "pt-BR": "Complete: Maria is from Brazil. ___ is from Brazil."
   },
   "evaluation": {
     "type": "deterministic",

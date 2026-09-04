@@ -7,11 +7,14 @@
   "lessonId": "lesson.a0.006.be-contractions",
   "type": "short-answer",
   "prompt": {
-    "pt-BR": "Reescreva I am Ana usando a contração, sem ponto final."
+    "pt-BR": "Reescreva com contrações: I am Ana. She is from Brazil."
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": ["I'm Ana", "I’m Ana"]
+    "acceptedAnswers": [
+      "I'm Ana. She's from Brazil.",
+      "I’m Ana. She’s from Brazil."
+    ]
   },
   "conceptIds": ["concept.a0.grammar.be-contractions", "concept.a0.grammar.be-affirmative"],
   "objectiveIds": ["objective.a0.006.use-be-contractions"],
