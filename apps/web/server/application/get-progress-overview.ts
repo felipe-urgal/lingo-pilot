@@ -88,6 +88,20 @@ function localized(
   return text[locale] ?? text["pt-BR"] ?? Object.values(text)[0] ?? "";
 }
 
+function lastProgressedLesson(
+  catalog: CurriculumCatalog,
+  progress: Awaited<
+    ReturnType<ProgressRepository["loadProgressSnapshot"]>
+  >["lessonProgress"],
+): Lesson | null {
+  const progressedIds = new Set(progress.map((item) => item.lessonId));
+  return (
+    [...catalog.lessons]
+      .reverse()
+      .find((candidate) => progressedIds.has(candidate.id)) ?? null
+  );
+}
+
 function levelForLesson(
   catalog: CurriculumCatalog,
   lesson: Lesson | null,
@@ -127,14 +141,15 @@ function historyItem(
 }
 
 function safePage(value: number | undefined): number {
-  return Number.isInteger(value) && (value ?? 0) > 0 ? Math.trunc(value!) : 1;
+  if (!Number.isInteger(value) || value === undefined || value <= 0) return 1;
+  return Math.trunc(value);
 }
 
 function safePageSize(value: number | undefined): number {
-  if (!Number.isInteger(value) || (value ?? 0) <= 0) {
+  if (!Number.isInteger(value) || value === undefined || value <= 0) {
     return DEFAULT_HISTORY_PAGE_SIZE;
   }
-  return Math.min(MAX_HISTORY_PAGE_SIZE, Math.trunc(value!));
+  return Math.min(MAX_HISTORY_PAGE_SIZE, Math.trunc(value));
 }
 
 export function createGetProgressOverview(
@@ -162,12 +177,14 @@ export function createGetProgressOverview(
     });
     const current = nextEligibleLesson(eligibility);
     const lesson = current?.lesson ?? null;
+    const locationLesson =
+      lesson ?? lastProgressedLesson(dependencies.catalog, snapshot.lessonProgress);
     const level = levelForLesson(
       dependencies.catalog,
-      lesson,
+      locationLesson,
       journey.enrollment.entryPointLevel,
     );
-    const unit = unitForLesson(dependencies.catalog, lesson);
+    const unit = unitForLesson(dependencies.catalog, locationLesson);
     const locale = journey.learnerProfile.interfaceLocale;
 
     return {
