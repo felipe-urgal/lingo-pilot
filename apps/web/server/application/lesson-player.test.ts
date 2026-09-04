@@ -6,6 +6,7 @@ import {
 import type {
   LessonProgress,
   SaveLessonPositionInput,
+  SessionExecutionRepository,
   SessionItem,
   StudyMutationResult,
   StudyRepository,
@@ -222,6 +223,39 @@ class StudyRepositoryFake implements StudyRepository {
   }
 }
 
+class SessionExecutionRepositoryFake implements SessionExecutionRepository {
+  constructor(private readonly study: StudyRepositoryFake) {}
+
+  async findLatestOpenSession() {
+    return this.study.session.status === "completed" ? null : this.study.session;
+  }
+
+  async findReviewResource() {
+    return null;
+  }
+
+  async skipSessionItem() {
+    return { ok: false, reason: "invalid-state" as const };
+  }
+
+  async finalizeSessionIfTerminal() {
+    return this.study.session;
+  }
+
+  async finalizeSessionContainingItem() {
+    return this.study.session;
+  }
+}
+
+function navigationDependencies(study: StudyRepositoryFake) {
+  return {
+    clock: { now: () => now },
+    catalog: catalogWithRevision(1),
+    study,
+    execution: new SessionExecutionRepositoryFake(study),
+  };
+}
+
 describe("lesson player application flow", () => {
   it("stops resume when the authored revision no longer matches persisted progress", async () => {
     const study = new StudyRepositoryFake();
@@ -242,11 +276,7 @@ describe("lesson player application flow", () => {
 
   it("persists resume position and completes only after an explicit final action", async () => {
     const study = new StudyRepositoryFake();
-    const dependencies = {
-      clock: { now: () => now },
-      catalog: catalogWithRevision(1),
-      study,
-    };
+    const dependencies = navigationDependencies(study);
     const navigate = createNavigateLessonPlayer(dependencies);
     const getPlayer = createGetLessonPlayer(dependencies);
 
@@ -287,11 +317,7 @@ describe("lesson player application flow", () => {
 
   it("treats a stale duplicate navigation submit as invalid state", async () => {
     const study = new StudyRepositoryFake();
-    const navigate = createNavigateLessonPlayer({
-      clock: { now: () => now },
-      catalog: catalogWithRevision(1),
-      study,
-    });
+    const navigate = createNavigateLessonPlayer(navigationDependencies(study));
 
     await navigate({
       journey,
