@@ -62,6 +62,7 @@ export type {
 export type {
   LoadProgressSnapshotInput,
   ProgressMasterySummary,
+  ProgressModalityEvidenceSummary,
   ProgressRepository,
   ProgressSnapshot,
 } from "./learner/progress-repository.ts";

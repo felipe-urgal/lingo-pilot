@@ -53,7 +53,7 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 - #24 Concept evidence and mastery model v1 — **Concluída no PR #86**
 - #25 Daily Session Planner v1 — **Concluída no PR #87**
 - #26 Session execution, resume and idempotency hardening — **Concluída nos PRs #91 e #92**
-- #27 Progress, weak concepts and study history — **Recorte 1 em review no PR #95**
+- #27 Progress, weak concepts and study history — **Recorte 1 concluído no PR #95; fechamento em review no PR #96**
 - #28 Migrate and editorially review A0 course content
 - #49 14-day A0 dogfood validation and learning-loop review
 - #29 Migrate and editorially review A1 and A2 course content
@@ -148,9 +148,9 @@ Os PRs #91 e #92, mergeados em 2026-09-04, concluíram o hardening da sessão di
 - E2E interrompe no meio da lesson, faz logout/login e retoma no mesmo bloco persistido;
 - observabilidade cobre duplicate prevention, `resume` e `session failure reason`.
 
-### Progresso baseado em evidência — #27 / PR #95
+### Progresso baseado em evidência — #27 / PRs #95 e #96
 
-O primeiro recorte da #27 cria uma leitura de progresso sem XP como proxy:
+O PR #95 entregou a base de leitura de progresso sem XP como proxy:
 
 - completion curricular vem exclusivamente de `LessonProgress.completed`;
 - placement A1/A2 continua sem fabricar completion ou mastery;
@@ -160,7 +160,16 @@ O primeiro recorte da #27 cria uma leitura de progresso sem XP como proxy:
 - datas de sessão usam o `localStudyDate` já calculado no timezone do aluno;
 - `/app/progress` separa visualmente “trilha concluída” de “domínio estimado”.
 
-Breakdown por modalidade, drill-down detalhado de lesson e histórico avançado permanecem na própria #27 após este recorte.
+O PR #96 fecha o escopo funcional restante da #27 sem criar uma fórmula paralela de mastery:
+
+- `ConceptEvidence` é agregado por `reading|listening|writing|speaking` como desempenho observado + tamanho da amostra;
+- `mixed` continua válido para o modelo pedagógico por conceito, mas não vira uma quinta habilidade visual;
+- o drill-down de nível/unidade/lesson reutiliza `evaluateCurriculum` e exibe `completed|in_progress|available|waived|locked`;
+- `waived` permanece explicitamente diferente de completion;
+- a UI usa `<details>/<summary>` nativos para manter a trilha consultável sem aumentar a densidade padrão;
+- ownership e agregação por modalidade são cobertos por regressão de banco; o E2E cobre mobile/keyboard e placement sem progresso fictício.
+
+Histórico avançado e filtros continuam YAGNI até que dogfood mostre necessidade concreta.
 
 ### Estratégia de entrega
 
@@ -183,7 +192,7 @@ Today/session ───────→ planner               ✅ #25 / PR #87
       ↓                 ↓
 resume ────────────→ hardening               ✅ #26 / PRs #91/#92
       ↓
-progress/history                             ativa #27 / PR #95
+progress/history                             ativa #27 / PRs #95/#96
       ↓
 A0 dogfood
       ↓
@@ -197,10 +206,10 @@ A Fase 1 só encerra quando o Study Engine cobre A0, A1 e A2 sem lógica especia
 A frente ativa é:
 
 ```text
-#27 Progress, weak concepts and study history — PR #95
+#27 Progress, weak concepts and study history — PR #96
 ```
 
-O PR #95 implementa o primeiro recorte coeso da #27. A issue permanece aberta até que os critérios de modalidade, drill-down e demais itens ainda não cobertos sejam concluídos.
+O PR #95 entregou o primeiro recorte e o PR #96 fecha modalidade + drill-down. Se o CI, auto-review e DoD finais permanecerem verdes, a #27 pode ser concluída; o próximo passo do roadmap volta a ser #28, seguido do dogfood #49 e da expansão #29 conforme as dependências registradas.
 
 ## Fase 2 — Skills + AI Evaluation Foundation
 
@@ -312,4 +321,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 ## Próximo passo
 
-O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87 e o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92. A frente ativa é **#27 — Progress, weak concepts and study history**, com o primeiro recorte no **PR #95**. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87, o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92 e o primeiro recorte de progresso **#27 está concluído em `main`** pelo PR #95. A frente ativa é o fechamento da **#27 no PR #96**; após isso, a sequência da Fase 1 segue para **#28 — conteúdo A0**, depois dogfood #49 e expansão A1/A2 #29. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.

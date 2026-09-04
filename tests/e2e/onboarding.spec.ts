@@ -107,6 +107,13 @@ test("signup/login -> onboarding A0 -> Today -> interrupt/login resume -> comple
   ).toBeVisible();
   await expect(page.getByText("1 aula", { exact: true })).toBeVisible();
   await expect(
+    page.getByRole("heading", { name: "Evidência observada por modalidade" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Status das aulas" }),
+  ).toBeVisible();
+  await expect(page.getByText("Concluída", { exact: true }).first()).toBeVisible();
+  await expect(
     page.getByRole("heading", { name: "Sessões persistidas" }),
   ).toBeVisible();
 });
@@ -135,5 +142,12 @@ test("false beginner can choose A2 manual entry without fabricated completion UI
   await expect(page.getByText("0 aulas", { exact: true })).toBeVisible();
   await expect(
     page.getByText(/Ainda não há evidência suficiente para estimar domínio/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Ainda não há evidência específica de leitura, escuta, escrita ou fala/),
+  ).toBeVisible();
+  await page.locator("details summary").first().click();
+  await expect(
+    page.getByText("Dispensada pelo ponto de entrada", { exact: true }).first(),
   ).toBeVisible();
 });

@@ -30,6 +30,7 @@
 
 .section :global(.eyebrow),
 .section h2,
+.section h3,
 .section p {
   margin: 0;
 }
@@ -38,21 +39,28 @@
   font-size: var(--lp-font-size-lg);
 }
 
+.section h3 {
+  font-size: var(--lp-font-size-md);
+}
+
 .muted,
 .stat p,
+.modality p,
 .history p,
 .list span {
   color: var(--lp-color-text-muted);
   line-height: var(--lp-line-height-body);
 }
 
-.grid {
+.grid,
+.modalityGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--lp-space-3);
 }
 
-.stat {
+.stat,
+.modality {
   display: grid;
   align-content: start;
   gap: var(--lp-space-2);
@@ -61,7 +69,8 @@
   background: var(--lp-color-surface-muted);
 }
 
-.stat strong {
+.stat strong,
+.modality strong {
   font-size: var(--lp-font-size-xl);
 }
 
@@ -70,6 +79,49 @@
   font-weight: 700;
 }
 
+.trail,
+.levelContent,
+.unit {
+  display: grid;
+  gap: var(--lp-space-3);
+}
+
+.levelDetails {
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-lg);
+  overflow: hidden;
+}
+
+.levelDetails summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-4);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.levelDetails summary:focus-visible {
+  outline: 3px solid var(--lp-focus-ring);
+  outline-offset: -3px;
+}
+
+.levelDetails summary span:last-child {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-sm);
+}
+
+.levelContent {
+  padding: 0 var(--lp-space-4) var(--lp-space-4);
+}
+
+.unit {
+  padding-top: var(--lp-space-3);
+  border-top: 1px solid var(--lp-color-border);
+}
+
+.lessonList,
 .list,
 .history {
   display: grid;
@@ -79,6 +131,7 @@
   list-style: none;
 }
 
+.lessonRow,
 .list li,
 .history li {
   display: grid;
@@ -86,6 +139,18 @@
   padding: var(--lp-space-4);
   border: 1px solid var(--lp-color-border);
   border-radius: var(--lp-radius-lg);
+}
+
+.lessonRow {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--lp-space-3);
+}
+
+.lessonRow strong {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-sm);
+  text-align: right;
 }
 
 .list span {
@@ -110,12 +175,21 @@
 }
 
 @media (max-width: 36rem) {
-  .grid {
+  .grid,
+  .modalityGrid {
     grid-template-columns: 1fr;
   }
 
   .header,
   .section {
     padding: var(--lp-space-5);
+  }
+
+  .lessonRow {
+    grid-template-columns: 1fr;
+  }
+
+  .lessonRow strong {
+    text-align: left;
   }
 }

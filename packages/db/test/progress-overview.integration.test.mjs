@@ -94,7 +94,42 @@ function masteryProjection() {
   };
 }
 
-test("loads bounded ownership-scoped progress history without mixing learners", async () => {
+async function submitEvidence(practice, enrollmentId, modality, correct) {
+  const attemptSuffix = randomUUID();
+  return practice.submitAttempt(
+    {
+      attemptId: `attempt-${attemptSuffix}`,
+      enrollmentId,
+      sessionItemId: null,
+      activityId: "activity.a0.orientation.check",
+      contentSchemaVersion: 1,
+      contentRevision: 1,
+      operationKey: `operation-${attemptSuffix}`,
+      maxAttempts: 3,
+      answer: "understood",
+      correct,
+      scorePercent: correct ? 100 : 0,
+      hintCount: 0,
+      modality,
+      supportLevel: 0,
+      evidenceKind: "independent-retrieval",
+      conceptIds: ["concept.a0.lesson-flow"],
+      initialMemorySchedules: [
+        {
+          conceptId: "concept.a0.lesson-flow",
+          memoryItemId: `memory-${attemptSuffix}`,
+          dueAt: new Date("2026-09-04T14:00:00.000Z"),
+          intervalSeconds: 600,
+          algorithmVersion: "review-scheduler-v1",
+        },
+      ],
+      now: new Date("2026-09-04T15:15:00.000Z"),
+    },
+    masteryProjection,
+  );
+}
+
+test("loads bounded ownership-scoped progress history and modality evidence", async () => {
   const enrollmentId = await createEnrollment("progress-owner");
   const otherEnrollmentId = await createEnrollment("progress-other");
   const study = new PostgresStudyRepository(client.db);
@@ -118,39 +153,11 @@ test("loads bounded ownership-scoped progress history without mixing learners", 
     now: new Date("2026-09-04T15:10:00.000Z"),
   });
 
-  const attemptSuffix = randomUUID();
-  const attempted = await practice.submitAttempt(
-    {
-      attemptId: `attempt-${attemptSuffix}`,
-      enrollmentId,
-      sessionItemId: null,
-      activityId: "activity.a0.orientation.check",
-      contentSchemaVersion: 1,
-      contentRevision: 1,
-      operationKey: `operation-${attemptSuffix}`,
-      maxAttempts: 3,
-      answer: "understood",
-      correct: false,
-      scorePercent: 0,
-      hintCount: 0,
-      modality: "reading",
-      supportLevel: 0,
-      evidenceKind: "independent-retrieval",
-      conceptIds: ["concept.a0.lesson-flow"],
-      initialMemorySchedules: [
-        {
-          conceptId: "concept.a0.lesson-flow",
-          memoryItemId: `memory-${attemptSuffix}`,
-          dueAt: new Date("2026-09-04T14:00:00.000Z"),
-          intervalSeconds: 600,
-          algorithmVersion: "review-scheduler-v1",
-        },
-      ],
-      now: new Date("2026-09-04T15:15:00.000Z"),
-    },
-    masteryProjection,
+  assert.equal((await submitEvidence(practice, enrollmentId, "reading", false)).ok, true);
+  assert.equal(
+    (await submitEvidence(practice, otherEnrollmentId, "speaking", true)).ok,
+    true,
   );
-  assert.equal(attempted.ok, true);
 
   const firstPage = await progress.loadProgressSnapshot({
     enrollmentId,
@@ -173,6 +180,9 @@ test("loads bounded ownership-scoped progress history without mixing learners", 
     averageScorePercent: 40,
     averageConfidencePercent: 80,
   });
+  assert.deepEqual(firstPage.modalityEvidence, [
+    { modality: "reading", evidenceCount: 1, correctCount: 0 },
+  ]);
   assert.equal(firstPage.weakConcepts[0]?.conceptId, "concept.a0.lesson-flow");
 
   const secondPage = await progress.loadProgressSnapshot({

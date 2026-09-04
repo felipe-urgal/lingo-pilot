@@ -13,12 +13,15 @@ import type {
 import {
   evaluateCurriculum,
   nextEligibleLesson,
+  type LessonAvailability,
+  type LessonEligibility,
 } from "../../../../packages/learning/src/index.ts";
 
 const DEFAULT_HISTORY_PAGE_SIZE = 5;
 const MAX_HISTORY_PAGE = 100;
 const MAX_HISTORY_PAGE_SIZE = 10;
 const WEAK_CONCEPT_LIMIT = 5;
+const CORE_MODALITIES = ["reading", "listening", "writing", "speaking"] as const;
 
 export interface ProgressLocation {
   readonly entryPointLevel: "A0" | "A1" | "A2";
@@ -46,11 +49,38 @@ export interface ProgressLearningSummary {
   readonly averageConfidencePercent: number | null;
 }
 
+export interface ProgressModalitySignal {
+  readonly modality: (typeof CORE_MODALITIES)[number];
+  readonly evidenceCount: number;
+  readonly correctPercent: number;
+}
+
 export interface ProgressWeakConcept {
   readonly id: string;
   readonly title: string;
   readonly scorePercent: number;
   readonly confidencePercent: number;
+}
+
+export interface ProgressLessonStatus {
+  readonly id: string;
+  readonly title: string;
+  readonly status: LessonAvailability;
+}
+
+export interface ProgressUnitStatus {
+  readonly id: string;
+  readonly title: string;
+  readonly lessons: readonly ProgressLessonStatus[];
+}
+
+export interface ProgressLevelStatus {
+  readonly id: string;
+  readonly cefr: string;
+  readonly title: string;
+  readonly completedLessons: number;
+  readonly totalLessons: number;
+  readonly units: readonly ProgressUnitStatus[];
 }
 
 export interface ProgressHistoryItem {
@@ -65,6 +95,8 @@ export interface ProgressHistoryItem {
 export interface ProgressOverview {
   readonly location: ProgressLocation;
   readonly learning: ProgressLearningSummary;
+  readonly modalities: readonly ProgressModalitySignal[];
+  readonly curriculum: readonly ProgressLevelStatus[];
   readonly dueReviewCount: number;
   readonly weakConcepts: readonly ProgressWeakConcept[];
   readonly history: Readonly<{
@@ -123,6 +155,66 @@ function unitForLesson(
 ): Unit | null {
   if (!lesson) return null;
   return catalog.units.find((candidate) => candidate.id === lesson.unitId) ?? null;
+}
+
+function modalitySignals(
+  snapshot: Awaited<ReturnType<ProgressRepository["loadProgressSnapshot"]>>,
+): readonly ProgressModalitySignal[] {
+  const byModality = new Map(
+    snapshot.modalityEvidence.map((summary) => [summary.modality, summary]),
+  );
+
+  return CORE_MODALITIES.flatMap((modality) => {
+    const summary = byModality.get(modality);
+    if (!summary || summary.evidenceCount <= 0) return [];
+    return [
+      {
+        modality,
+        evidenceCount: summary.evidenceCount,
+        correctPercent: Math.round(
+          (summary.correctCount / summary.evidenceCount) * 100,
+        ),
+      },
+    ];
+  });
+}
+
+function curriculumBreakdown(
+  catalog: CurriculumCatalog,
+  eligibility: readonly LessonEligibility[],
+  locale: string,
+): readonly ProgressLevelStatus[] {
+  const eligibilityByLesson = new Map(
+    eligibility.map((item) => [item.lesson.id, item]),
+  );
+
+  return catalog.levels.map((level) => {
+    const units = catalog.units
+      .filter((unit) => unit.levelId === level.id)
+      .map((unit) => ({
+        id: unit.id,
+        title: localized(unit.title, locale),
+        lessons: catalog.lessons
+          .filter((lesson) => lesson.unitId === unit.id)
+          .map((lesson) => ({
+            id: lesson.id,
+            title: localized(lesson.title, locale),
+            status:
+              eligibilityByLesson.get(lesson.id)?.availability ?? "locked",
+          })),
+      }));
+    const lessons = units.flatMap((unit) => unit.lessons);
+
+    return {
+      id: level.id,
+      cefr: level.cefr,
+      title: localized(level.title, locale),
+      completedLessons: lessons.filter((lesson) => lesson.status === "completed")
+        .length,
+      totalLessons: lessons.length,
+      units,
+    };
+  });
 }
 
 function historyItem(
@@ -223,6 +315,8 @@ export function createGetProgressOverview(
         averageMasteryPercent: snapshot.mastery.averageScorePercent,
         averageConfidencePercent: snapshot.mastery.averageConfidencePercent,
       },
+      modalities: modalitySignals(snapshot),
+      curriculum: curriculumBreakdown(dependencies.catalog, eligibility, locale),
       dueReviewCount: snapshot.dueReviewCount,
       weakConcepts: snapshot.weakConcepts.flatMap((state) => {
         const concept = dependencies.catalog.conceptById.get(state.conceptId);
