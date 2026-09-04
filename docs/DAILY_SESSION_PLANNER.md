@@ -130,13 +130,15 @@ Quando pertence, o submit valida simultaneamente:
 - `resourceId=memoryItemId`;
 - sessão ainda executável.
 
-A gravação de `ReviewEvent`, atualização de `MemoryItem`, `ConceptEvidence`, `MasteryState`, completion do `SessionItem` e eventual completion da `StudySession` acontecem na mesma transação.
+A gravação de `ReviewEvent`, atualização de `MemoryItem`, `ConceptEvidence`, `MasteryState`, completion do `SessionItem` e eventual completion da `StudySession` acontecem na mesma transação do learning loop. Depois disso, o hardening de execução reconcilia a sessão para tratar `skipped` como terminal sem considerar o item como aprendizagem concluída.
 
 Revisões avulsas continuam válidas sem `sessionItemId`.
 
 ## Hardening de execução — #26
 
-O primeiro recorte da #26 mantém o snapshot persistido como autoridade e endurece quatro cenários sem criar uma segunda camada de estado:
+A #26 mantém o snapshot persistido como autoridade e não cria uma segunda camada de estado.
+
+### Recorte 1 — PR #91
 
 1. **refresh/resume:** `StudySession`, `SessionItem` e `LessonProgress.currentBlockIndex` são relidos do banco; refresh não replana nem avança posição;
 2. **submit repetido:** Attempt e Review continuam idempotentes por `operationKey`, e o formulário bloqueia um segundo submit enquanto a mesma operação está em voo;
@@ -145,7 +147,52 @@ O primeiro recorte da #26 mantém o snapshot persistido como autoridade e endure
 
 O formulário continua sendo um `<form method="post">`: sem JavaScript, o fluxo nativo permanece funcional. Com JavaScript, o submit é progressivamente aprimorado para oferecer estado de envio e recuperação de rede sem alterar o contrato server-side.
 
-Ainda permanecem na #26 a política explícita para sessão atravessando meia-noite/mudança de timezone, recovery completo de conteúdo stale/retired, summary final e os demais cenários de hardening necessários para fechar todos os critérios da issue.
+### Recorte 2 — PR #92
+
+#### Mudança de dia e timezone
+
+Uma sessão `planned|in_progress` já persistida permanece autoritativa até se tornar terminal, mesmo se o clock local mudar de data ou se a timezone do learner mudar entre requests.
+
+Regra V1:
+
+```text
+há sessão aberta persistida?
+  sim -> retomar exatamente essa sessão e seu localStudyDate original
+  não -> carregar/criar a sessão da data local atual
+```
+
+Portanto uma sessão iniciada antes da meia-noite pode terminar depois da meia-noite sem ganhar um segundo snapshot concorrente. A próxima data local só recebe um novo plano depois que a sessão anterior fica terminal. Não há expiração silenciosa por idade: uma sessão antiga continua recuperável, e conteúdo que deixou de ser executável segue a política de recovery abaixo.
+
+#### Recovery de conteúdo stale/retired
+
+`SessionItem.status` passa a aceitar:
+
+```text
+planned | in_progress | completed | skipped
+```
+
+`skipped` é terminal operacional, mas **não** significa conclusão pedagógica. Nenhum `Attempt`, `ReviewEvent`, `ConceptEvidence`, `MasteryState` ou `LessonProgress.completed` é criado ao ignorar um item.
+
+A UI só oferece recovery quando o item planejado deixou de ser executável. O POST revalida ownership e classifica server-side:
+
+- `content-unavailable`: lesson/activity/memory necessário não existe ou não está publicado/executável;
+- `revision-conflict`: schema/revision atual não corresponde ao snapshot persistido;
+- `review-no-longer-due`: o `MemoryItem` planejado continua válido, mas outra operação já moveu seu `dueAt` para o futuro.
+
+Se o conteúdo ainda está válido e executável, o endpoint recusa o skip. Repetir o mesmo recovery de um item já `skipped` é idempotente.
+
+#### Completion e summary
+
+Um item é terminal quando está `completed` ou `skipped`. A sessão só fica `completed` quando não existe nenhum item `planned|in_progress` persistido.
+
+O summary de Hoje deriva diretamente desses itens:
+
+- conta aulas/reviews realmente `completed`;
+- mostra separadamente a quantidade `skipped`;
+- deixa explícito que `skipped` não contou como aprendizagem;
+- preserva a data original quando a sessão atravessou o limite local de dia.
+
+Não há XP, score ou métrica decorativa no summary.
 
 ## Observabilidade
 
@@ -154,11 +201,14 @@ O use case de Today emite:
 - `study.planner.duration` em milissegundos;
 - `study.planner.review_debt`;
 - `study.planner.new_content_suspended`;
-- `study.planner.reason_code` com atributo `reasonCode`.
+- `study.planner.reason_code` com atributo `reasonCode`;
+- `study.session.resume` com `source=same-day|day-boundary` e as datas locais do snapshot/current request.
+
+Recovery emite `study.session.failure_reason` com `reason` e `itemKind` somente na primeira transição para `skipped`.
 
 Os endpoints de Attempt e Review registram `duplicate` no evento de conclusão, permitindo distinguir retries idempotentes de gravações novas sem registrar respostas textuais do aluno.
 
-Nenhuma resposta textual do aluno é adicionada à telemetria.
+Nenhuma resposta textual, email, transcript ou áudio do aluno é adicionada à telemetria.
 
 ## Testes
 
@@ -168,7 +218,7 @@ A cobertura obrigatória inclui:
 - centenas de reviews vencidos;
 - resume de lesson ativa;
 - refresh relendo a mesma sessão/item e o mesmo `currentBlockIndex` persistido;
-- limite de timezone por `localStudyDate`;
+- sessão aberta preservando `localStudyDate` ao atravessar um novo dia;
 - ausência de lesson elegível com review disponível;
 - weak concept;
 - modalidade indisponível;
@@ -178,18 +228,13 @@ A cobertura obrigatória inclui:
 - duas abas recebendo exatamente o snapshot vencedor persistido;
 - persistência ordenada multi-item;
 - conclusão transacional de review planejada;
+- `skipped` idempotente e completion apenas após todos os itens ficarem terminais;
 - bloqueio de submits simultâneos no cliente;
-- retry após falha de rede preservando resposta e `operationKey`.
+- retry após falha de rede preservando resposta e `operationKey`;
+- E2E de interrupção: refresh no meio da lesson, logout/login, retorno por Hoje e retomada no mesmo bloco antes de concluir.
 
-## Limites da #25 e continuidade da #26
+## Limites após a #26
 
-A #25 entregou decisão e snapshot da sessão, além do mínimo de execução necessário para não deixar reviews planejadas órfãs.
+Com os recortes dos PRs #91 e #92, a #26 fecha o contrato de execução/resume da Fase 1. Evoluções futuras de sessão devem preservar as invariantes acima ou versionar explicitamente o contrato.
 
-A #26 endurece a execução em recortes coesos. Após o primeiro recorte descrito acima, ainda faltam:
-
-- regra explícita para mudança de data/timezone durante uma sessão;
-- stale/retired content recovery completo;
-- summary final e hardening adicional de completion;
-- E2E adicional de interrupção/resume conforme o fluxo estabilizar.
-
-A página completa de progresso/histórico continua na #27.
+A página completa de progresso/histórico continua na #27. PWA/offline queue e replay offline pertencem à #42 e devem reutilizar a idempotência estabelecida aqui em vez de criar semântica paralela.
