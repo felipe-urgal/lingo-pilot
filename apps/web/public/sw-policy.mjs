@@ -26,3 +26,7 @@ export function shouldClearCachesAfterResponse({ method, pathname, status }) {
 export function isLingoCacheName(name) {
   return name.startsWith(LINGO_CACHE_PREFIX);
 }
+
+export function shouldDeleteCacheAfterLogout(name) {
+  return isLingoCacheName(name) && name !== LINGO_SHELL_CACHE;
+}
