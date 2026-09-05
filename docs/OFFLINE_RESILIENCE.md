@@ -8,7 +8,7 @@ Este documento registra o contrato inicial da issue #42. A prioridade é continu
 - manter assets estáticos necessários ao shell reutilizáveis offline;
 - oferecer fallback público, claro e acessível quando a navegação perde rede;
 - nunca persistir HTML autenticado, respostas de API ou payloads de estudo no service worker;
-- limpar caches pertencentes ao LingoPilot após logout bem-sucedido;
+- limpar caches de sessão pertencentes ao LingoPilot após logout bem-sucedido, preservando somente o shell público offline;
 - manter mutations network-only até existir uma fila desenhada em cima de idempotência comprovada.
 
 ## Política de cache
@@ -32,11 +32,13 @@ Navegação é network-first. Se a rede falhar, o worker retorna somente `/offli
 
 ## Logout e dados residuais
 
-O worker observa apenas o `POST /api/auth/logout` para limpeza. Quando a resposta do servidor é menor que 400, todos os caches cujo nome começa por `lingo-pilot-` são removidos.
+O worker observa apenas o `POST /api/auth/logout` para limpeza. Quando a resposta do servidor é menor que 400, caches LingoPilot que possam carregar estado de sessão ou assets acumulados são removidos.
+
+O cache `lingo-pilot-shell-*` é preservado porque contém apenas o fallback público `/offline`. Isso evita que uma sessão futura perca a tela offline depois que o usuário anterior fizer logout; nenhum HTML autenticado ou dado do aluno é mantido nesse shell.
 
 A limpeza não toca caches de outros aplicativos/origins com nomes não pertencentes ao LingoPilot.
 
-Como HTML privado não é cacheado neste recorte, logout não depende dessa limpeza para confidencialidade; ela é defesa adicional para assets/fallback versionados e para evolução futura do contrato.
+Como HTML privado não é cacheado neste recorte, logout não depende dessa limpeza para confidencialidade; ela é defesa adicional para assets e para evolução futura do contrato.
 
 ## Mutations offline
 
@@ -72,7 +74,7 @@ Falha ao registrar o worker não bloqueia a aplicação online.
 
 - rotas privadas nunca são classificadas como asset cacheável;
 - somente `GET` de `/_next/static/` com resposta bem-sucedida pode ser persistido;
-- logout bem-sucedido solicita limpeza de cache;
+- logout bem-sucedido solicita limpeza de caches de sessão sem remover o shell público;
 - worker não introduz IndexedDB, SyncManager ou listener de Background Sync.
 
 Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos da issue, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
