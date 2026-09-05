@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   PrivateSpeakingStorage,
   SpeakingRecordingMetadata,
@@ -152,9 +152,7 @@ describe("speaking recording upload orchestration", () => {
     ledger.complete = async () => {
       throw new Error("database unavailable");
     };
-    const release = (ledger.release = async () => undefined);
-    const releaseSpy = vi.fn(release);
-    ledger.release = releaseSpy;
+    const releaseSpy = vi.spyOn(ledger, "release");
     const { storage, deletes } = createStorage();
 
     await expect(
