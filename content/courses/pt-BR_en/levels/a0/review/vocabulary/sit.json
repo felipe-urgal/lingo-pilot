@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.sit",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "sit",
+  "language": "en",
+  "partOfSpeech": "verb",
+  "translations": { "pt-BR": "sentar" },
+  "introducedInLessonId": "lesson.a0.028.imperatives"
+}

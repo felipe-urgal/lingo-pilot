@@ -1,0 +1,17 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.05.places-and-ability",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": { "pt-BR": "Lugares e habilidades" },
+  "lessonIds": [
+    "lesson.a0.025.there-is-are",
+    "lesson.a0.026.place-prepositions",
+    "lesson.a0.027.rooms-at-home",
+    "lesson.a0.028.imperatives",
+    "lesson.a0.029.can-ability",
+    "lesson.a0.030.can-requests-permission"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.come",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "come",
+  "language": "en",
+  "partOfSpeech": "verb",
+  "translations": { "pt-BR": "vir" },
+  "introducedInLessonId": "lesson.a0.028.imperatives"
+}

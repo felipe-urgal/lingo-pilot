@@ -1,0 +1,48 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.025.there-is-are",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "There is / There are" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.025.state-existence",
+      "description": { "pt-BR": "Dizer que um ou mais elementos existem usando there is e there are." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.024.everyday-objects"],
+  "introducesConceptIds": ["concept.a0.grammar.there-is-are"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.regular-plurals",
+    "concept.a0.lexicon.everyday-objects"
+  ],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.025.there-is-are.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Use there is para uma coisa e there are para mais de uma. Nesta Lesson, foque primeiro na escolha singular/plural." }
+    },
+    {
+      "id": "block.a0.025.there-is-are.rule",
+      "type": "rule",
+      "text": { "pt-BR": "there is + singular; there are + plural" }
+    },
+    {
+      "id": "block.a0.025.there-is-are.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "There is a book. There are two books." }
+    },
+    {
+      "id": "block.a0.025.there-is-are.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Antes de escolher is ou are, identifique se o elemento é singular ou plural." }
+    }
+  ],
+  "activityIds": ["activity.a0.025.use-there-is-are"]
+}
