@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@lingo-pilot/ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { speakingRecordingPolicy } from "../../lib/speaking/recording-policy";
 
 export type SpeakingRecording = Readonly<{
@@ -25,6 +25,11 @@ type SpeakingRecorderProps = Readonly<{
 export function SpeakingRecorder({
   onRecordingReady,
 }: SpeakingRecorderProps) {
+  const isRecordingSupported = useSyncExternalStore(
+    subscribeToRecordingCapability,
+    supportsAudioRecording,
+    getServerRecordingCapability,
+  );
   const [state, setState] = useState<RecorderState>("idle");
   const [errorMessage, setErrorMessage] = useState<string>();
   const [previewUrl, setPreviewUrl] = useState<string>();
@@ -36,8 +41,6 @@ export function SpeakingRecorder({
   const discardOnStopRef = useRef(false);
 
   useEffect(() => {
-    if (!supportsAudioRecording()) setState("unsupported");
-
     return () => {
       if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
       discardOnStopRef.current = true;
@@ -49,7 +52,7 @@ export function SpeakingRecorder({
   }, [previewUrl]);
 
   async function startRecording(): Promise<void> {
-    if (!supportsAudioRecording()) {
+    if (!isRecordingSupported) {
       setState("unsupported");
       return;
     }
@@ -169,7 +172,7 @@ export function SpeakingRecorder({
     setPreviewUrl(undefined);
   }
 
-  if (state === "unsupported") {
+  if (state === "unsupported" || !isRecordingSupported) {
     return (
       <div className="practice-feedback" role="status">
         Este navegador não oferece gravação de áudio compatível. Continue pela
@@ -240,6 +243,14 @@ export function SpeakingRecorder({
       ) : null}
     </section>
   );
+}
+
+function subscribeToRecordingCapability(): () => void {
+  return () => {};
+}
+
+function getServerRecordingCapability(): boolean {
+  return false;
 }
 
 function supportsAudioRecording(): boolean {
