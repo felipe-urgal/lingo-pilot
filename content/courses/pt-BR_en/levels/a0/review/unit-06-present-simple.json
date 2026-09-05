@@ -1,0 +1,17 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.06.present-simple",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": { "pt-BR": "Presente simples" },
+  "lessonIds": [
+    "lesson.a0.031.essential-verbs",
+    "lesson.a0.032.present-simple-plural-subjects",
+    "lesson.a0.033.present-simple-third-person",
+    "lesson.a0.034.present-simple-negative",
+    "lesson.a0.035.present-simple-questions",
+    "lesson.a0.036.frequency-adverbs"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.grammar.present-simple-third-person",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": { "pt-BR": "Simple present com he/she/it" },
+  "description": { "pt-BR": "Aplicar a marca de terceira pessoa singular em afirmações no simple present." },
+  "prerequisiteConceptIds": ["concept.a0.grammar.present-simple-base"]
+}
