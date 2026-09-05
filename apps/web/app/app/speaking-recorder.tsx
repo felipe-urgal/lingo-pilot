@@ -11,20 +11,13 @@ export type SpeakingRecording = Readonly<{
 }>;
 
 type RecorderState =
-  | "idle"
-  | "requesting"
-  | "recording"
-  | "ready"
-  | "unsupported"
-  | "error";
+  "idle" | "requesting" | "recording" | "ready" | "unsupported" | "error";
 
 type SpeakingRecorderProps = Readonly<{
   onRecordingReady: (recording: SpeakingRecording) => void;
 }>;
 
-export function SpeakingRecorder({
-  onRecordingReady,
-}: SpeakingRecorderProps) {
+export function SpeakingRecorder({ onRecordingReady }: SpeakingRecorderProps) {
   const isRecordingSupported = useSyncExternalStore(
     subscribeToRecordingCapability,
     supportsAudioRecording,

@@ -22,12 +22,7 @@
     "concept.a0.lexicon.colors",
     "concept.a0.grammar.indefinite-articles"
   ],
-  "vocabularyIds": [
-    "vocab.phone",
-    "vocab.key",
-    "vocab.bag",
-    "vocab.book"
-  ],
+  "vocabularyIds": ["vocab.phone", "vocab.key", "vocab.bag", "vocab.book"],
   "blocks": [
     {
       "id": "block.a0.024.objects.explanation",

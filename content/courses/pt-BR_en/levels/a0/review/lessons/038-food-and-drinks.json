@@ -8,16 +8,53 @@
   "unitId": "unit.a0.07.everyday-survival",
   "title": { "pt-BR": "Comida e bebida" },
   "estimatedMinutes": 10,
-  "objectives": [{"id":"objective.a0.038.use-food-and-drinks","description":{"pt-BR":"Usar palavras essenciais de comida e bebida com verbos já estudados."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.038.use-food-and-drinks",
+      "description": {
+        "pt-BR": "Usar palavras essenciais de comida e bebida com verbos já estudados."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.037.daily-routine"],
   "introducesConceptIds": ["concept.a0.lexicon.food-and-drinks"],
   "reinforcesConceptIds": ["concept.a0.lexicon.essential-verbs"],
-  "vocabularyIds": ["vocab.water","vocab.coffee","vocab.bread","vocab.rice","vocab.eat","vocab.drink"],
+  "vocabularyIds": [
+    "vocab.water",
+    "vocab.coffee",
+    "vocab.bread",
+    "vocab.rice",
+    "vocab.eat",
+    "vocab.drink"
+  ],
   "blocks": [
-    {"id":"block.a0.038.food.explanation","type":"explanation","text":{"pt-BR":"Combine eat e drink com alimentos e bebidas essenciais. O foco é reconhecer e produzir frases muito curtas."}},
-    {"id":"block.a0.038.food.vocabulary","type":"vocabulary","text":{"pt-BR":"water = água; coffee = café; bread = pão; rice = arroz."}},
-    {"id":"block.a0.038.food.example","type":"example","language":"en","text":{"en":"I drink water. We eat rice."}},
-    {"id":"block.a0.038.food.checkpoint","type":"checkpoint","text":{"pt-BR":"Use drink com bebidas e eat com alimentos neste recorte."}}
+    {
+      "id": "block.a0.038.food.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Combine eat e drink com alimentos e bebidas essenciais. O foco é reconhecer e produzir frases muito curtas."
+      }
+    },
+    {
+      "id": "block.a0.038.food.vocabulary",
+      "type": "vocabulary",
+      "text": {
+        "pt-BR": "water = água; coffee = café; bread = pão; rice = arroz."
+      }
+    },
+    {
+      "id": "block.a0.038.food.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I drink water. We eat rice." }
+    },
+    {
+      "id": "block.a0.038.food.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Use drink com bebidas e eat com alimentos neste recorte."
+      }
+    }
   ],
   "activityIds": ["activity.a0.038.use-food-and-drink"]
 }

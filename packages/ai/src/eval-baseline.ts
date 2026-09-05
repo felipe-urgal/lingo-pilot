@@ -53,7 +53,10 @@ export function createEvalBaseline(report: EvalReport): EvalBaseline {
     schemaVersion: evalBaselineSchemaVersion,
     dataset: report.dataset,
     dimensions: Object.fromEntries(
-      report.dimensions.map((dimension) => [dimension.dimension, dimension.score]),
+      report.dimensions.map((dimension) => [
+        dimension.dimension,
+        dimension.score,
+      ]),
     ),
     checks: report.cases.flatMap((evalCase) =>
       evalCase.checks.map((check) => toBaselineCheck(evalCase, check)),

@@ -8,16 +8,57 @@
   "unitId": "unit.a0.07.everyday-survival",
   "title": { "pt-BR": "Question words" },
   "estimatedMinutes": 10,
-  "objectives": [{"id":"objective.a0.040.choose-question-word","description":{"pt-BR":"Escolher what, who, where, when ou how para perguntas simples."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.040.choose-question-word",
+      "description": {
+        "pt-BR": "Escolher what, who, where, when ou how para perguntas simples."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.039.like-love-hate"],
   "introducesConceptIds": ["concept.a0.grammar.question-words"],
-  "reinforcesConceptIds": ["concept.a0.grammar.present-simple-questions","concept.a0.grammar.be-questions"],
-  "vocabularyIds": ["vocab.what","vocab.who","vocab.where","vocab.when","vocab.how","vocab.live","vocab.eat"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-questions",
+    "concept.a0.grammar.be-questions"
+  ],
+  "vocabularyIds": [
+    "vocab.what",
+    "vocab.who",
+    "vocab.where",
+    "vocab.when",
+    "vocab.how",
+    "vocab.live",
+    "vocab.eat"
+  ],
   "blocks": [
-    {"id":"block.a0.040.question-words.explanation","type":"explanation","text":{"pt-BR":"Question words indicam o tipo de informação procurada: what para coisa/informação, who para pessoa, where para lugar, when para tempo e how para modo/estado."}},
-    {"id":"block.a0.040.question-words.vocabulary","type":"vocabulary","text":{"pt-BR":"what = o que/qual; who = quem; where = onde; when = quando; how = como."}},
-    {"id":"block.a0.040.question-words.example","type":"example","language":"en","text":{"en":"Where do you live? What do you eat? How are you?"}},
-    {"id":"block.a0.040.question-words.checkpoint","type":"checkpoint","text":{"pt-BR":"Escolha primeiro a informação desejada; depois mantenha a estrutura de pergunta que você já estudou."}}
+    {
+      "id": "block.a0.040.question-words.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Question words indicam o tipo de informação procurada: what para coisa/informação, who para pessoa, where para lugar, when para tempo e how para modo/estado."
+      }
+    },
+    {
+      "id": "block.a0.040.question-words.vocabulary",
+      "type": "vocabulary",
+      "text": {
+        "pt-BR": "what = o que/qual; who = quem; where = onde; when = quando; how = como."
+      }
+    },
+    {
+      "id": "block.a0.040.question-words.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "Where do you live? What do you eat? How are you?" }
+    },
+    {
+      "id": "block.a0.040.question-words.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Escolha primeiro a informação desejada; depois mantenha a estrutura de pergunta que você já estudou."
+      }
+    }
   ],
   "activityIds": ["activity.a0.040.choose-question-word"]
 }

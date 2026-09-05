@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.031.use-essential-verbs",
-      "description": { "pt-BR": "Reconhecer e usar verbos frequentes para ações e fatos cotidianos simples." }
+      "description": {
+        "pt-BR": "Reconhecer e usar verbos frequentes para ações e fatos cotidianos simples."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.030.can-requests-permission"],
@@ -29,12 +31,16 @@
     {
       "id": "block.a0.031.essential-verbs.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Estes verbos aparecem com muita frequência quando falamos de rotina e fatos: go, work, live, study, eat e drink." }
+      "text": {
+        "pt-BR": "Estes verbos aparecem com muita frequência quando falamos de rotina e fatos: go, work, live, study, eat e drink."
+      }
     },
     {
       "id": "block.a0.031.essential-verbs.vocabulary",
       "type": "vocabulary",
-      "text": { "pt-BR": "go = ir; work = trabalhar; live = morar; study = estudar; eat = comer; drink = beber." }
+      "text": {
+        "pt-BR": "go = ir; work = trabalhar; live = morar; study = estudar; eat = comer; drink = beber."
+      }
     },
     {
       "id": "block.a0.031.essential-verbs.example",
@@ -45,7 +51,9 @@
     {
       "id": "block.a0.031.essential-verbs.checkpoint",
       "type": "checkpoint",
-      "text": { "pt-BR": "Primeiro reconheça o significado do verbo. A forma do simple present será organizada nas próximas aulas." }
+      "text": {
+        "pt-BR": "Primeiro reconheça o significado do verbo. A forma do simple present será organizada nas próximas aulas."
+      }
     }
   ],
   "activityIds": ["activity.a0.031.use-essential-verb"]

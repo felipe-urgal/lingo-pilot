@@ -6,6 +6,8 @@
   "status": "review",
   "courseId": "course.en.ptbr.v1",
   "title": { "pt-BR": "Cômodos da casa" },
-  "description": { "pt-BR": "Reconhecer e nomear cômodos essenciais de uma casa em descrições simples." },
+  "description": {
+    "pt-BR": "Reconhecer e nomear cômodos essenciais de uma casa em descrições simples."
+  },
   "prerequisiteConceptIds": []
 }

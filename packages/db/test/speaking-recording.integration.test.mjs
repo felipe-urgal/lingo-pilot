@@ -170,11 +170,15 @@ test("persists upload retention and exposes expired/discarded cleanup candidates
   );
 
   assert.equal(
-    (await repository.findOwnedAttempt(owner.userId, reserved.attempt.id))?.status,
+    (await repository.findOwnedAttempt(owner.userId, reserved.attempt.id))
+      ?.status,
     "reserved",
   );
   assert.equal(
-    await repository.findOwnedAttempt(`other-${randomUUID()}`, reserved.attempt.id),
+    await repository.findOwnedAttempt(
+      `other-${randomUUID()}`,
+      reserved.attempt.id,
+    ),
     null,
   );
 
@@ -188,11 +192,18 @@ test("persists upload retention and exposes expired/discarded cleanup candidates
     now: uploadedAt,
   });
   assert.equal(uploaded?.status, "uploaded");
-  assert.equal(uploaded?.retainedUntil?.toISOString(), retainedUntil.toISOString());
+  assert.equal(
+    uploaded?.retainedUntil?.toISOString(),
+    retainedUntil.toISOString(),
+  );
 
   assert.equal(
-    (await repository.listCleanupCandidates(new Date(retainedUntil.getTime() - 1), 10))
-      .some((item) => item.id === reserved.attempt.id),
+    (
+      await repository.listCleanupCandidates(
+        new Date(retainedUntil.getTime() - 1),
+        10,
+      )
+    ).some((item) => item.id === reserved.attempt.id),
     false,
   );
   assert.equal(
@@ -209,8 +220,12 @@ test("persists upload retention and exposes expired/discarded cleanup candidates
   );
   assert.equal(discarded?.status, "discarded");
   assert.equal(
-    (await repository.listCleanupCandidates(new Date("2026-09-05T13:00:01.000Z"), 10))
-      .some((item) => item.id === reserved.attempt.id),
+    (
+      await repository.listCleanupCandidates(
+        new Date("2026-09-05T13:00:01.000Z"),
+        10,
+      )
+    ).some((item) => item.id === reserved.attempt.id),
     true,
   );
 
@@ -220,8 +235,12 @@ test("persists upload retention and exposes expired/discarded cleanup candidates
   );
   assert.equal(deleted?.status, "deleted");
   assert.equal(
-    (await repository.listCleanupCandidates(new Date("2026-09-07T00:00:00.000Z"), 10))
-      .some((item) => item.id === reserved.attempt.id),
+    (
+      await repository.listCleanupCandidates(
+        new Date("2026-09-07T00:00:00.000Z"),
+        10,
+      )
+    ).some((item) => item.id === reserved.attempt.id),
     false,
   );
 });

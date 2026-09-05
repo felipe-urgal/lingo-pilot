@@ -48,10 +48,60 @@ import vocabShort from "../../../content/courses/pt-BR_en/levels/a0/review/vocab
 import vocabHair from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/hair.json" with { type: "json" };
 import vocabEyes from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/eyes.json" with { type: "json" };
 
-const lessons = [lesson037, lesson038, lesson039, lesson040, lesson041, lesson042, lesson043] as const;
-const activities = [activity037, activity038, activity039, activity040, activity041, activity042, activity043] as const;
-const concepts = [conceptDailyRoutine, conceptFoodAndDrinks, conceptPreferenceVerbs, conceptQuestionWords, conceptBasicAdjectives, conceptDescribePeople, conceptSurvivalDialogues] as const;
-const vocabulary = [vocabWakeUp, vocabStart, vocabFinish, vocabWater, vocabCoffee, vocabBread, vocabRice, vocabLike, vocabLove, vocabHate, vocabWhat, vocabWho, vocabWhere, vocabWhen, vocabHow, vocabBig, vocabSmall, vocabNew, vocabOld, vocabGood, vocabBad, vocabTall, vocabShort, vocabHair, vocabEyes] as const;
+const lessons = [
+  lesson037,
+  lesson038,
+  lesson039,
+  lesson040,
+  lesson041,
+  lesson042,
+  lesson043,
+] as const;
+const activities = [
+  activity037,
+  activity038,
+  activity039,
+  activity040,
+  activity041,
+  activity042,
+  activity043,
+] as const;
+const concepts = [
+  conceptDailyRoutine,
+  conceptFoodAndDrinks,
+  conceptPreferenceVerbs,
+  conceptQuestionWords,
+  conceptBasicAdjectives,
+  conceptDescribePeople,
+  conceptSurvivalDialogues,
+] as const;
+const vocabulary = [
+  vocabWakeUp,
+  vocabStart,
+  vocabFinish,
+  vocabWater,
+  vocabCoffee,
+  vocabBread,
+  vocabRice,
+  vocabLike,
+  vocabLove,
+  vocabHate,
+  vocabWhat,
+  vocabWho,
+  vocabWhere,
+  vocabWhen,
+  vocabHow,
+  vocabBig,
+  vocabSmall,
+  vocabNew,
+  vocabOld,
+  vocabGood,
+  vocabBad,
+  vocabTall,
+  vocabShort,
+  vocabHair,
+  vocabEyes,
+] as const;
 
 describe("A0 editorial review Unit 07", () => {
   it("keeps Unit 07 isolated from the published A0 catalog", () => {
@@ -59,16 +109,28 @@ describe("A0 editorial review Unit 07", () => {
     expect(levelA0.unitIds).not.toContain(reviewUnit07.id);
     expect(reviewUnit07.lessonIds).toEqual(lessons.map((lesson) => lesson.id));
     expect(lessons.every((lesson) => lesson.status === "review")).toBe(true);
-    expect(activities.every((activity) => activity.status === "review")).toBe(true);
+    expect(activities.every((activity) => activity.status === "review")).toBe(
+      true,
+    );
     expect(concepts.every((concept) => concept.status === "review")).toBe(true);
     expect(vocabulary.every((item) => item.status === "review")).toBe(true);
   });
 
   it("links every lesson objective to one deterministic activity", () => {
     for (const lesson of lessons) {
-      const lessonActivities = activities.filter((activity) => activity.lessonId === lesson.id);
+      const lessonActivities = activities.filter(
+        (activity) => activity.lessonId === lesson.id,
+      );
       expect(lessonActivities).toHaveLength(1);
-      expect(lesson.objectives.every((objective) => lessonActivities.some((activity) => activity.evaluation.type === "deterministic" && activity.objectiveIds.includes(objective.id)))).toBe(true);
+      expect(
+        lesson.objectives.every((objective) =>
+          lessonActivities.some(
+            (activity) =>
+              activity.evaluation.type === "deterministic" &&
+              activity.objectiveIds.includes(objective.id),
+          ),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -82,28 +144,64 @@ describe("A0 editorial review Unit 07", () => {
       [lesson042, lesson041.id],
       [lesson043, lesson042.id],
     ] as const;
-    for (const [lesson, prerequisiteId] of expectedPrerequisites) expect(lesson.prerequisiteLessonIds).toEqual([prerequisiteId]);
+    for (const [lesson, prerequisiteId] of expectedPrerequisites)
+      expect(lesson.prerequisiteLessonIds).toEqual([prerequisiteId]);
   });
 
   it("uses semantic concept prerequisites for integrated A0 survival language", () => {
-    expect(conceptDailyRoutine.prerequisiteConceptIds).toEqual(["concept.a0.grammar.present-simple-base", "concept.a0.time.clock-time", "concept.a0.grammar.frequency-adverbs"]);
+    expect(conceptDailyRoutine.prerequisiteConceptIds).toEqual([
+      "concept.a0.grammar.present-simple-base",
+      "concept.a0.time.clock-time",
+      "concept.a0.grammar.frequency-adverbs",
+    ]);
     expect(conceptFoodAndDrinks.prerequisiteConceptIds).toEqual([]);
-    expect(conceptPreferenceVerbs.prerequisiteConceptIds).toEqual(["concept.a0.grammar.present-simple-base"]);
-    expect(conceptQuestionWords.prerequisiteConceptIds).toEqual(["concept.a0.grammar.present-simple-questions", "concept.a0.grammar.be-questions"]);
+    expect(conceptPreferenceVerbs.prerequisiteConceptIds).toEqual([
+      "concept.a0.grammar.present-simple-base",
+    ]);
+    expect(conceptQuestionWords.prerequisiteConceptIds).toEqual([
+      "concept.a0.grammar.present-simple-questions",
+      "concept.a0.grammar.be-questions",
+    ]);
     expect(conceptBasicAdjectives.prerequisiteConceptIds).toEqual([]);
-    expect(conceptDescribePeople.prerequisiteConceptIds).toEqual(["concept.a0.grammar.be-affirmative", "concept.a0.grammar.have-has", "concept.a0.lexicon.basic-adjectives"]);
-    expect(conceptSurvivalDialogues.prerequisiteConceptIds).toEqual(["concept.a0.communication.greetings", "concept.a0.grammar.can-requests-permission", "concept.a0.lexicon.food-and-drinks"]);
+    expect(conceptDescribePeople.prerequisiteConceptIds).toEqual([
+      "concept.a0.grammar.be-affirmative",
+      "concept.a0.grammar.have-has",
+      "concept.a0.lexicon.basic-adjectives",
+    ]);
+    expect(conceptSurvivalDialogues.prerequisiteConceptIds).toEqual([
+      "concept.a0.communication.greetings",
+      "concept.a0.grammar.can-requests-permission",
+      "concept.a0.lexicon.food-and-drinks",
+    ]);
   });
 
   it("tracks new lexical items at their first Unit 07 lesson", () => {
-    for (const item of vocabulary) expect(lessons.map((lesson) => lesson.id)).toContain(item.introducedInLessonId);
+    for (const item of vocabulary)
+      expect(lessons.map((lesson) => lesson.id)).toContain(
+        item.introducedInLessonId,
+      );
     expect(lesson037.vocabularyIds).toContain("vocab.wake-up");
-    expect(lesson038.vocabularyIds).toEqual(["vocab.water", "vocab.coffee", "vocab.bread", "vocab.rice", "vocab.eat", "vocab.drink"]);
-    expect(lesson043.vocabularyIds).toEqual(["vocab.hello", "vocab.please", "vocab.drink", "vocab.water", "vocab.yes"]);
+    expect(lesson038.vocabularyIds).toEqual([
+      "vocab.water",
+      "vocab.coffee",
+      "vocab.bread",
+      "vocab.rice",
+      "vocab.eat",
+      "vocab.drink",
+    ]);
+    expect(lesson043.vocabularyIds).toEqual([
+      "vocab.hello",
+      "vocab.please",
+      "vocab.drink",
+      "vocab.water",
+      "vocab.yes",
+    ]);
   });
 
   it("finishes A0 without inventing new vocabulary in the integration lesson", () => {
-    const newlyIntroducedInFinalLesson = vocabulary.filter((item) => item.introducedInLessonId === lesson043.id);
+    const newlyIntroducedInFinalLesson = vocabulary.filter(
+      (item) => item.introducedInLessonId === lesson043.id,
+    );
     expect(newlyIntroducedInFinalLesson).toHaveLength(0);
   });
 });

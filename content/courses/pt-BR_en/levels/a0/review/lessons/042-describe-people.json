@@ -8,16 +8,56 @@
   "unitId": "unit.a0.07.everyday-survival",
   "title": { "pt-BR": "Descrever pessoas" },
   "estimatedMinutes": 10,
-  "objectives": [{"id":"objective.a0.042.describe-person","description":{"pt-BR":"Combinar be, have/has e adjetivos conhecidos em uma descrição curta de pessoa."}}],
+  "objectives": [
+    {
+      "id": "objective.a0.042.describe-person",
+      "description": {
+        "pt-BR": "Combinar be, have/has e adjetivos conhecidos em uma descrição curta de pessoa."
+      }
+    }
+  ],
   "prerequisiteLessonIds": ["lesson.a0.041.adjectives-opposites"],
   "introducesConceptIds": ["concept.a0.communication.describe-people"],
-  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative","concept.a0.grammar.have-has","concept.a0.lexicon.basic-adjectives"],
-  "vocabularyIds": ["vocab.tall","vocab.short","vocab.hair","vocab.eyes","vocab.black"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.be-affirmative",
+    "concept.a0.grammar.have-has",
+    "concept.a0.lexicon.basic-adjectives"
+  ],
+  "vocabularyIds": [
+    "vocab.tall",
+    "vocab.short",
+    "vocab.hair",
+    "vocab.eyes",
+    "vocab.black"
+  ],
   "blocks": [
-    {"id":"block.a0.042.describe-people.explanation","type":"explanation","text":{"pt-BR":"Use be para características como tall/short e have/has para partes ou características físicas como hair e eyes."}},
-    {"id":"block.a0.042.describe-people.vocabulary","type":"vocabulary","text":{"pt-BR":"tall = alto; short = baixo; hair = cabelo; eyes = olhos."}},
-    {"id":"block.a0.042.describe-people.example","type":"example","language":"en","text":{"en":"She is tall. She has black hair."}},
-    {"id":"block.a0.042.describe-people.checkpoint","type":"checkpoint","text":{"pt-BR":"Antes de formar a frase, decida se a ideia pede be (é/está) ou have/has (tem)."}}
+    {
+      "id": "block.a0.042.describe-people.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use be para características como tall/short e have/has para partes ou características físicas como hair e eyes."
+      }
+    },
+    {
+      "id": "block.a0.042.describe-people.vocabulary",
+      "type": "vocabulary",
+      "text": {
+        "pt-BR": "tall = alto; short = baixo; hair = cabelo; eyes = olhos."
+      }
+    },
+    {
+      "id": "block.a0.042.describe-people.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "She is tall. She has black hair." }
+    },
+    {
+      "id": "block.a0.042.describe-people.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Antes de formar a frase, decida se a ideia pede be (é/está) ou have/has (tem)."
+      }
+    }
   ],
   "activityIds": ["activity.a0.042.describe-person"]
 }

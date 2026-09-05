@@ -6,6 +6,8 @@
   "status": "review",
   "courseId": "course.en.ptbr.v1",
   "title": { "pt-BR": "There is / There are" },
-  "description": { "pt-BR": "Indicar a existência de um ou mais elementos escolhendo there is ou there are." },
+  "description": {
+    "pt-BR": "Indicar a existência de um ou mais elementos escolhendo there is ou there are."
+  },
   "prerequisiteConceptIds": ["concept.a0.grammar.regular-plurals"]
 }

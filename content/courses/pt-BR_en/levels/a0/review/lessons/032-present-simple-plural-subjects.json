@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.032.use-present-simple-base",
-      "description": { "pt-BR": "Descrever ações e fatos simples com I, you, we e they mais a forma base do verbo." }
+      "description": {
+        "pt-BR": "Descrever ações e fatos simples com I, you, we e they mais a forma base do verbo."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.031.essential-verbs"],
@@ -32,7 +34,9 @@
     {
       "id": "block.a0.032.present-simple-base.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Com I, you, we e they, use o verbo na forma base para falar de ações habituais e fatos simples." }
+      "text": {
+        "pt-BR": "Com I, you, we e they, use o verbo na forma base para falar de ações habituais e fatos simples."
+      }
     },
     {
       "id": "block.a0.032.present-simple-base.rule",

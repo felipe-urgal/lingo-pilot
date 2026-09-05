@@ -38,24 +38,24 @@ Não invente requisito de produto silenciosamente. Se a ambiguidade permitir dua
 
 O `AGENTS.md` define invariantes e orienta navegação. Detalhes operacionais pertencem aos documentos canônicos abaixo:
 
-| Assunto | Fonte de verdade |
-| --- | --- |
-| versões, scripts e comandos disponíveis | `package.json` e manifests dos workspaces |
-| setup local, execução e gate antes do PR | `docs/DEVELOPMENT.md` |
-| arquitetura e direção estrutural | `docs/ARCHITECTURE.md` |
-| boundaries e direção de dependências | `docs/APPLICATION_BOUNDARIES.md` |
-| qualidade e estratégia de testes | `docs/QUALITY_STRATEGY.md` |
-| banco, Drizzle e migrations | `docs/DATABASE.md` |
-| autenticação | `docs/AUTHENTICATION.md` |
-| segurança e privacidade | `docs/SECURITY_PRIVACY.md` |
-| design system | `docs/DESIGN_SYSTEM.md` |
-| princípios de UX | `docs/UX_AND_DESIGN.md` |
-| conteúdo pedagógico | `docs/CONTENT_MODEL.md` e documentos relacionados ao conteúdo |
-| IA | `docs/AI_PROVIDER_FOUNDATION.md`, `docs/AI_TUTOR.md` e documentos do fluxo alterado |
-| produção e recovery | `docs/PRODUCTION.md` |
-| conclusão da tarefa | `docs/DEFINITION_OF_DONE.md` |
-| workflow e governança | `docs/DEVELOPMENT_WORKFLOW.md` e `docs/REPOSITORY_GOVERNANCE.md` |
-| decisões estruturais | `docs/ADR/` |
+| Assunto                                  | Fonte de verdade                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| versões, scripts e comandos disponíveis  | `package.json` e manifests dos workspaces                                           |
+| setup local, execução e gate antes do PR | `docs/DEVELOPMENT.md`                                                               |
+| arquitetura e direção estrutural         | `docs/ARCHITECTURE.md`                                                              |
+| boundaries e direção de dependências     | `docs/APPLICATION_BOUNDARIES.md`                                                    |
+| qualidade e estratégia de testes         | `docs/QUALITY_STRATEGY.md`                                                          |
+| banco, Drizzle e migrations              | `docs/DATABASE.md`                                                                  |
+| autenticação                             | `docs/AUTHENTICATION.md`                                                            |
+| segurança e privacidade                  | `docs/SECURITY_PRIVACY.md`                                                          |
+| design system                            | `docs/DESIGN_SYSTEM.md`                                                             |
+| princípios de UX                         | `docs/UX_AND_DESIGN.md`                                                             |
+| conteúdo pedagógico                      | `docs/CONTENT_MODEL.md` e documentos relacionados ao conteúdo                       |
+| IA                                       | `docs/AI_PROVIDER_FOUNDATION.md`, `docs/AI_TUTOR.md` e documentos do fluxo alterado |
+| produção e recovery                      | `docs/PRODUCTION.md`                                                                |
+| conclusão da tarefa                      | `docs/DEFINITION_OF_DONE.md`                                                        |
+| workflow e governança                    | `docs/DEVELOPMENT_WORKFLOW.md` e `docs/REPOSITORY_GOVERNANCE.md`                    |
+| decisões estruturais                     | `docs/ADR/`                                                                         |
 
 Não duplique nesses arquivos regras que já possuem fonte canônica. Quando um contrato mudar, atualize sua fonte de verdade e apenas ajuste referências aqui se necessário.
 
@@ -267,13 +267,13 @@ lint
 
 Checks especializados são proporcionais ao escopo:
 
-| Mudança | Check adicional esperado quando aplicável |
-| --- | --- |
-| configuração/runtime | `pnpm env:check` |
-| schema/migration/infra de banco | `pnpm db:check` e `pnpm db:smoke` |
-| fluxo browser-first crítico | `pnpm test:e2e` |
-| investigação de cobertura | `pnpm test:coverage` |
-| auditoria explícita de formatação | `pnpm format:check` |
+| Mudança                           | Check adicional esperado quando aplicável |
+| --------------------------------- | ----------------------------------------- |
+| configuração/runtime              | `pnpm env:check`                          |
+| schema/migration/infra de banco   | `pnpm db:check` e `pnpm db:smoke`         |
+| fluxo browser-first crítico       | `pnpm test:e2e`                           |
+| investigação de cobertura         | `pnpm test:coverage`                      |
+| auditoria explícita de formatação | `pnpm format:check`                       |
 
 Não transforme um diagnóstico especializado em gate global sem decisão explícita. Não pule check obrigatório por conveniência.
 
@@ -281,19 +281,19 @@ Não transforme um diagnóstico especializado em gate global sem decisão explí
 
 Antes de finalizar, use esta matriz como lembrete:
 
-| Se alterar | Verifique também |
-| --- | --- |
-| `packages/domain` | invariantes, unit tests, dependências proibidas |
-| `apps/web/server/application` | use case puro, resultados tipados, ports |
-| `packages/learning` | `Clock`, invariantes temporais, idempotência |
-| `packages/db` | integration test, ownership, transação, N+1 |
-| schema/migration | migration nova, `db:check`, `db:smoke`, recovery |
-| auth | ownership server-side, sessão, PII/secrets |
-| `packages/ui` ou UI de feature | primitives existentes, a11y, estados, component test |
-| IA | schema, timeout/fallback, prompt version, eval/fixture |
-| conteúdo | schema, referências, versão, `content:validate` |
-| fluxo crítico no navegador | E2E e validação manual quando aplicável |
-| configuração/produção | `docs/PRODUCTION.md` e contratos de runtime |
+| Se alterar                     | Verifique também                                       |
+| ------------------------------ | ------------------------------------------------------ |
+| `packages/domain`              | invariantes, unit tests, dependências proibidas        |
+| `apps/web/server/application`  | use case puro, resultados tipados, ports               |
+| `packages/learning`            | `Clock`, invariantes temporais, idempotência           |
+| `packages/db`                  | integration test, ownership, transação, N+1            |
+| schema/migration               | migration nova, `db:check`, `db:smoke`, recovery       |
+| auth                           | ownership server-side, sessão, PII/secrets             |
+| `packages/ui` ou UI de feature | primitives existentes, a11y, estados, component test   |
+| IA                             | schema, timeout/fallback, prompt version, eval/fixture |
+| conteúdo                       | schema, referências, versão, `content:validate`        |
+| fluxo crítico no navegador     | E2E e validação manual quando aplicável                |
+| configuração/produção          | `docs/PRODUCTION.md` e contratos de runtime            |
 
 ## 10. Git e Pull Requests
 

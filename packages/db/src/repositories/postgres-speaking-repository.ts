@@ -1,21 +1,11 @@
-import {
-  and,
-  asc,
-  eq,
-  inArray,
-  lte,
-  or,
-} from "drizzle-orm";
+import { and, asc, eq, inArray, lte, or } from "drizzle-orm";
 import type { Database } from "../client.ts";
 import { enrollments, languageProfiles } from "../schema.ts";
 import { speakingAttempts } from "../speaking-schema.ts";
 import { sessionItems, studySessions } from "../study-schema.ts";
 
 export type SpeakingAttemptStatus =
-  | "reserved"
-  | "uploaded"
-  | "discarded"
-  | "deleted";
+  "reserved" | "uploaded" | "discarded" | "deleted";
 
 export type SpeakingAttemptRecord = Readonly<{
   id: string;
@@ -79,12 +69,14 @@ export class PostgresSpeakingRepository {
     this.database = database;
   }
 
-  async ownsLessonSessionItem(input: Readonly<{
-    userId: string;
-    enrollmentId: string;
-    sessionItemId: string;
-    lessonId: string;
-  }>): Promise<boolean> {
+  async ownsLessonSessionItem(
+    input: Readonly<{
+      userId: string;
+      enrollmentId: string;
+      sessionItemId: string;
+      lessonId: string;
+    }>,
+  ): Promise<boolean> {
     const [row] = await this.database
       .select({ id: sessionItems.id })
       .from(sessionItems)
@@ -92,10 +84,7 @@ export class PostgresSpeakingRepository {
         studySessions,
         eq(studySessions.id, sessionItems.studySessionId),
       )
-      .innerJoin(
-        enrollments,
-        eq(enrollments.id, studySessions.enrollmentId),
-      )
+      .innerJoin(enrollments, eq(enrollments.id, studySessions.enrollmentId))
       .innerJoin(
         languageProfiles,
         eq(languageProfiles.id, enrollments.languageProfileId),
@@ -168,10 +157,7 @@ export class PostgresSpeakingRepository {
     const [row] = await this.database
       .select({ attempt: speakingAttempts })
       .from(speakingAttempts)
-      .innerJoin(
-        enrollments,
-        eq(enrollments.id, speakingAttempts.enrollmentId),
-      )
+      .innerJoin(enrollments, eq(enrollments.id, speakingAttempts.enrollmentId))
       .innerJoin(
         languageProfiles,
         eq(languageProfiles.id, enrollments.languageProfileId),
@@ -219,13 +205,15 @@ export class PostgresSpeakingRepository {
     return row ? fromRow(row) : this.findOwnedAttempt(userId, attemptId);
   }
 
-  async markUploaded(input: Readonly<{
-    attemptId: string;
-    etag: string;
-    uploadedAt: Date;
-    retainedUntil: Date;
-    now: Date;
-  }>): Promise<SpeakingAttemptRecord | null> {
+  async markUploaded(
+    input: Readonly<{
+      attemptId: string;
+      etag: string;
+      uploadedAt: Date;
+      retainedUntil: Date;
+      now: Date;
+    }>,
+  ): Promise<SpeakingAttemptRecord | null> {
     const [row] = await this.database
       .update(speakingAttempts)
       .set({
@@ -259,7 +247,8 @@ export class PostgresSpeakingRepository {
   ): Promise<SpeakingAttemptRecord | null> {
     const owned = await this.findOwnedAttempt(userId, attemptId);
     if (!owned) return null;
-    if (owned.status === "discarded" || owned.status === "deleted") return owned;
+    if (owned.status === "discarded" || owned.status === "deleted")
+      return owned;
 
     const [row] = await this.database
       .update(speakingAttempts)

@@ -9,8 +9,7 @@ export function ServiceWorkerRegistration() {
     let disposed = false;
     let registration: ServiceWorkerRegistration | undefined;
     let registrationAttempt:
-      | Promise<ServiceWorkerRegistration | undefined>
-      | undefined;
+      Promise<ServiceWorkerRegistration | undefined> | undefined;
 
     const ensureRegistration = () => {
       if (registration) return Promise.resolve(registration);

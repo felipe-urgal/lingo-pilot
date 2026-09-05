@@ -45,9 +45,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function numberField(record: Record<string, unknown>, key: string): number | undefined {
+function numberField(
+  record: Record<string, unknown>,
+  key: string,
+): number | undefined {
   const value = record[key];
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 function tokenUsage(payload: OpenAiPayload): TokenUsage | undefined {
@@ -75,7 +80,11 @@ function extractOutputText(payload: OpenAiPayload): string {
 
   const textParts: string[] = [];
   for (const item of payload.output) {
-    if (!isRecord(item) || item.type !== "message" || !Array.isArray(item.content)) {
+    if (
+      !isRecord(item) ||
+      item.type !== "message" ||
+      !Array.isArray(item.content)
+    ) {
       continue;
     }
 
@@ -112,10 +121,14 @@ function mapHttpError(status: number): LanguageModelProviderError {
     );
   }
   if (status === 408) {
-    return new LanguageModelProviderError("timeout", "Provider request timed out", {
-      retryable: true,
-      statusCode: status,
-    });
+    return new LanguageModelProviderError(
+      "timeout",
+      "Provider request timed out",
+      {
+        retryable: true,
+        statusCode: status,
+      },
+    );
   }
   if (status === 429) {
     return new LanguageModelProviderError(
@@ -141,9 +154,13 @@ function mapHttpError(status: number): LanguageModelProviderError {
 function normalizeThrownError(error: unknown): LanguageModelProviderError {
   if (error instanceof LanguageModelProviderError) return error;
   if (error instanceof DOMException && error.name === "AbortError") {
-    return new LanguageModelProviderError("timeout", "Provider request timed out", {
-      retryable: true,
-    });
+    return new LanguageModelProviderError(
+      "timeout",
+      "Provider request timed out",
+      {
+        retryable: true,
+      },
+    );
   }
   return new LanguageModelProviderError(
     "provider_unavailable",
@@ -191,7 +208,9 @@ export class OpenAIResponsesProvider implements LanguageModelProvider {
   }
 
   async generateText(request: TextRequest): Promise<ProviderResult<string>> {
-    return this.#execute("text", request, undefined, (payload) => extractOutputText(payload));
+    return this.#execute("text", request, undefined, (payload) =>
+      extractOutputText(payload),
+    );
   }
 
   async generateStructured<T>(
@@ -206,7 +225,8 @@ export class OpenAIResponsesProvider implements LanguageModelProvider {
         schema: request.output.jsonSchema,
         strict: true,
       },
-      (payload) => parseStructuredOutput(request.output, extractOutputText(payload)),
+      (payload) =>
+        parseStructuredOutput(request.output, extractOutputText(payload)),
     );
   }
 
@@ -333,5 +353,9 @@ export class OpenAIResponsesProvider implements LanguageModelProvider {
 }
 
 export function isRetryableProviderErrorCode(code: ProviderErrorCode): boolean {
-  return code === "timeout" || code === "rate_limit" || code === "provider_unavailable";
+  return (
+    code === "timeout" ||
+    code === "rate_limit" ||
+    code === "provider_unavailable"
+  );
 }

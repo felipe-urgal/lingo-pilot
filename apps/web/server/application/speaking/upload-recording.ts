@@ -31,10 +31,12 @@ export type SpeakingUploadReservation =
  * in-process lock.
  */
 export interface SpeakingUploadLedger {
-  reserve(input: Readonly<{
-    userId: string;
-    metadata: SpeakingRecordingMetadata;
-  }>): Promise<SpeakingUploadReservation>;
+  reserve(
+    input: Readonly<{
+      userId: string;
+      metadata: SpeakingRecordingMetadata;
+    }>,
+  ): Promise<SpeakingUploadReservation>;
   complete(receipt: SpeakingRecordingReceipt): Promise<void>;
   release(
     input: Readonly<{ userId: string; operationKey: string }>,
@@ -42,11 +44,13 @@ export interface SpeakingUploadLedger {
 }
 
 export interface SpeakingAttemptOwnership {
-  belongsToUser(input: Readonly<{
-    userId: string;
-    attemptId: string;
-    activityId: string;
-  }>): Promise<boolean>;
+  belongsToUser(
+    input: Readonly<{
+      userId: string;
+      attemptId: string;
+      activityId: string;
+    }>,
+  ): Promise<boolean>;
 }
 
 export type SpeakingUploadErrorCode =

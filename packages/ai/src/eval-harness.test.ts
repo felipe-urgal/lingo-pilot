@@ -13,7 +13,7 @@ import {
 } from "./eval-scorers.js";
 import type { StructuredOutputContract } from "./contracts.js";
 
- type Output = Readonly<{
+type Output = Readonly<{
   feedback: string;
   conceptIds: readonly string[];
 }>;
@@ -36,7 +36,8 @@ const outputContract: StructuredOutputContract<Output> = {
   parse(value) {
     if (!value || typeof value !== "object") throw new Error("invalid output");
     const candidate = value as Record<string, unknown>;
-    if (typeof candidate.feedback !== "string") throw new Error("invalid feedback");
+    if (typeof candidate.feedback !== "string")
+      throw new Error("invalid feedback");
     if (
       !Array.isArray(candidate.conceptIds) ||
       !candidate.conceptIds.every((item) => typeof item === "string")
@@ -65,7 +66,9 @@ const dataset: EvalDataset<Input> = {
 
 function createExecutor(
   response: Output,
-): (evalCase: (typeof dataset.cases)[number]) => Promise<EvalExecution<Output>> {
+): (
+  evalCase: (typeof dataset.cases)[number],
+) => Promise<EvalExecution<Output>> {
   const provider = new FakeLanguageModelProvider({
     structuredResponses: [response],
     model: "fake-eval-model",
@@ -155,7 +158,9 @@ describe("AI eval harness", () => {
       promptVersion: "1",
       schemaVersion: "eval-output-v1",
     });
-    expect(JSON.stringify(report)).not.toContain("PRIVATE_INPUT_MUST_NOT_ENTER_REPORT");
+    expect(JSON.stringify(report)).not.toContain(
+      "PRIVATE_INPUT_MUST_NOT_ENTER_REPORT",
+    );
     expect(JSON.stringify(report)).not.toContain(
       "Revise only the most important A0 error.",
     );
@@ -174,7 +179,9 @@ describe("AI eval harness", () => {
     expect(report.status).toBe("failed");
     expect(report.criticalFailures).toBe(1);
     expect(
-      report.cases[0]?.checks.find((check) => check.scorerId === "concept-allowlist"),
+      report.cases[0]?.checks.find(
+        (check) => check.scorerId === "concept-allowlist",
+      ),
     ).toMatchObject({ passed: false, severity: "critical" });
   });
 

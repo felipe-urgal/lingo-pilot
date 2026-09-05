@@ -24,7 +24,10 @@ class FakeLedger implements SpeakingUploadLedger {
     | { kind: "completed"; receipt: SpeakingRecordingReceipt }
     | undefined;
 
-  async reserve(input: { userId: string; metadata: SpeakingRecordingMetadata }) {
+  async reserve(input: {
+    userId: string;
+    metadata: SpeakingRecordingMetadata;
+  }) {
     if (!this.state) {
       this.state = {
         kind: "reserved",

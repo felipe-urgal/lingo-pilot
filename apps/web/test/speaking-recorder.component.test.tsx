@@ -90,9 +90,7 @@ describe("SpeakingRecorder", () => {
     expect(onRecordingReady.mock.calls[0]?.[0].blob).toBeInstanceOf(Blob);
     expect(onRecordingReady.mock.calls[0]?.[0].durationMs).toBeGreaterThan(0);
     expect(trackStop).toHaveBeenCalled();
-    expect(
-      screen.getByLabelText("Prévia da sua gravação"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Prévia da sua gravação")).toBeInTheDocument();
   });
 });
 

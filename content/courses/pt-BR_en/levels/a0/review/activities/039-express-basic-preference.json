@@ -7,8 +7,14 @@
   "lessonId": "lesson.a0.039.like-love-hate",
   "type": "translation",
   "prompt": { "pt-BR": "Traduza: Eu gosto de café." },
-  "evaluation": { "type": "deterministic", "acceptedAnswers": ["i like coffee","i like coffee."] },
-  "conceptIds": ["concept.a0.grammar.preference-verbs","concept.a0.lexicon.food-and-drinks"],
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["i like coffee", "i like coffee."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.preference-verbs",
+    "concept.a0.lexicon.food-and-drinks"
+  ],
   "objectiveIds": ["objective.a0.039.express-basic-preference"],
   "modality": "writing",
   "supportLevel": 1,

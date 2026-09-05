@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.029.state-ability",
-      "description": { "pt-BR": "Dizer habilidades simples com can ou can't seguido de verbo base." }
+      "description": {
+        "pt-BR": "Dizer habilidades simples com can ou can't seguido de verbo base."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.028.imperatives"],
@@ -22,7 +24,9 @@
     {
       "id": "block.a0.029.can-ability.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Use can + verbo base para habilidade e can't + verbo base para dizer que a habilidade não existe." }
+      "text": {
+        "pt-BR": "Use can + verbo base para habilidade e can't + verbo base para dizer que a habilidade não existe."
+      }
     },
     {
       "id": "block.a0.029.can-ability.vocabulary",
@@ -39,7 +43,9 @@
     {
       "id": "block.a0.029.can-ability.checkpoint",
       "type": "checkpoint",
-      "text": { "pt-BR": "Depois de can/can't, mantenha o verbo na forma base: can swim, não can swims." }
+      "text": {
+        "pt-BR": "Depois de can/can't, mantenha o verbo na forma base: can swim, não can swims."
+      }
     }
   ],
   "activityIds": ["activity.a0.029.use-can-ability"]

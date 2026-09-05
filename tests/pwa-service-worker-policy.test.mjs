@@ -78,7 +78,10 @@ test("successful logout clears LingoPilot session caches but preserves public sh
   assert.equal(isLingoCacheName(LINGO_STATIC_CACHE), true);
   assert.equal(isLingoCacheName("unrelated-cache"), false);
   assert.equal(shouldDeleteCacheAfterLogout(LINGO_STATIC_CACHE), true);
-  assert.equal(shouldDeleteCacheAfterLogout("lingo-pilot-future-user-cache-v1"), true);
+  assert.equal(
+    shouldDeleteCacheAfterLogout("lingo-pilot-future-user-cache-v1"),
+    true,
+  );
   assert.equal(shouldDeleteCacheAfterLogout(LINGO_SHELL_CACHE), false);
   assert.equal(shouldDeleteCacheAfterLogout("unrelated-cache"), false);
 });

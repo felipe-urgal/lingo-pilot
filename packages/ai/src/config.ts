@@ -48,7 +48,9 @@ function parseInteger(
   return parsed;
 }
 
-export function parseAiEnvironment(source: Readonly<Record<string, string | undefined>>): AiConfig {
+export function parseAiEnvironment(
+  source: Readonly<Record<string, string | undefined>>,
+): AiConfig {
   const provider = source.AI_PROVIDER?.trim().toLowerCase() || "none";
   if (provider === "none") return Object.freeze({ provider: "none" });
   if (provider !== "openai") {
@@ -59,8 +61,20 @@ export function parseAiEnvironment(source: Readonly<Record<string, string | unde
     provider: "openai",
     apiKey: requireString(source.OPENAI_API_KEY, "OPENAI_API_KEY"),
     model: requireString(source.OPENAI_MODEL, "OPENAI_MODEL"),
-    timeoutMs: parseInteger(source.AI_TIMEOUT_MS, "AI_TIMEOUT_MS", 10_000, 100, 60_000),
-    maxAttempts: parseInteger(source.AI_MAX_ATTEMPTS, "AI_MAX_ATTEMPTS", 2, 1, 3),
+    timeoutMs: parseInteger(
+      source.AI_TIMEOUT_MS,
+      "AI_TIMEOUT_MS",
+      10_000,
+      100,
+      60_000,
+    ),
+    maxAttempts: parseInteger(
+      source.AI_MAX_ATTEMPTS,
+      "AI_MAX_ATTEMPTS",
+      2,
+      1,
+      3,
+    ),
     maxOutputTokens: parseInteger(
       source.AI_MAX_OUTPUT_TOKENS,
       "AI_MAX_OUTPUT_TOKENS",

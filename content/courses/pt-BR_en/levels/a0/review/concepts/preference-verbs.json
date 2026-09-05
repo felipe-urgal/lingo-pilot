@@ -11,7 +11,5 @@
   "description": {
     "pt-BR": "Expressar preferência básica com like, love e hate diante de nomes conhecidos."
   },
-  "prerequisiteConceptIds": [
-    "concept.a0.grammar.present-simple-base"
-  ]
+  "prerequisiteConceptIds": ["concept.a0.grammar.present-simple-base"]
 }

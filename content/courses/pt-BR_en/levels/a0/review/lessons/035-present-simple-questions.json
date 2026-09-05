@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.035.ask-present-simple",
-      "description": { "pt-BR": "Perguntar sobre ações e fatos simples com do/does mais sujeito e verbo base." }
+      "description": {
+        "pt-BR": "Perguntar sobre ações e fatos simples com do/does mais sujeito e verbo base."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.034.present-simple-negative"],
@@ -25,12 +27,16 @@
     {
       "id": "block.a0.035.present-simple-questions.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Use do antes de I/you/we/they e does antes de he/she/it. O verbo principal fica na forma base." }
+      "text": {
+        "pt-BR": "Use do antes de I/you/we/they e does antes de he/she/it. O verbo principal fica na forma base."
+      }
     },
     {
       "id": "block.a0.035.present-simple-questions.rule",
       "type": "rule",
-      "text": { "pt-BR": "Do + I/you/we/they + verbo base...? Does + he/she/it + verbo base...?" }
+      "text": {
+        "pt-BR": "Do + I/you/we/they + verbo base...? Does + he/she/it + verbo base...?"
+      }
     },
     {
       "id": "block.a0.035.present-simple-questions.example",
@@ -41,7 +47,9 @@
     {
       "id": "block.a0.035.present-simple-questions.common-error",
       "type": "common-error",
-      "text": { "pt-BR": "Depois de does, use a forma base: Does she work?, não Does she works?" }
+      "text": {
+        "pt-BR": "Depois de does, use a forma base: Does she work?, não Does she works?"
+      }
     }
   ],
   "activityIds": ["activity.a0.035.ask-present-simple"]
