@@ -126,14 +126,15 @@ export async function uploadSpeakingRecording(
     return { ok: true, replayed: true, receipt: reservation.receipt };
   }
 
-  const objectKey = createPrivateSpeakingObjectKey({
-    userId: input.userId,
-    attemptId: validation.value.attemptId,
-    assetId: reservation.assetId,
-  });
   let storedAssetRef: string | undefined;
 
   try {
+    const objectKey = createPrivateSpeakingObjectKey({
+      userId: input.userId,
+      attemptId: validation.value.attemptId,
+      assetId: reservation.assetId,
+    });
+
     const stored = await dependencies.storage.putPrivateObject({
       objectKey,
       contentType: validation.value.mimeType,
