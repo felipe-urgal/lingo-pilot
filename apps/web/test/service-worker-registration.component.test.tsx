@@ -38,6 +38,7 @@ describe("ServiceWorkerRegistration", () => {
         type: "module",
       }),
     );
+    await Promise.resolve();
 
     window.dispatchEvent(new Event("online"));
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
@@ -47,7 +48,35 @@ describe("ServiceWorkerRegistration", () => {
     expect(update).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps registration failure non-blocking", async () => {
+  it("retries registration after an offline startup failure", async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const register = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ update });
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: { register },
+    });
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+
+    render(<ServiceWorkerRegistration />);
+
+    await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
+    await Promise.resolve();
+
+    window.dispatchEvent(new Event("online"));
+    await waitFor(() => expect(register).toHaveBeenCalledTimes(2));
+    await Promise.resolve();
+
+    window.dispatchEvent(new Event("online"));
+    await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps repeated registration failure non-blocking", async () => {
     const register = vi.fn().mockRejectedValue(new Error("offline"));
     Object.defineProperty(navigator, "serviceWorker", {
       configurable: true,
@@ -60,5 +89,8 @@ describe("ServiceWorkerRegistration", () => {
 
     expect(() => render(<ServiceWorkerRegistration />)).not.toThrow();
     await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
+
+    window.dispatchEvent(new Event("online"));
+    await waitFor(() => expect(register).toHaveBeenCalledTimes(2));
   });
 });
