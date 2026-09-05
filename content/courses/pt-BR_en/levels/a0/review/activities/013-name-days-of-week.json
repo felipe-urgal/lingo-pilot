@@ -1,0 +1,24 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.013.name-days-of-week",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.013.days-of-week",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Escreva em inglês, separados por vírgulas: segunda-feira, quarta-feira, domingo."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "Monday, Wednesday, Sunday",
+      "Monday,Wednesday,Sunday"
+    ]
+  },
+  "conceptIds": ["concept.a0.calendar.days-of-week"],
+  "objectiveIds": ["objective.a0.013.name-days-of-week"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.grammar.present-simple-negative",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": { "pt-BR": "Simple present — negativa" },
+  "description": { "pt-BR": "Negar ações e fatos no simple present com don't e doesn't mais verbo base." },
+  "prerequisiteConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.grammar.present-simple-third-person"
+  ]
+}

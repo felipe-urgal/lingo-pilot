@@ -1,0 +1,55 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.032.present-simple-plural-subjects",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Simple present — I/you/we/they" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.032.use-present-simple-base",
+      "description": { "pt-BR": "Descrever ações e fatos simples com I, you, we e they mais a forma base do verbo." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.031.essential-verbs"],
+  "introducesConceptIds": ["concept.a0.grammar.present-simple-base"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.subject-pronouns",
+    "concept.a0.lexicon.essential-verbs"
+  ],
+  "vocabularyIds": [
+    "vocab.go",
+    "vocab.work",
+    "vocab.live",
+    "vocab.study",
+    "vocab.eat",
+    "vocab.drink"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.032.present-simple-base.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Com I, you, we e they, use o verbo na forma base para falar de ações habituais e fatos simples." }
+    },
+    {
+      "id": "block.a0.032.present-simple-base.rule",
+      "type": "rule",
+      "text": { "pt-BR": "I/You/We/They + verbo base." }
+    },
+    {
+      "id": "block.a0.032.present-simple-base.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I study. You work. We live. They eat." }
+    },
+    {
+      "id": "block.a0.032.present-simple-base.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Não acrescente -s ao verbo com I, you, we ou they." }
+    }
+  ],
+  "activityIds": ["activity.a0.032.use-present-simple-base"]
+}

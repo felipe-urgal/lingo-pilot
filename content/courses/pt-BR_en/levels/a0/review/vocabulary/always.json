@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.always",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "always",
+  "language": "en",
+  "partOfSpeech": "adverb",
+  "translations": { "pt-BR": "sempre" },
+  "introducedInLessonId": "lesson.a0.036.frequency-adverbs"
+}

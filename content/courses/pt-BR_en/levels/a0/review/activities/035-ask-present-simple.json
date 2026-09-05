@@ -1,0 +1,22 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.035.ask-present-simple",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.035.present-simple-questions",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Você estuda?" },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["do you study", "do you study?"]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.present-simple-questions",
+    "concept.a0.lexicon.essential-verbs"
+  ],
+  "objectiveIds": ["objective.a0.035.ask-present-simple"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

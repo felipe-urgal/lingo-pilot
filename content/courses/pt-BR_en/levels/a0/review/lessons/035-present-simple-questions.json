@@ -1,0 +1,48 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.035.present-simple-questions",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Simple present — perguntas" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.035.ask-present-simple",
+      "description": { "pt-BR": "Perguntar sobre ações e fatos simples com do/does mais sujeito e verbo base." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.034.present-simple-negative"],
+  "introducesConceptIds": ["concept.a0.grammar.present-simple-questions"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-negative",
+    "concept.a0.grammar.subject-pronouns"
+  ],
+  "vocabularyIds": ["vocab.work", "vocab.study", "vocab.live"],
+  "blocks": [
+    {
+      "id": "block.a0.035.present-simple-questions.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Use do antes de I/you/we/they e does antes de he/she/it. O verbo principal fica na forma base." }
+    },
+    {
+      "id": "block.a0.035.present-simple-questions.rule",
+      "type": "rule",
+      "text": { "pt-BR": "Do + I/you/we/they + verbo base...? Does + he/she/it + verbo base...?" }
+    },
+    {
+      "id": "block.a0.035.present-simple-questions.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "Do you study? Do they work? Does she work?" }
+    },
+    {
+      "id": "block.a0.035.present-simple-questions.common-error",
+      "type": "common-error",
+      "text": { "pt-BR": "Depois de does, use a forma base: Does she work?, não Does she works?" }
+    }
+  ],
+  "activityIds": ["activity.a0.035.ask-present-simple"]
+}

@@ -1,0 +1,48 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.034.present-simple-negative",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Simple present — negativa" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.034.negate-present-simple",
+      "description": { "pt-BR": "Negar ações e fatos simples com don't/doesn't mais verbo base." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.033.present-simple-third-person"],
+  "introducesConceptIds": ["concept.a0.grammar.present-simple-negative"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.grammar.present-simple-third-person"
+  ],
+  "vocabularyIds": ["vocab.work", "vocab.study", "vocab.live", "vocab.eat"],
+  "blocks": [
+    {
+      "id": "block.a0.034.present-simple-negative.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Use don't com I/you/we/they e doesn't com he/she/it. Depois de don't/doesn't, o verbo volta para a forma base." }
+    },
+    {
+      "id": "block.a0.034.present-simple-negative.rule",
+      "type": "rule",
+      "text": { "pt-BR": "I/You/We/They + don't + verbo base. He/She/It + doesn't + verbo base." }
+    },
+    {
+      "id": "block.a0.034.present-simple-negative.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I don't work. She doesn't work. They don't study." }
+    },
+    {
+      "id": "block.a0.034.present-simple-negative.common-error",
+      "type": "common-error",
+      "text": { "pt-BR": "Depois de doesn't, não repita o -s: use She doesn't work, não She doesn't works." }
+    }
+  ],
+  "activityIds": ["activity.a0.034.negate-present-simple"]
+}

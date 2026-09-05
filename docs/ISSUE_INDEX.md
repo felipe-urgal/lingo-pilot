@@ -39,7 +39,7 @@ Este documento é o índice do backlog criado a partir da visão, arquitetura e 
 - #65 alinhou o manifesto ativo ao vocabulário canônico do Dev Dashboard;
 - #66/#69 atualizaram Next.js para `16.3.4`, acima do security floor corrigido da linha 16.3.
 
-A capability de Production está ativa, mas isso não encerra o hardening operacional da #45.
+A capability de Production está ativa. O hardening operacional da #45 foi concluído no PR #104 com runbooks executáveis, recovery explícito e documentação de deploy reconciliada com o fluxo do Dev Dashboard.
 
 ## Fase 1 — Study Engine
 
@@ -54,7 +54,7 @@ A capability de Production está ativa, mas isso não encerra o hardening operac
 - #25 Daily Session Planner v1 — **Concluída no PR #87**
 - #26 Session execution, resume and idempotency hardening — **Concluída nos PRs #91 e #92**
 - #27 Progress, weak concepts and study history — **Escopo funcional concluído nos PRs #95 e #96; issue aberta por pendência de DoD de evidência visual/E2E**
-- #28 Migrate and editorially review A0 course content — **Ativa; 12/43 aulas materializadas em `review` nos PRs #97 e #98**
+- #28 Migrate and editorially review A0 course content — **Ativa; 24/43 aulas materializadas em `review` nos PRs #97, #98, #103 e #105**
 - #49 14-day A0 dogfood validation and learning-loop review
 - #29 Migrate and editorially review A1 and A2 course content
 
@@ -173,7 +173,7 @@ A issue #27 permanece aberta somente pela pendência processual de DoD já regis
 
 Histórico avançado e filtros continuam YAGNI até que dogfood mostre necessidade concreta.
 
-### Migração editorial A0 — #28 / PRs #97 e #98
+### Migração editorial A0 — #28 / PRs #97, #98, #103 e #105
 
 A #28 está ativa e o conteúdo expandido continua deliberadamente isolado em `status=review` até revisão editorial humana explícita.
 
@@ -195,9 +195,13 @@ O PR #98 adicionou a Unit 02 `unit.a0.02.personal-information`, aulas 007–012:
 - ponte explícita de progressão 006 → 007 e sequência até 012;
 - regressão de conteúdo e `content:validate` 100% verdes.
 
-Estado atual da migração: **12/43 aulas A0 materializadas em schema `review`**. Units 01 e 02 ainda não estão publicadas e precisam de revisão editorial humana, revisão de naturalidade/CEFR e smoke no Lesson Player antes de qualquer promoção para `published`.
+O PR #103 adicionou a Unit 03, aulas 013–018, mantendo todo o recorte em `review` e ampliando o grafo com calendário básico, artigos/plurais e regressões de progressão sem publicação no runtime.
 
-A próxima fatia planejada da #28 é a **Unit 03, aulas 013–018** (`days-of-week` → `irregular-plurals`), mantendo a mesma política de isolamento editorial.
+O PR #105 adiciona a Unit 04, aulas 019–024, com demonstratives, possessive adjectives, family, `have/has`, colors e everyday objects. O recorte também corrige a proveniência lexical de `phone` na Lesson 012 e `book` na Lesson 017, sem fingir introdução tardia desses itens.
+
+Estado após este recorte: **24/43 aulas A0 materializadas em schema `review`**. Units 01–04 ainda não estão publicadas e precisam de revisão editorial humana, revisão de naturalidade/CEFR e smoke no Lesson Player antes de qualquer promoção para `published`.
+
+A próxima fatia planejada da #28 é a **Unit 05, aulas 025–030**, mantendo a mesma política de isolamento editorial.
 
 ### Estratégia de entrega
 
@@ -222,7 +226,7 @@ resume ────────────→ hardening               ✅ #26 /
       ↓
 progress/history                             funcional ✅ #27 / PRs #95/#96
       ↓
-A0 content review                            ativa #28 · 12/43 / PRs #97/#98
+A0 content review                            ativa #28 · 24/43 / PRs #97/#98/#103/#105
       ↓
 A0 publicado + smoke pedagógico
       ↓
@@ -239,10 +243,10 @@ A frente funcional ativa é:
 
 ```text
 #28 Migrate and editorially review A0 course content
-  └─ próximo recorte: Unit 03 / aulas 013–018
+  └─ próximo recorte: Unit 05 / aulas 025–030
 ```
 
-Os PRs #97 e #98 já deixaram **12/43** aulas em `review` com validação de conteúdo no CI. A sequência é continuar materializando Units 03–07, revisar a progressão A0 do início ao fim e só então promover conteúdo explicitamente aprovado para `published` + smoke pedagógico. Em paralelo, #27 permanece aberta apenas pela evidência de DoD registrada na própria issue.
+Os PRs #97, #98, #103 e #105 deixam **24/43** aulas em `review` com validação de conteúdo no CI. A sequência é continuar materializando Units 05–07, revisar a progressão A0 do início ao fim e só então promover conteúdo explicitamente aprovado para `published` + smoke pedagógico. Em paralelo, #27 permanece aberta apenas pela evidência de DoD registrada na própria issue.
 
 Depois de A0 utilizável ponta a ponta, a sequência volta para dogfood #49 e expansão A1/A2 #29 conforme as dependências registradas.
 
@@ -260,7 +264,7 @@ A infraestrutura compartilhada de IA entra **antes** das avaliações por IA de 
 
 ### AI evaluation foundation — prerequisite compartilhado
 
-- #35 Provider abstraction, structured outputs and prompt registry
+- #35 Provider abstraction, structured outputs and prompt registry — **Concluída no PR #106**
 - #36 LearnerContext builder and pedagogical constraints
 - #41 Versioned AI evaluation harness and quality gates
 
@@ -316,13 +320,13 @@ O tutor V1 precisa de evals representativos de **A0, A1 e A2**; cobertura A0/A1 
 - #42 PWA, offline resilience and safe retry strategy
 - #43 User data export, deletion and retention enforcement
 - #44 Accessibility audit and performance budgets
-- #45 Backup, restore, deployment and incident runbooks
+- #45 Backup, restore, deployment and incident runbooks — **Concluída no PR #104**
 - #46 Product and learning analytics with privacy-safe event schemas
 - #47 Multi-language capability contracts and locale-aware normalization
 - #48 Content publication, revision rollout and rollback workflow
 - #50 Validate platform with B1 expansion and a second-language pilot
 
-A produção operacional já foi ativada por #63–#65: Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check e integração com o Dev Dashboard foram exercitados. A #45 continua aberta para o **hardening restante**, especialmente runbooks, incident response, critérios adicionais de recovery e evolução operacional conforme o produto passar a armazenar dados reais.
+A produção operacional foi ativada por #63–#65 e endurecida pela #45/PR #104: Vercel, Neon, migrations explícitas, health/readiness, backup/restore-check, runbooks e integração com o Dev Dashboard têm contratos documentados e testados. Evoluções futuras de operação entram como novas issues quando houver requisitos adicionais.
 
 ## Prioridades
 
@@ -358,4 +362,4 @@ Hardening, operacionalização e generalização da plataforma. Alguns itens de 
 
 O practice learning loop **#21–#24 está concluído em `main`** pelo PR #86, o planner diário **#25 está concluído em `main`** pelo PR #87, o hardening de execução **#26 está concluído em `main`** pelos PRs #91 e #92 e o escopo funcional de progresso **#27 está em `main`** pelos PRs #95 e #96, permanecendo a issue aberta somente pela pendência explícita de evidência de DoD.
 
-A frente funcional ativa é **#28 — conteúdo A0**. Os PRs #97 e #98 materializaram Units 01–02 e **12/43 aulas em `review`**; o próximo recorte é **Unit 03 / aulas 013–018**. Nenhuma Unit assistida por IA deve ser promovida para `published` antes de revisão editorial humana, validação completa e smoke pedagógico. Depois de A0 utilizável ponta a ponta, seguem dogfood #49 e expansão A1/A2 #29. Produção já está ativa como capability operacional, mas a #45 continua responsável pelo hardening e pelos runbooks restantes.
+A frente funcional ativa é **#28 — conteúdo A0**. Os PRs #97, #98, #103 e #105 materializam Units 01–04 e **24/43 aulas em `review`**; o próximo recorte é **Unit 05 / aulas 025–030**. Nenhuma Unit assistida por IA deve ser promovida para `published` antes de revisão editorial humana, validação completa e smoke pedagógico. Depois de A0 utilizável ponta a ponta, seguem dogfood #49 e expansão A1/A2 #29. A foundation compartilhada de IA tem a #35 concluída no PR #106; #36 e #41 permanecem como próximos gates antes de qualquer consumer de IA voltado ao aluno.

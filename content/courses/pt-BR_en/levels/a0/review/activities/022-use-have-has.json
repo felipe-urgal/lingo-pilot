@@ -1,0 +1,25 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.022.use-have-has",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.022.have-has",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza para o inglês: Ela tem um irmão."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["She has a brother.", "She has a brother"]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.have-has",
+    "concept.a0.lexicon.family",
+    "concept.a0.grammar.subject-pronouns"
+  ],
+  "objectiveIds": ["objective.a0.022.use-have-has"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

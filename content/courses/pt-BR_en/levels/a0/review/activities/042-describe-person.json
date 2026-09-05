@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.042.describe-person",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.042.describe-people",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza: Ela tem cabelo preto." },
+  "evaluation": { "type": "deterministic", "acceptedAnswers": ["she has black hair","she has black hair."] },
+  "conceptIds": ["concept.a0.communication.describe-people","concept.a0.grammar.have-has"],
+  "objectiveIds": ["objective.a0.042.describe-person"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,53 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.017.regular-plurals",
+  "schemaVersion": 1,
+  "revision": 2,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "Plural regular" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.017.form-regular-plurals",
+      "description": {
+        "pt-BR": "Formar plurais regulares frequentes com -s e -es."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.016.articles-a-an"],
+  "introducesConceptIds": ["concept.a0.grammar.regular-plurals"],
+  "reinforcesConceptIds": [],
+  "vocabularyIds": ["vocab.book"],
+  "blocks": [
+    {
+      "id": "block.a0.017.plural.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Muitos substantivos formam o plural com -s. Alguns finais comuns usam -es."
+      }
+    },
+    {
+      "id": "block.a0.017.plural.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Comece pelos padrões frequentes: book → books; class → classes."
+      }
+    },
+    {
+      "id": "block.a0.017.plural.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "one book · two books · one class · two classes" }
+    },
+    {
+      "id": "block.a0.017.plural.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Observe se a palavra aceita o padrão regular antes de aplicar -s ou -es."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.017.form-regular-plural"]
+}

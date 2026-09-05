@@ -1,0 +1,19 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.03.time-and-basic-nouns",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Tempo e substantivos básicos"
+  },
+  "lessonIds": [
+    "lesson.a0.013.days-of-week",
+    "lesson.a0.014.months-and-dates",
+    "lesson.a0.015.telling-time",
+    "lesson.a0.016.articles-a-an",
+    "lesson.a0.017.regular-plurals",
+    "lesson.a0.018.irregular-plurals"
+  ]
+}

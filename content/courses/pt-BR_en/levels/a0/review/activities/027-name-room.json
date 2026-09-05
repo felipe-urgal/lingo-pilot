@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.027.name-room",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.027.rooms-at-home",
+  "type": "short-answer",
+  "prompt": { "pt-BR": "Escreva em inglês a palavra para cozinha." },
+  "evaluation": { "type": "deterministic", "acceptedAnswers": ["kitchen"] },
+  "conceptIds": ["concept.a0.lexicon.rooms-at-home"],
+  "objectiveIds": ["objective.a0.027.name-rooms-at-home"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

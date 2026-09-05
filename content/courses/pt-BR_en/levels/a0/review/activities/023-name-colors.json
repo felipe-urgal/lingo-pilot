@@ -1,0 +1,24 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.023.name-colors",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.023.colors",
+  "type": "short-answer",
+  "prompt": {
+    "pt-BR": "Escreva em inglês, separados por vírgulas: vermelho, azul, preto, branco."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "red, blue, black, white",
+      "red,blue,black,white"
+    ]
+  },
+  "conceptIds": ["concept.a0.lexicon.colors"],
+  "objectiveIds": ["objective.a0.023.name-colors"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

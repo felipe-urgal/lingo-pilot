@@ -1,0 +1,31 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.037.describe-daily-routine",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.037.daily-routine",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza: Eu geralmente acordo às sete."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "i usually wake up at seven",
+      "i usually wake up at seven.",
+      "i usually wake up at 7",
+      "i usually wake up at 7."
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.communication.daily-routine",
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.time.clock-time",
+    "concept.a0.grammar.frequency-adverbs"
+  ],
+  "objectiveIds": ["objective.a0.037.describe-daily-routine"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

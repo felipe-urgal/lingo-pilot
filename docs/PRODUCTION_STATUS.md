@@ -1,8 +1,8 @@
 # Status de produção
 
-Este documento registra o estado factual/evidências da capacidade de produção do LingoPilot. O procedimento operacional canônico está em [`PRODUCTION.md`](PRODUCTION.md); o contrato técnico detalhado permanece em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md).
+Este documento registra o estado factual/evidências da capacidade de produção do LingoPilot. O procedimento operacional canônico está em [`PRODUCTION.md`](PRODUCTION.md); o contrato técnico detalhado permanece em [`PRODUCTION_DEPLOYMENT.md`](PRODUCTION_DEPLOYMENT.md); resposta a incidentes usa [`runbooks/`](runbooks/README.md).
 
-> **Estado atual:** Production capability habilitada desde 2026-09-01 após validação real de check isolado, migration, deployment Vercel, readiness, backup e restore-check. O manifesto `.dev-dashboard/production.json` está ativo e mapeia explicitamente o projeto Vercel `lingo-pilot`.
+> **Estado atual:** Production capability habilitada desde 2026-09-01 após validação real de check isolado, migration, deployment Vercel, readiness, backup e restore-check. Desde 2026-09-04 / PR #102, deployments automáticos da integração Git estão desabilitados e a promoção Vercel é acionada explicitamente pelo Dev Dashboard via API do provider.
 
 ## Infraestrutura validada
 
@@ -10,8 +10,9 @@ Este documento registra o estado factual/evidências da capacidade de produção
 
 - projeto: `lingo-pilot`;
 - repositório: `felipe-urgal/lingo-pilot`;
-- production branch: `main`;
-- deployments automáticos da integração Git: somente `main`, conforme `vercel.json` e ADR 0004;
+- branch/fonte versionada de Production: `main`;
+- `vercel.json`: `git.deploymentEnabled=false` para todas as branches;
+- promoção atual: `Dev Dashboard -> provider-deploy -> Vercel API`;
 - aplicação Next.js em `apps/web`;
 - domínio canônico: `https://lingo-pilot.vercel.app`;
 - readiness canônica: `https://lingo-pilot.vercel.app/api/health/ready`;
@@ -19,7 +20,9 @@ Este documento registra o estado factual/evidências da capacidade de produção
 
 O ambiente Production da Vercel recebe somente configuração de runtime necessária. `DATABASE_URL` usa conexão pooled da branch Neon `main`; credenciais administrativas de migration/backup não ficam no runtime da aplicação.
 
-Preview Deployments automáticos para branches de trabalho estão desabilitados. A branch Neon `preview` permanece isolada para Preview explícito/manual quando necessário e nunca deve receber a conexão da `main`.
+Preview Deployments automáticos também estão desabilitados. A branch Neon `preview` permanece isolada para Preview explícito/manual quando necessário e nunca deve receber a conexão da `main`.
+
+A política anterior de deployment automático somente na `main` está registrada historicamente no ADR 0004 e foi superada pelo ADR 0006 após o PR #102.
 
 ### Neon PostgreSQL
 
@@ -41,6 +44,8 @@ pnpm prod:verify
 pnpm prod:backup
 pnpm prod:restore-check -- <backup.dump>
 ```
+
+Não existe `prod:deploy` local. `provider-deploy` é uma etapa do Dev Dashboard para o provider Vercel.
 
 `prod:prepare` continua sendo hook real do Production Contract e executa `pnpm db:up` para preparar a fronteira local do preflight. Ele não deve ser removido apenas por parecer um wrapper fino: o Dev Dashboard conhece o alias, não Docker/PostgreSQL.
 
@@ -71,10 +76,19 @@ Em 2026-09-01 foram validados:
 - backup PostgreSQL em formato custom;
 - restore em branch Neon descartável separada da `main`;
 - presença de `app_metadata` após restore;
-- projeto Vercel ligado ao GitHub/`main`;
+- projeto Vercel ligado ao repositório/`main`;
 - Production Deployment `Ready` no domínio canônico;
 - `prod:verify` com readiness real;
 - isolamento de Preview sem acesso ao banco de Production.
+
+Em 2026-09-04 o PR #102 mudou apenas o **gatilho** de promoção:
+
+- `git.deploymentEnabled=false` passou a impedir deployments automáticos por push/merge;
+- o Dev Dashboard, que já orquestra o Production Contract, passou a acionar explicitamente o deployment Vercel via API;
+- `main`/SHA continua sendo a fonte versionada do release;
+- topologia Vercel + Neon, health/readiness e migrations explícitas não mudaram.
+
+ADR: [`ADR/0006-explicit-vercel-deployments-via-dev-dashboard.md`](ADR/0006-explicit-vercel-deployments-via-dev-dashboard.md).
 
 ## Health/readiness
 
@@ -88,6 +102,32 @@ Falha de PostgreSQL ou ausência do schema retorna `503`. Providers opcionais de
 `prod:backup` gera dump em `.dev-dashboard/backups/`, caminho ignorado pelo Git. A senha não entra na linha de comando do `pg_dump`.
 
 `prod:restore-check` exige destino não produtivo e confirmação explícita. Quando `DATABASE_DIRECT_URL` também está presente, o comando compara endpoint e recusa o mesmo banco de Production. Após restore, valida o schema mínimo.
+
+A política de hardening da #45 passa a exigir:
+
+- backup antes de toda migration conforme o contrato ativo;
+- metadata mínima de auditoria (timestamp UTC, SHA, migration head, checksum e retenção) para artefatos retidos;
+- armazenamento criptografado em domínio de falha separado quando houver dados duráveis/relevantes;
+- restore exercise trimestral antes de dados relevantes e mensal depois que Production tiver dados duráveis/relevantes, além de repetir após mudança material do mecanismo.
+
+Detalhes: [`runbooks/backup-restore.md`](runbooks/backup-restore.md).
+
+## Runbooks operacionais
+
+A baseline ativa agora possui procedimentos para:
+
+- deploy/smoke/rollback;
+- migration failure + `recovery_required`;
+- backup/restore;
+- Vercel outage/quota;
+- PostgreSQL/Neon outage;
+- auth outage;
+- leaked secret;
+- data corruption.
+
+Entrada: [`runbooks/README.md`](runbooks/README.md).
+
+AI/storage outage continuam ausentes deliberadamente até essas capabilities existirem.
 
 ## Production Contract ativo
 
@@ -111,8 +151,10 @@ migrations = before-deploy
 rollback = provider-only-when-schema-compatible
 ```
 
-Não existe `prod:deploy` local. A promoção continua sendo merge/push em `main` + integração Git da Vercel, seguida de `prod:verify`.
+`git-managed` continua descrevendo a ref Git que define o release; não implica deployment automático da integração Git. A promoção corrente é `check -> backup/migrate quando aplicável -> provider-deploy -> verify` pelo Dev Dashboard.
 
-## Hardening futuro
+## Estado do hardening #45
 
-A issue #45 continua referência para hardening operacional adicional que não é pré-requisito para manter a capability já validada. Mudanças futuras de provider, migration policy, backup/restore ou readiness devem atualizar [`PRODUCTION.md`](PRODUCTION.md), o contrato técnico e este status quando a evidência factual mudar.
+A capacidade inicial (#63–#65) permanece ativa. O recorte de hardening da #45 adiciona runbooks executáveis, política de recovery/backup, correlação operacional e reconcilia o gatilho explícito introduzido no #102.
+
+Critérios que dependem de incidente real continuarão sendo validados por execução quando ocorrerem; o contrato de resposta e os checks estruturais ficam versionados desde já. Mudanças futuras de provider, migration policy, backup/restore, readiness ou gatilho de deploy devem atualizar [`PRODUCTION.md`](PRODUCTION.md), o contrato técnico, ADR/runbooks afetados e este status quando a evidência factual mudar.

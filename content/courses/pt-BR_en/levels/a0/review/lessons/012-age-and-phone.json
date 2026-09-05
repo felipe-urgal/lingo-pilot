@@ -2,7 +2,7 @@
   "kind": "lesson",
   "id": "lesson.a0.012.age-and-phone",
   "schemaVersion": 1,
-  "revision": 1,
+  "revision": 2,
   "status": "review",
   "levelId": "level.a0",
   "unitId": "unit.a0.02.personal-information",
@@ -23,7 +23,7 @@
     "concept.a0.numbers.zero-to-twenty",
     "concept.a0.numbers.twenty-to-hundred"
   ],
-  "vocabularyIds": [],
+  "vocabularyIds": ["vocab.phone"],
   "blocks": [
     {
       "id": "block.a0.012.personal-information.explanation",

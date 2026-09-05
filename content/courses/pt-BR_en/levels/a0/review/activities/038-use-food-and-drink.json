@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.038.use-food-and-drink",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.038.food-and-drinks",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza: Eu bebo água." },
+  "evaluation": { "type": "deterministic", "acceptedAnswers": ["i drink water","i drink water."] },
+  "conceptIds": ["concept.a0.lexicon.food-and-drinks","concept.a0.lexicon.essential-verbs"],
+  "objectiveIds": ["objective.a0.038.use-food-and-drinks"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,52 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.031.essential-verbs",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Verbos essenciais" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.031.use-essential-verbs",
+      "description": { "pt-BR": "Reconhecer e usar verbos frequentes para ações e fatos cotidianos simples." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.030.can-requests-permission"],
+  "introducesConceptIds": ["concept.a0.lexicon.essential-verbs"],
+  "reinforcesConceptIds": ["concept.a0.grammar.subject-pronouns"],
+  "vocabularyIds": [
+    "vocab.go",
+    "vocab.work",
+    "vocab.live",
+    "vocab.study",
+    "vocab.eat",
+    "vocab.drink"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.031.essential-verbs.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Estes verbos aparecem com muita frequência quando falamos de rotina e fatos: go, work, live, study, eat e drink." }
+    },
+    {
+      "id": "block.a0.031.essential-verbs.vocabulary",
+      "type": "vocabulary",
+      "text": { "pt-BR": "go = ir; work = trabalhar; live = morar; study = estudar; eat = comer; drink = beber." }
+    },
+    {
+      "id": "block.a0.031.essential-verbs.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I study. You work. We eat. They drink." }
+    },
+    {
+      "id": "block.a0.031.essential-verbs.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Primeiro reconheça o significado do verbo. A forma do simple present será organizada nas próximas aulas." }
+    }
+  ],
+  "activityIds": ["activity.a0.031.use-essential-verb"]
+}

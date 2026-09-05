@@ -1,6 +1,10 @@
 import { Button } from "@lingo-pilot/ui";
 import type { StudySession } from "../../../../../packages/domain/src/index.ts";
 import { redirect } from "next/navigation";
+import {
+  formatCompletedStudySummary,
+  formatPlannedReviewsSummary,
+} from "../../../lib/study/study-count-copy";
 import { requireCurrentUser } from "../../../server/auth/current-user";
 import { getLearnerJourneyRepository } from "../../../server/learner/runtime";
 import { getDueReviews } from "../../../server/practice/runtime";
@@ -48,9 +52,7 @@ function CompletedToday({
       <p className="eyebrow">{crossedDay ? "Sessão retomada" : "Hoje"}</p>
       <h1 id="today-title">Estudo concluído.</h1>
       <p className="description">
-        {lessons} aula{lessons === 1 ? "" : "s"} e {reviews} revisão
-        {reviews === 1 ? "" : "ões"} concluída{reviews === 1 ? "" : "s"} a
-        partir dos itens persistidos.
+        {formatCompletedStudySummary({ lessons, reviews })}
       </p>
       {skipped.length > 0 ? (
         <p className="description">
@@ -136,10 +138,7 @@ export default async function TodayPage() {
         <h1 id="today-title">Comece pelas revisões prioritárias.</h1>
         <div className="today-plan" aria-label="Plano de estudo atual">
           <p className="today-plan__label">Revisar</p>
-          <h2>
-            {plannedReviews.length} revisão
-            {plannedReviews.length === 1 ? "" : "ões"} no plano
-          </h2>
+          <h2>{formatPlannedReviewsSummary(plannedReviews.length)}</h2>
           <p>O snapshot persistido continua sendo a fonte de verdade.</p>
         </div>
         <form action="/app/review" method="get">

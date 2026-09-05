@@ -1,0 +1,27 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.034.negate-present-simple",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.034.present-simple-negative",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Ele não trabalha." },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "he doesn't work",
+      "he doesn't work.",
+      "he does not work",
+      "he does not work."
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.present-simple-negative",
+    "concept.a0.grammar.present-simple-third-person"
+  ],
+  "objectiveIds": ["objective.a0.034.negate-present-simple"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

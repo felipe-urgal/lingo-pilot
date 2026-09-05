@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.drink",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "drink",
+  "language": "en",
+  "partOfSpeech": "verb",
+  "translations": { "pt-BR": "beber" },
+  "introducedInLessonId": "lesson.a0.031.essential-verbs"
+}

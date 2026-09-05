@@ -1,0 +1,28 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.030.make-can-request",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.030.can-requests-permission",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza como pedido de permissão: Posso abrir o livro, por favor?" },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "can i open the book please",
+      "can i open the book, please",
+      "can i open the book, please?",
+      "can i open the book please?"
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.can-requests-permission",
+    "concept.a0.grammar.imperatives",
+    "concept.a0.lexicon.everyday-objects"
+  ],
+  "objectiveIds": ["objective.a0.030.make-can-request"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

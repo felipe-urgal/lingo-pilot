@@ -1,0 +1,46 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.026.place-prepositions",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "Preposições de lugar" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.026.locate-objects",
+      "description": { "pt-BR": "Localizar objetos com in, on, under e next to em frases curtas." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.025.there-is-are"],
+  "introducesConceptIds": ["concept.a0.grammar.place-prepositions"],
+  "reinforcesConceptIds": ["concept.a0.lexicon.everyday-objects"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.026.prepositions.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Use uma preposição curta para mostrar a relação espacial entre dois elementos conhecidos." }
+    },
+    {
+      "id": "block.a0.026.prepositions.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": { "en": "in · on · under · next to" }
+    },
+    {
+      "id": "block.a0.026.prepositions.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "The key is in the bag. The book is next to the phone." }
+    },
+    {
+      "id": "block.a0.026.prepositions.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Associe cada preposição à posição real; não traduza todas como uma única ideia de lugar." }
+    }
+  ],
+  "activityIds": ["activity.a0.026.choose-place-preposition"]
+}

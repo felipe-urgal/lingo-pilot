@@ -1,0 +1,19 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.04.people-and-possessions",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Pessoas e posses"
+  },
+  "lessonIds": [
+    "lesson.a0.019.demonstratives",
+    "lesson.a0.020.possessive-adjectives",
+    "lesson.a0.021.family",
+    "lesson.a0.022.have-has",
+    "lesson.a0.023.colors",
+    "lesson.a0.024.everyday-objects"
+  ]
+}

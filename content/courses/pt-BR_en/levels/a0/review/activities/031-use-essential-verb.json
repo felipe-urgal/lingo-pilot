@@ -1,0 +1,22 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.031.use-essential-verb",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.031.essential-verbs",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Eu estudo." },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["i study", "i study."]
+  },
+  "conceptIds": [
+    "concept.a0.lexicon.essential-verbs",
+    "concept.a0.grammar.subject-pronouns"
+  ],
+  "objectiveIds": ["objective.a0.031.use-essential-verbs"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

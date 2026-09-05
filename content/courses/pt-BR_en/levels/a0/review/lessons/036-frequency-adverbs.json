@@ -1,0 +1,55 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.036.frequency-adverbs",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Advérbios de frequência" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.036.use-frequency-adverbs",
+      "description": { "pt-BR": "Indicar frequência em frases simples de rotina com always, usually, sometimes e never." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.035.present-simple-questions"],
+  "introducesConceptIds": ["concept.a0.grammar.frequency-adverbs"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.grammar.present-simple-third-person"
+  ],
+  "vocabularyIds": [
+    "vocab.always",
+    "vocab.usually",
+    "vocab.sometimes",
+    "vocab.never",
+    "vocab.work",
+    "vocab.study"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.036.frequency-adverbs.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Always, usually, sometimes e never dizem com que frequência algo acontece. Com os verbos desta unidade, coloque o advérbio normalmente antes do verbo principal." }
+    },
+    {
+      "id": "block.a0.036.frequency-adverbs.vocabulary",
+      "type": "vocabulary",
+      "text": { "pt-BR": "always = sempre; usually = geralmente; sometimes = às vezes; never = nunca." }
+    },
+    {
+      "id": "block.a0.036.frequency-adverbs.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I always study. She usually works. We sometimes study. They never work." }
+    },
+    {
+      "id": "block.a0.036.frequency-adverbs.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Neste recorte, pratique a posição com verbos de ação já conhecidos; outros padrões podem ser revisados em unidades posteriores." }
+    }
+  ],
+  "activityIds": ["activity.a0.036.use-frequency-adverb"]
+}

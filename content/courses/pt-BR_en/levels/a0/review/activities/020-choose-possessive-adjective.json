@@ -1,0 +1,24 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.020.choose-possessive-adjective",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.020.possessive-adjectives",
+  "type": "fill-blank",
+  "prompt": {
+    "pt-BR": "Complete em inglês: She is Maria. This is ___ book."
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["her", "Her"]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.possessive-adjectives",
+    "concept.a0.grammar.subject-pronouns"
+  ],
+  "objectiveIds": ["objective.a0.020.choose-possessive-adjective"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.043.survival-dialogues",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.07.everyday-survival",
+  "title": { "pt-BR": "Mini diálogos de sobrevivência" },
+  "estimatedMinutes": 12,
+  "objectives": [{"id":"objective.a0.043.complete-survival-exchange","description":{"pt-BR":"Combinar cumprimentos, pedidos e vocabulário conhecido em uma troca curta de sobrevivência."}}],
+  "prerequisiteLessonIds": ["lesson.a0.042.describe-people"],
+  "introducesConceptIds": ["concept.a0.communication.survival-dialogues"],
+  "reinforcesConceptIds": ["concept.a0.communication.greetings","concept.a0.grammar.can-requests-permission","concept.a0.lexicon.food-and-drinks"],
+  "vocabularyIds": ["vocab.hello","vocab.please","vocab.drink","vocab.water","vocab.yes"],
+  "blocks": [
+    {"id":"block.a0.043.survival.explanation","type":"explanation","text":{"pt-BR":"Feche o A0 combinando estruturas já estudadas em trocas curtas. O objetivo não é aprender uma regra nova, e sim recuperar rapidamente linguagem útil."}},
+    {"id":"block.a0.043.survival.example","type":"example","language":"en","text":{"en":"Hello. Can I drink water, please? — Yes."}},
+    {"id":"block.a0.043.survival.comparison","type":"comparison","text":{"pt-BR":"Use hello para abrir a troca; uma pergunta ou pedido curto para expressar a necessidade; please quando quiser tornar o pedido mais cortês."}},
+    {"id":"block.a0.043.survival.checkpoint","type":"checkpoint","text":{"pt-BR":"Mantenha a troca curta e use apenas estruturas já estudadas. Se uma palavra nova for indispensável, ela deve ser revisada editorialmente antes de publicação."}}
+  ],
+  "activityIds": ["activity.a0.043.complete-survival-exchange"]
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.020.possessive-adjectives",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.04.people-and-possessions",
+  "title": { "pt-BR": "Possessivos my/your/his/her" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.020.choose-possessive-adjective",
+      "description": {
+        "pt-BR": "Usar my, your, his e her para indicar posse ou relação em frases curtas."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.019.demonstratives"],
+  "introducesConceptIds": ["concept.a0.grammar.possessive-adjectives"],
+  "reinforcesConceptIds": ["concept.a0.grammar.subject-pronouns"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.020.possessives.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "My, your, his e her vêm antes do substantivo. Eles indicam de quem é algo ou a relação com uma pessoa."
+      }
+    },
+    {
+      "id": "block.a0.020.possessives.comparison",
+      "type": "comparison",
+      "language": "en",
+      "text": {
+        "en": "I → my · you → your · he → his · she → her"
+      }
+    },
+    {
+      "id": "block.a0.020.possessives.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "I am Ana. This is my book. She is Maria. This is her book."
+      }
+    },
+    {
+      "id": "block.a0.020.possessives.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Escolha o possessivo pelo dono/referente, não pelo objeto possuído."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.020.choose-possessive-adjective"]
+}

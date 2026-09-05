@@ -97,13 +97,21 @@ Os objetivos abaixo são **rascunhos editoriais** e devem ser revisados antes de
 
 ## Progressão e prerequisites
 
-Proposta inicial para revisão:
+Proposta atual para revisão:
 
 - a ordem 001 → 043 é preservada como progressão principal;
 - dentro da Unit 01, cada lesson posterior depende da anterior para garantir uma sequência de revisão previsível;
 - a Unit 02 mantém a ponte explícita `006 → 007` e a sequência `007 → 012`; a dependência entre Lessons preserva a trilha editorial, enquanto Concept prerequisites continuam representando necessidade pedagógica real;
-- Concept prerequisites são mais seletivos: `be-negative` e `be-questions` dependem de `be-affirmative`, `be-short-answers` depende das estruturas de pergunta/negação e números 20–100 dependem de 0–20;
-- ao migrar Units 03–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 03 mantém a ponte explícita `012 → 013` e a sequência `013 → 018`; calendário e horas reutilizam Concepts numéricos apenas onde a regra depende deles, enquanto artigos/plurais não recebem dependências artificiais pela posição;
+- `months-and-dates` depende do sistema numérico até 100 porque datas podem exigir 21–31; `clock-time` depende dos números 0–20; `irregular-plurals` depende do contraste estabelecido por `regular-plurals`;
+- a Unit 04 mantém a ponte explícita `018 → 019` e a sequência `019 → 024`; `demonstratives` depende do contraste singular/plural, enquanto `possessive-adjectives` e `have-has` dependem de subject pronouns;
+- família, cores e objetos são Concepts lexicais sem prerequisite conceitual artificial; as Lessons continuam lineares para manter a trilha editorial;
+- `phone` e `book` preservam a primeira aparição real: `vocab.phone` é introduzido na Lesson 012 e `vocab.book` na 017, mesmo sendo reutilizados pela Lesson 024;
+- a Unit 05 mantém a ponte explícita `024 → 025` e a sequência `025 → 030`; `there-is-are` depende do contraste singular/plural já estabelecido, `can-ability` reutiliza subject pronouns e `can-requests-permission` depende de `can-ability` por continuidade semântica;
+- preposições de lugar, cômodos e imperativos não recebem prerequisite conceitual artificial apenas por posição na trilha;
+- a Unit 06 mantém a ponte explícita `030 → 031` e a sequência `031 → 036`; `essential-verbs` não recebe prerequisite artificial, `present-simple-base` reutiliza subject pronouns + léxico essencial, terceira pessoa depende da forma base, negativa depende do contraste base/terceira pessoa, perguntas dependem do contraste `do/does` já introduzido pela negativa e frequency adverbs dependem da forma base — não da posição da Lesson 035;
+- a Unit 07 mantém a ponte explícita `036 → 037` e a sequência `037 → 043`; rotina integra simple present + horas + frequência, preferências dependem da forma base, question words reutilizam perguntas com `be` e simple present, descrição de pessoas depende de `be` + `have/has` + adjetivos e o diálogo final depende apenas de linguagem já introduzida;
+- a Lesson 043 é integração e não introduz VocabularyItem novo; qualquer linguagem adicional necessária deve virar decisão editorial explícita em vez de entrar escondida no checkpoint final;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
 ## Estado da migração em `review`
@@ -121,19 +129,94 @@ Materializada no PR #97 com:
 
 ### Unit 02 — aulas 007–012
 
+Materializada originalmente no PR #98 e reconciliada no recorte 4 com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 4 VocabularyItems lexicais (`not`, `yes`, `no`, `phone`);
+- 6 Activities determinísticas;
+- ContentBlocks de regra, exemplo, vocabulário fechado e checkpoint;
+- ponte explícita da Lesson 006 para a 007;
+- `lesson.a0.012.age-and-phone` em revision 2 para registrar `vocab.phone` na primeira Lesson em que a palavra já era usada.
+
+Números 0–100 não viram dezenas de `VocabularyItem` artificiais. O conjunto numérico é modelado por Concepts + `ContentBlock` de vocabulário; chunks como `years old` e `phone number` permanecem em regra/exemplo porque o schema v1 ainda não possui entidade `PhrasePattern`. `phone` é um substantivo lexical real e, por isso, passa a ser rastreado sem transformar o chunk inteiro em VocabularyItem.
+
+### Unit 03 — aulas 013–018
+
+Materializada no PR #103 e reconciliada no recorte 4 com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 1 VocabularyItem lexical (`book`) formalizado na primeira Lesson em que já era usado;
+- 6 Activities determinísticas;
+- conjuntos fechados de dias e meses em `ContentBlock` de vocabulário;
+- horas cheias/meias-horas, `a/an`, plural regular e dois pares essenciais de plural irregular;
+- ponte explícita da Lesson 012 para a 013 e sequência até 018;
+- Concept prerequisites seletivos para números e contraste regular/irregular;
+- `lesson.a0.017.regular-plurals` em revision 2 para registrar `vocab.book` sem fingir introdução posterior.
+
+Dias e meses continuam identificados como vocabulário candidato no inventário, mas não geram 19 `VocabularyItem`s neste recorte. Como ocorre com números, o conjunto fechado fica explícito no conteúdo da Lesson enquanto a revisão editorial decide se granularidade lexical individual agrega valor ao modelo. `o'clock` e `half past` permanecem em regra/exemplo porque funcionam como chunks da estrutura de horas, não como substitutos improvisados para uma entidade de phrase pattern inexistente.
+
+### Unit 04 — aulas 019–024
+
 Materializada neste recorte com:
 
 - 6 Lessons;
 - 6 Concepts;
-- 3 VocabularyItems lexicais (`not`, `yes`, `no`);
-- 6 Activities determinísticas;
-- ContentBlocks de regra, exemplo, vocabulário fechado e checkpoint;
-- ponte explícita da Lesson 006 para a 007;
-- revision metadata em todos os documentos.
+- 12 VocabularyItems formalizados no recorte: família (`mother`, `father`, `sister`, `brother`), cores (`red`, `blue`, `black`, `white`) e objetos (`phone`, `key`, `bag`, `book`);
+- 10 desses itens são introduzidos dentro da Unit 04; `phone` e `book` preservam introdução nas Lessons 012 e 017;
+- 6 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `018 → 019` e sequência até 024;
+- demonstrativos usam o contraste singular/plural; possessivos e `have/has` reutilizam subject pronouns; Concepts lexicais não recebem prerequisites artificiais;
+- `phone`, `key`, `bag` e `book` são reutilizados em combinações com artigos e cores na Lesson 024;
+- revision metadata preservada em todos os documentos.
 
-Números 0–100 não viram dezenas de `VocabularyItem` artificiais. O conjunto numérico é modelado por Concepts + `ContentBlock` de vocabulário; chunks como `years old` e `phone number` permanecem em regra/exemplo porque o schema v1 ainda não possui entidade `PhrasePattern`. Essa decisão evita usar `VocabularyItem` como substituto semântico de um contrato inexistente.
+### Unit 05 — aulas 025–030
 
-As duas Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, 12/43 aulas A0 estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+Materializada no PR #112 com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 11 VocabularyItems lexicais (`kitchen`, `bedroom`, `bathroom`, `open`, `close`, `sit`, `come`, `swim`, `cook`, `drive`, `please`);
+- 6 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `024 → 025` e sequência até 030;
+- `there-is-are` ligado ao contraste singular/plural, `can-ability` reutilizando subject pronouns e `can-requests-permission` ligado ao Concept de habilidade;
+- preposições, padrões gramaticais e modal `can` mantidos em Concept/ContentBlock em vez de virarem VocabularyItems artificiais;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+### Unit 06 — aulas 031–036
+
+Materializada neste recorte com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 10 VocabularyItems lexicais (`go`, `work`, `live`, `study`, `eat`, `drink`, `always`, `usually`, `sometimes`, `never`);
+- 6 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `030 → 031` e sequência até 036;
+- Concept prerequisites seletivos: léxico essencial sem dependência artificial, forma base ligada a subject pronouns + léxico essencial, terceira pessoa ligada à forma base, negativa ao contraste base/terceira pessoa, perguntas ao contraste `do/does` e frequency adverbs à forma base;
+- `do`, `does`, `don't` e `doesn't` permanecem em Concept/ContentBlock, sem virar VocabularyItems artificiais;
+- exemplos de terceira pessoa usam neste recorte apenas formas regulares transparentes (`works`, `lives`, `eats`, `drinks`); `goes`/`studies` exigem decisão editorial explícita antes de serem ensinados;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+### Unit 07 — aulas 037–043
+
+Materializada no draft PR #118 com:
+
+- 7 Lessons;
+- 7 Concepts;
+- 25 VocabularyItems novos, com reutilização explícita de léxico das Units anteriores;
+- 7 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `036 → 037` e sequência até 043;
+- rotina integrando forma base, horário e frequency adverb, com `at + horário` explicitado como regra;
+- preferências limitadas a `like/love/hate + substantivo` para não introduzir `-ing` implicitamente;
+- question words apoiadas nas estruturas de pergunta já estudadas;
+- descrição de pessoas reutilizando `be`, `have/has`, adjetivos e `black` da Unit 04;
+- Lesson 043 de integração sem VocabularyItem novo e Activity aceitando `hello`/`hi`, variantes já ensinadas;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+As sete Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Com #117 + #118, **43/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+
+Isso fecha a cobertura técnica do inventário, mas não o DoD editorial da #28: ainda são obrigatórias revisão humana ponta a ponta, validação de naturalidade, `pnpm content:validate` no PR final, smoke no Lesson Player e promoção explícita de revision/status apenas do conteúdo aprovado.
 
 ## Checklist de promoção para `published`
 

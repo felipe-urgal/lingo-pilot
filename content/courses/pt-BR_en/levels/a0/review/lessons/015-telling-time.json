@@ -1,0 +1,53 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.015.telling-time",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.03.time-and-basic-nouns",
+  "title": { "pt-BR": "Horas" },
+  "estimatedMinutes": 9,
+  "objectives": [
+    {
+      "id": "objective.a0.015.tell-basic-time",
+      "description": {
+        "pt-BR": "Perguntar e informar horas cheias e meias-horas em um padrão básico."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.014.months-and-dates"],
+  "introducesConceptIds": ["concept.a0.time.clock-time"],
+  "reinforcesConceptIds": ["concept.a0.numbers.zero-to-twenty"],
+  "vocabularyIds": [],
+  "blocks": [
+    {
+      "id": "block.a0.015.time.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Pergunte What time is it? Para horas cheias, use número + o'clock. Para meia hora, use half past + número."
+      }
+    },
+    {
+      "id": "block.a0.015.time.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Use It's three o'clock para 3:00 e It's half past three para 3:30."
+      }
+    },
+    {
+      "id": "block.a0.015.time.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "What time is it? It's half past three." }
+    },
+    {
+      "id": "block.a0.015.time.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Pratique uma hora cheia e uma meia-hora sem misturar o'clock com half past."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.015.tell-half-past-time"]
+}

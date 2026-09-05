@@ -161,6 +161,8 @@ A #27 também não adiciona eventos de analytics de produto; qualquer analytics 
 
 A página usa HTML semântico, links nativos, `<details>/<summary>` e layout de uma coluna em telas pequenas. O acesso `Hoje`/`Progresso` fica no shell protegido.
 
+Resumos de contagem derivados de `StudySession.items` devem escolher palavras completas por cardinalidade (`1 revisão`, `0 revisões`, `2 revisões`) em vez de montar plurais por concatenação de sufixo. O mesmo contrato vale para o resumo de sessão concluída e para o número de revisões do plano atual; a copy nunca altera nem substitui a contagem persistida.
+
 ## Empty states
 
 Usuário novo deve ver:
