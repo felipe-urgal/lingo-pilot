@@ -62,6 +62,10 @@ Até isso existir, network-only é a decisão mais segura.
 
 Assets estáticos usam cache-first somente porque seus caminhos do Next são versionados por build/hash. HTML e APIs não usam stale-while-revalidate.
 
+O registro no client também participa do lifecycle de versão: depois que `/sw.mjs` registra com sucesso, a aplicação observa o evento `online`. Quando a conectividade retorna, chama `ServiceWorkerRegistration.update()` para que o browser verifique uma nova versão do worker imediatamente, em vez de depender apenas da cadência interna do navegador. O listener é removido no unmount e erros de `register()`/`update()` continuam não bloqueantes para a experiência online.
+
+Esse comportamento **não** reenvia mutations, não cria fila e não toca em payload de estudo. Reconnect neste recorte significa somente recuperar conectividade e verificar atualização do worker; qualquer retry de operação transacional continua pertencendo ao fluxo que prove idempotência server-side.
+
 ## Installability
 
 `app/manifest.ts` define nome, `start_url`, display standalone, idioma e o ícone SVG escalável com alvos explícitos `192x192` e `512x512`. O service worker é registrado apenas quando `navigator.serviceWorker` existe e o contexto é seguro.
@@ -86,6 +90,7 @@ Executar em um ambiente HTTPS real ou localhost compatível com service worker. 
 - com uma sessão autenticada carregada, ativar modo offline e navegar/recarregar uma rota que exija rede;
 - confirmar que o browser recebe somente o fallback público `/offline`, sem HTML previamente autenticado;
 - restaurar a rede e usar a ação de reconexão do fallback;
+- confirmar no painel de Service Workers que o retorno ao `online` dispara verificação de update sem criar request de replay de mutation;
 - confirmar retorno ao fluxo online sem duplicar submit, Attempt ou ReviewEvent.
 
 ### Cache e logout
@@ -100,7 +105,8 @@ Executar em um ambiente HTTPS real ou localhost compatível com service worker. 
 
 - após uma mudança de versão de cache/worker, recarregar e confirmar ativação da versão nova;
 - confirmar remoção das versões antigas do namespace LingoPilot;
-- repetir um ciclo online → offline → online para garantir que o update não deixou cache órfão.
+- repetir um ciclo online → offline → online e confirmar que o client chama `registration.update()` ao recuperar rede;
+- garantir que o update não deixou cache órfão nem disparou replay de mutation.
 
 Qualquer divergência observada aqui deve virar teste automatizado no nível mais baixo que consiga reproduzir a propriedade, sem transformar E2E em novo GitHub Action obrigatório.
 
@@ -113,13 +119,19 @@ Qualquer divergência observada aqui deve virar teste automatizado no nível mai
 - logout bem-sucedido solicita limpeza de caches de sessão sem remover o shell público;
 - worker não introduz IndexedDB, SyncManager ou listener de Background Sync.
 
-O primeiro recorte pode ser integrado com esses invariantes protegidos pelo gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
+`apps/web/test/service-worker-registration.component.test.tsx` protege o lifecycle do registro no client:
+
+- reconexão `online` solicita `registration.update()` exatamente pelo listener instalado pelo componente;
+- unmount remove o listener e evita update residual;
+- falha de registro permanece não bloqueante.
+
+Esses testes pertencem ao gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
 
 ## Próximos recortes
 
 A issue #42 permanece aberta depois desta foundation. Próximos passos devem ser guiados por dogfood e pelos critérios de aceite, especialmente:
 
-- verificar installability em browser real;
+- verificar installability e o ciclo update/reconnect em browser real;
 - medir storage/cache budget;
 - decidir se algum conteúdo editorial público/revisionado pode ser cacheado sem risco de stale indefinido;
 - só então avaliar fila offline restrita a mutations comprovadamente idempotentes.
