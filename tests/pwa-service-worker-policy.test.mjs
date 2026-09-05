@@ -8,6 +8,7 @@ import {
   isPrivatePath,
   shouldCacheResponse,
   shouldClearCachesAfterResponse,
+  shouldDeleteCacheAfterLogout,
 } from "../apps/web/public/sw-policy.mjs";
 
 test("PWA cache policy never treats authenticated routes as cacheable assets", () => {
@@ -56,7 +57,7 @@ test("PWA cache policy only persists successful Next.js static assets", () => {
   );
 });
 
-test("successful logout clears only LingoPilot-owned caches", () => {
+test("successful logout clears LingoPilot session caches but preserves public shell", () => {
   assert.equal(
     shouldClearCachesAfterResponse({
       method: "POST",
@@ -76,6 +77,10 @@ test("successful logout clears only LingoPilot-owned caches", () => {
   assert.equal(isLingoCacheName(LINGO_SHELL_CACHE), true);
   assert.equal(isLingoCacheName(LINGO_STATIC_CACHE), true);
   assert.equal(isLingoCacheName("unrelated-cache"), false);
+  assert.equal(shouldDeleteCacheAfterLogout(LINGO_STATIC_CACHE), true);
+  assert.equal(shouldDeleteCacheAfterLogout("lingo-pilot-future-user-cache-v1"), true);
+  assert.equal(shouldDeleteCacheAfterLogout(LINGO_SHELL_CACHE), false);
+  assert.equal(shouldDeleteCacheAfterLogout("unrelated-cache"), false);
 });
 
 test("service worker does not introduce mutation replay storage", async () => {
