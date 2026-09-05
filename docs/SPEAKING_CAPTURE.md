@@ -1,19 +1,22 @@
 # Speaking capture — foundation segura
 
-Este documento registra o primeiro recorte da issue #33. Ele cobre captura no browser e o contrato de entrada para storage privado sem escolher silenciosamente um fornecedor de storage.
+Este documento registra a foundation da issue #33. Ela cobre captura no browser e a orquestração server-side para storage privado sem escolher silenciosamente um fornecedor de storage.
 
-## Objetivo do recorte
+## Objetivo dos recortes atuais
 
 - detectar suporte a microfone/`MediaRecorder` no browser;
 - pedir permissão apenas quando o aluno inicia a gravação;
 - permitir parar, cancelar, descartar e gravar novamente;
 - manter fallback explícito quando gravação não está disponível;
 - compartilhar limites de duração/tamanho/MIME entre browser e servidor;
-- validar metadata novamente no servidor;
+- validar metadata novamente no servidor e conferir o tamanho real do payload;
 - gerar object key somente com IDs controlados/validados pelo servidor;
-- definir um port pequeno de storage privado para o adapter futuro.
+- revalidar ownership do Attempt no contexto autenticado antes do upload;
+- reservar `operationKey` atomicamente para idempotência e rejeitar conflito de payload;
+- compensar upload parcial quando a persistência do receipt falha;
+- definir ports pequenos de storage/ownership/ledger para adapters futuros.
 
-Este recorte **não** persiste áudio em produção e não escolhe bucket/provider.
+Estes recortes **não** persistem áudio em Production e não escolhem bucket/provider/database adapter.
 
 ## Contrato de captura
 
@@ -62,9 +65,29 @@ speaking/{userId}/{attemptId}/{assetId}
 
 Os três segmentos precisam ser IDs opacos válidos; `/`, `..`, espaços iniciais e valores excessivamente longos são rejeitados. O adapter de storage recebe essa key já derivada pelo servidor.
 
+### Orquestração de upload
+
+`apps/web/server/application/speaking/upload-recording.ts` fecha as invariantes que independem do fornecedor:
+
+1. revalida metadata com o contrato server-side;
+2. compara `metadata.byteLength` com `Uint8Array.byteLength`, portanto o tamanho declarado pelo cliente não é autoridade;
+3. consulta `SpeakingAttemptOwnership` usando `userId` autenticado + Attempt/Activity antes de reservar ou gravar qualquer objeto;
+4. reserva `(userId, operationKey)` por `SpeakingUploadLedger`;
+5. uma operação já concluída com a mesma metadata retorna o mesmo receipt como replay idempotente, sem novo `put`;
+6. reutilizar a `operationKey` com metadata diferente falha como conflito;
+7. a reserva fornece `assetId` server-side, usado para derivar a object key;
+8. somente depois disso `PrivateSpeakingStorage.putPrivateObject` recebe bytes + MIME validado;
+9. se o objeto for gravado mas `ledger.complete` falhar, a aplicação tenta `deletePrivateObject` e libera a reserva antes de propagar a falha.
+
+O port `SpeakingUploadLedger.reserve` possui uma exigência não negociável para o adapter real: a reserva precisa ser **atômica e única por `(userId, operationKey)`**. Um `find` seguido de `insert` sem constraint transacional reabre corrida de duplicate upload e não satisfaz o contrato.
+
+`in_progress` é um estado explícito para concorrência. O caller pode responder como conflito/retry recuperável; ele não deve iniciar um segundo upload em paralelo para a mesma operação.
+
+A compensação após falha de commit é best effort. Se o delete do storage também falhar, o futuro job de retention/cleanup precisa localizar e remover o objeto órfão de modo observável e sem logar conteúdo.
+
 ## Storage provider
 
-A foundation define apenas `PrivateSpeakingStorage` com duas operações:
+A foundation define `PrivateSpeakingStorage` com duas operações:
 
 - `putPrivateObject`;
 - `deletePrivateObject`.
@@ -90,23 +113,23 @@ Um fake/in-memory pode existir somente em testes; ele não deve ser composition 
 
 ### Quem pode acessar?
 
-Neste recorte, somente o próprio contexto de browser antes de qualquer upload. A integração futura deve revalidar usuário autenticado e ownership do `attemptId` no servidor.
+O contrato de aplicação exige resolver ownership do Attempt para o usuário autenticado antes de qualquer upload. O adapter real de `SpeakingAttemptOwnership` deve consultar o estado server-side; IDs recebidos do cliente nunca são prova de autorização.
 
 ### Onde é persistido?
 
-Agora, apenas memória/object URL do browser durante o fluxo. Nenhum storage remoto é ativado.
+A foundation ainda não configura storage remoto. O port descreve a operação privada que o adapter futuro deverá executar; testes usam fake controlado.
 
 ### Quem externo recebe?
 
-Ninguém neste recorte.
+Ninguém em Production neste recorte, porque nenhum adapter/provider de storage foi escolhido ou ligado ao composition root.
 
 ### Request repetida
 
-O contrato carrega `operationKey`; a implementação futura de upload/persistência deve garantir idempotência antes de gravar `assetRef` ou disparar transcrição/avaliação.
+`operationKey` passa por uma reserva atômica no ledger. Replay da mesma operação/metadata devolve o receipt já concluído; metadata diferente com a mesma key é conflito. O adapter persistente precisa materializar essa unicidade no banco.
 
 ### Um usuário pode apontar ID de outro?
 
-IDs do cliente nunca serão prova de ownership. O endpoint futuro precisa resolver Attempt pelo usuário autenticado antes de gerar object key ou signed URL.
+Não deve conseguir atravessar a fronteira de aplicação: ownership é verificada antes de reserva/upload. O endpoint futuro ainda precisa derivar `userId` da sessão autenticada, nunca do body.
 
 ### Upload/conteúdo executável
 
@@ -116,9 +139,13 @@ Somente MIME de áudio allowlisted será aceito. Filename do cliente é ignorado
 
 Nunca logar áudio, transcript, Blob, signed URL, payload completo ou conteúdo do aluno. Logs podem registrar IDs técnicos, tamanho/duração categorizados e error code seguro.
 
+### Falha parcial
+
+Se storage concluir e o ledger falhar, a aplicação tenta apagar o objeto imediatamente e libera a operação para retry. Falha dessa compensação deverá ser coberta pelo lifecycle/cleanup observável do adapter real.
+
 ### Exclusão
 
-Nenhum objeto remoto existe ainda. O adapter real precisa suportar delete e integrar a política de retenção/account deletion antes de Production.
+Nenhum objeto remoto de Production existe ainda. O adapter real precisa suportar delete e integrar a política de retenção/account deletion antes de Production.
 
 ## Retenção proposta para V1
 
@@ -134,17 +161,30 @@ Antes de speaking chegar a Production, a decisão final precisa definir um TTL c
 
 Não fixamos um número de dias nesta foundation porque isso depende do provider/lifecycle e da necessidade real do pipeline de avaliação.
 
+## Testes do recorte de upload
+
+`upload-recording.test.ts` protege pelo menos:
+
+- upload único + replay idempotente sem segundo `put`;
+- conflito quando a mesma operation key muda de metadata;
+- ownership negada antes de tocar storage;
+- divergência entre byte length declarado e payload real;
+- compensating delete + release da reserva quando o commit do receipt falha.
+
+Esses testes verificam o contrato provider-neutral. Eles não substituem integração futura com constraint transacional, storage privado real e autenticação.
+
 ## Critérios ainda pendentes da #33
 
-Este recorte não torna a issue Done. Permanecem necessários, entre outros:
+Estes recortes não tornam a issue Done. Permanecem necessários, entre outros:
 
-- adapter de storage privado escolhido e configurado explicitamente;
-- endpoint/upload flow autenticado com ownership e idempotência;
+- escolha explícita e documentada do provider/storage privado;
+- adapters reais de `SpeakingAttemptOwnership`, `SpeakingUploadLedger` e `PrivateSpeakingStorage`;
+- endpoint/upload flow autenticado que derive `userId` da sessão;
 - persistência de metadata/asset ref ligada ao SpeakingAttempt;
-- retention/lifecycle efetivos e cleanup observável;
+- retention/lifecycle efetivos e cleanup observável com TTL decidido;
 - integração com Activity/Today/Review;
 - avaliação de speaking separada da captura;
-- testes de retry/duplicate submit e browser E2E do fluxo integrado;
+- testes de constraint/concorrência/retry e browser E2E do fluxo integrado;
 - atualização do modelo de dados somente quando o use case real exigir persistência.
 
-A próxima branch deve partir dessas pendências, não contornar o provider decision com storage improvisado.
+A próxima branch deve partir dessas pendências, não contornar a decisão de provider com storage improvisado.
