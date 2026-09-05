@@ -62,9 +62,14 @@ Até isso existir, network-only é a decisão mais segura.
 
 Assets estáticos usam cache-first somente porque seus caminhos do Next são versionados por build/hash. HTML e APIs não usam stale-while-revalidate.
 
-O registro no client também participa do lifecycle de versão: depois que `/sw.mjs` registra com sucesso, a aplicação observa o evento `online`. Quando a conectividade retorna, chama `ServiceWorkerRegistration.update()` para que o browser verifique uma nova versão do worker imediatamente, em vez de depender apenas da cadência interna do navegador. O listener é removido no unmount e erros de `register()`/`update()` continuam não bloqueantes para a experiência online.
+O registro no client também participa do lifecycle de versão. A aplicação instala o listener de `online` antes da primeira tentativa de `register()`. Quando a conectividade retorna:
 
-Esse comportamento **não** reenvia mutations, não cria fila e não toca em payload de estudo. Reconnect neste recorte significa somente recuperar conectividade e verificar atualização do worker; qualquer retry de operação transacional continua pertencendo ao fluxo que prove idempotência server-side.
+- se já existe `ServiceWorkerRegistration`, chama `registration.update()` para verificar uma nova versão imediatamente;
+- se a primeira tentativa de registro falhou — por exemplo, porque a página abriu offline — tenta `register()` novamente sem exigir reload;
+- uma tentativa de registro já em andamento é reutilizada, evitando disparar registros concorrentes;
+- o listener é removido no unmount e erros de `register()`/`update()` continuam não bloqueantes para a experiência online.
+
+Esse comportamento **não** reenvia mutations, não cria fila e não toca em payload de estudo. Reconnect neste recorte significa somente recuperar conectividade e garantir registro/verificação de versão do worker; qualquer retry de operação transacional continua pertencendo ao fluxo que prove idempotência server-side.
 
 ## Installability
 
@@ -72,7 +77,7 @@ Esse comportamento **não** reenvia mutations, não cria fila e não toca em pay
 
 Os tamanhos explícitos atendem o contrato estrutural deste primeiro recorte. A validação em browser real continua obrigatória antes de declarar a #42 concluída; se algum browser alvo exigir fallback raster, ele deve ser adicionado a partir dessa evidência.
 
-Falha ao registrar o worker não bloqueia a aplicação online.
+Falha ao registrar o worker não bloqueia a aplicação online; recuperar conectividade dispara nova tentativa quando não existe registration válida.
 
 ## Checklist browser-first antes de concluir a #42
 
@@ -90,7 +95,9 @@ Executar em um ambiente HTTPS real ou localhost compatível com service worker. 
 - com uma sessão autenticada carregada, ativar modo offline e navegar/recarregar uma rota que exija rede;
 - confirmar que o browser recebe somente o fallback público `/offline`, sem HTML previamente autenticado;
 - restaurar a rede e usar a ação de reconexão do fallback;
-- confirmar no painel de Service Workers que o retorno ao `online` dispara verificação de update sem criar request de replay de mutation;
+- confirmar que uma registration existente recebe `update()` ao voltar online;
+- em uma carga iniciada sem registration e sem rede, confirmar que voltar online tenta registrar `/sw.mjs` sem reload;
+- confirmar que nenhum dos dois caminhos cria request de replay de mutation;
 - confirmar retorno ao fluxo online sem duplicar submit, Attempt ou ReviewEvent.
 
 ### Cache e logout
@@ -121,9 +128,10 @@ Qualquer divergência observada aqui deve virar teste automatizado no nível mai
 
 `apps/web/test/service-worker-registration.component.test.tsx` protege o lifecycle do registro no client:
 
-- reconexão `online` solicita `registration.update()` exatamente pelo listener instalado pelo componente;
-- unmount remove o listener e evita update residual;
-- falha de registro permanece não bloqueante.
+- reconexão `online` solicita `registration.update()` quando já existe registration;
+- falha da primeira tentativa é retomada por novo `register()` quando a conectividade retorna;
+- tentativas repetidas de registro continuam não bloqueantes;
+- unmount remove o listener e evita update/retry residual.
 
 Esses testes pertencem ao gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
 
@@ -131,7 +139,7 @@ Esses testes pertencem ao gate padrão `pnpm check`. Antes de promover a #42 a D
 
 A issue #42 permanece aberta depois desta foundation. Próximos passos devem ser guiados por dogfood e pelos critérios de aceite, especialmente:
 
-- verificar installability e o ciclo update/reconnect em browser real;
+- verificar installability e o ciclo register/update/reconnect em browser real;
 - medir storage/cache budget;
 - decidir se algum conteúdo editorial público/revisionado pode ser cacheado sem risco de stale indefinido;
 - só então avaliar fila offline restrita a mutations comprovadamente idempotentes.
