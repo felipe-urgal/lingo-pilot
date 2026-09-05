@@ -66,13 +66,13 @@ Assets estáticos usam cache-first somente porque seus caminhos do Next são ver
 
 `app/manifest.ts` define nome, `start_url`, display standalone, idioma e o ícone SVG escalável com alvos explícitos `192x192` e `512x512`. O service worker é registrado apenas quando `navigator.serviceWorker` existe e o contexto é seguro.
 
-Os tamanhos explícitos atendem o contrato esperado pelos browsers Chromium sem introduzir assets duplicados neste recorte. A validação em browser real continua obrigatória antes de declarar a #42 concluída; se algum browser alvo exigir fallback raster, ele deve ser adicionado a partir dessa evidência, não por suposição.
+Os tamanhos explícitos atendem o contrato estrutural deste primeiro recorte. A validação em browser real continua obrigatória antes de declarar a #42 concluída; se algum browser alvo exigir fallback raster, ele deve ser adicionado a partir dessa evidência.
 
 Falha ao registrar o worker não bloqueia a aplicação online.
 
-## Checklist browser-first antes de Ready
+## Checklist browser-first antes de concluir a #42
 
-Executar em um ambiente HTTPS real ou localhost compatível com service worker. Registrar browser/versão e resultado na #42 ou no PR.
+Executar em um ambiente HTTPS real ou localhost compatível com service worker. Registrar browser/versão e resultado na #42 ou em follow-up dedicado.
 
 ### Manifest e instalação
 
@@ -113,7 +113,7 @@ Qualquer divergência observada aqui deve virar teste automatizado no nível mai
 - logout bem-sucedido solicita limpeza de caches de sessão sem remover o shell público;
 - worker não introduz IndexedDB, SyncManager ou listener de Background Sync.
 
-Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos da issue, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
+O primeiro recorte pode ser integrado com esses invariantes protegidos pelo gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
 
 ## Próximos recortes
 
