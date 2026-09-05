@@ -33,16 +33,16 @@ export function SpeakingRecorder({
   const [state, setState] = useState<RecorderState>("idle");
   const [errorMessage, setErrorMessage] = useState<string>();
   const [previewUrl, setPreviewUrl] = useState<string>();
-  const recorderRef = useRef<MediaRecorder>();
-  const streamRef = useRef<MediaStream>();
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef(0);
-  const stopTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const discardOnStopRef = useRef(false);
 
   useEffect(() => {
     return () => {
-      if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
+      if (stopTimerRef.current !== null) clearTimeout(stopTimerRef.current);
       discardOnStopRef.current = true;
       const recorder = recorderRef.current;
       if (recorder?.state === "recording") recorder.stop();
@@ -116,7 +116,7 @@ export function SpeakingRecorder({
 
   function cancelRecording(): void {
     discardOnStopRef.current = true;
-    if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
+    if (stopTimerRef.current !== null) clearTimeout(stopTimerRef.current);
     const recorder = recorderRef.current;
     if (recorder?.state === "recording") {
       recorder.stop();
@@ -128,11 +128,11 @@ export function SpeakingRecorder({
   }
 
   function finishRecording(recorder: MediaRecorder): void {
-    if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
-    stopTimerRef.current = undefined;
+    if (stopTimerRef.current !== null) clearTimeout(stopTimerRef.current);
+    stopTimerRef.current = null;
     releaseStream(streamRef.current);
-    streamRef.current = undefined;
-    recorderRef.current = undefined;
+    streamRef.current = null;
+    recorderRef.current = null;
 
     if (discardOnStopRef.current) {
       discardOnStopRef.current = false;
@@ -268,6 +268,6 @@ function selectSupportedMimeType(): string | undefined {
   );
 }
 
-function releaseStream(stream?: MediaStream): void {
+function releaseStream(stream?: MediaStream | null): void {
   stream?.getTracks().forEach((track) => track.stop());
 }
