@@ -62,13 +62,22 @@ Até isso existir, network-only é a decisão mais segura.
 
 Assets estáticos usam cache-first somente porque seus caminhos do Next são versionados por build/hash. HTML e APIs não usam stale-while-revalidate.
 
+O registro no client também participa do lifecycle de versão. A aplicação instala o listener de `online` antes da primeira tentativa de `register()`. Quando a conectividade retorna:
+
+- se já existe `ServiceWorkerRegistration`, chama `registration.update()` para verificar uma nova versão imediatamente;
+- se a primeira tentativa de registro falhou — por exemplo, porque a página abriu offline — tenta `register()` novamente sem exigir reload;
+- uma tentativa de registro já em andamento é reutilizada, evitando disparar registros concorrentes;
+- o listener é removido no unmount e erros de `register()`/`update()` continuam não bloqueantes para a experiência online.
+
+Esse comportamento **não** reenvia mutations, não cria fila e não toca em payload de estudo. Reconnect neste recorte significa somente recuperar conectividade e garantir registro/verificação de versão do worker; qualquer retry de operação transacional continua pertencendo ao fluxo que prove idempotência server-side.
+
 ## Installability
 
 `app/manifest.ts` define nome, `start_url`, display standalone, idioma e o ícone SVG escalável com alvos explícitos `192x192` e `512x512`. O service worker é registrado apenas quando `navigator.serviceWorker` existe e o contexto é seguro.
 
 Os tamanhos explícitos atendem o contrato estrutural deste primeiro recorte. A validação em browser real continua obrigatória antes de declarar a #42 concluída; se algum browser alvo exigir fallback raster, ele deve ser adicionado a partir dessa evidência.
 
-Falha ao registrar o worker não bloqueia a aplicação online.
+Falha ao registrar o worker não bloqueia a aplicação online; recuperar conectividade dispara nova tentativa quando não existe registration válida.
 
 ## Checklist browser-first antes de concluir a #42
 
@@ -86,6 +95,9 @@ Executar em um ambiente HTTPS real ou localhost compatível com service worker. 
 - com uma sessão autenticada carregada, ativar modo offline e navegar/recarregar uma rota que exija rede;
 - confirmar que o browser recebe somente o fallback público `/offline`, sem HTML previamente autenticado;
 - restaurar a rede e usar a ação de reconexão do fallback;
+- confirmar que uma registration existente recebe `update()` ao voltar online;
+- em uma carga iniciada sem registration e sem rede, confirmar que voltar online tenta registrar `/sw.mjs` sem reload;
+- confirmar que nenhum dos dois caminhos cria request de replay de mutation;
 - confirmar retorno ao fluxo online sem duplicar submit, Attempt ou ReviewEvent.
 
 ### Cache e logout
@@ -100,7 +112,8 @@ Executar em um ambiente HTTPS real ou localhost compatível com service worker. 
 
 - após uma mudança de versão de cache/worker, recarregar e confirmar ativação da versão nova;
 - confirmar remoção das versões antigas do namespace LingoPilot;
-- repetir um ciclo online → offline → online para garantir que o update não deixou cache órfão.
+- repetir um ciclo online → offline → online e confirmar que o client chama `registration.update()` ao recuperar rede;
+- garantir que o update não deixou cache órfão nem disparou replay de mutation.
 
 Qualquer divergência observada aqui deve virar teste automatizado no nível mais baixo que consiga reproduzir a propriedade, sem transformar E2E em novo GitHub Action obrigatório.
 
@@ -113,13 +126,20 @@ Qualquer divergência observada aqui deve virar teste automatizado no nível mai
 - logout bem-sucedido solicita limpeza de caches de sessão sem remover o shell público;
 - worker não introduz IndexedDB, SyncManager ou listener de Background Sync.
 
-O primeiro recorte pode ser integrado com esses invariantes protegidos pelo gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
+`apps/web/test/service-worker-registration.component.test.tsx` protege o lifecycle do registro no client:
+
+- reconexão `online` solicita `registration.update()` quando já existe registration;
+- falha da primeira tentativa é retomada por novo `register()` quando a conectividade retorna;
+- tentativas repetidas de registro continuam não bloqueantes;
+- unmount remove o listener e evita update/retry residual.
+
+Esses testes pertencem ao gate padrão `pnpm check`. Antes de promover a #42 a Done ainda são necessários testes browser-first dos critérios completos, incluindo installability real, update de service worker, navegação offline/reconnect e comportamento em múltiplos estados de sessão.
 
 ## Próximos recortes
 
 A issue #42 permanece aberta depois desta foundation. Próximos passos devem ser guiados por dogfood e pelos critérios de aceite, especialmente:
 
-- verificar installability em browser real;
+- verificar installability e o ciclo register/update/reconnect em browser real;
 - medir storage/cache budget;
 - decidir se algum conteúdo editorial público/revisionado pode ser cacheado sem risco de stale indefinido;
 - só então avaliar fila offline restrita a mutations comprovadamente idempotentes.
