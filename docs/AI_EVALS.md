@@ -42,6 +42,24 @@ Thresholds por dimensão são opcionais e também variam de `0` a `1`. Eles serv
 
 Não usar apenas média global: uma resposta pode ser curta e natural e ainda assim violar o teto de nível, citar Concept inexistente ou vazar dado sensível.
 
+## Baseline versionado e comparação
+
+`packages/ai/src/eval-baseline.ts` transforma um `EvalReport` em um artefato de baseline redigido com `schemaVersion`, identidade/versionamento do dataset, score por dimensão e score por par estável `caseId/scorerId`.
+
+O baseline deliberadamente **não** persiste input, output nem metadata de provider/prompt. Ele registra apenas o necessário para detectar regressão e pode ser serializado pelo runner futuro sem ampliar a superfície de dados sensíveis.
+
+A comparação falha de forma explícita quando:
+
+- dataset id/version/feature não corresponde ao baseline;
+- o `EvalReport` atual já está `failed`, inclusive por um scorer crítico novo que não existia no baseline;
+- um check existente no baseline desaparece do relatório atual;
+- um score por case/scorer cai abaixo do baseline;
+- um score agregado por dimensão cai abaixo do baseline.
+
+A severidade do check é preservada na regressão. Assim, remover silenciosamente um scorer crítico, degradar um caso crítico ou adicionar um guard crítico que passa a falhar continua visível mesmo que o baseline seja anterior àquele guard.
+
+O contrato de baseline não fabrica um baseline de produção. O primeiro arquivo de baseline real deve nascer junto de uma feature candidata real, depois de execução válida e revisão do resultado. Alterar semanticamente o dataset exige nova versão em vez de comparar conjuntos incompatíveis.
+
 ## Revisão humana
 
 Naturalidade, qualidade pedagógica ou aceitabilidade linguística podem exigir julgamento humano. Nesses casos o case declara `humanReview` e o harness retorna `needs_review` se todos os checks automáticos passarem.
@@ -62,13 +80,13 @@ Input e output completos ficam fora do relatório padrão. Dataset versionado us
 
 ## Execução offline
 
-O CI rápido usa provider fake e fixtures determinísticas. Isso valida o próprio harness, parsing, metadata, allowlists, fail-closed e regressões de contratos sem chave externa.
+O CI rápido usa provider fake e fixtures determinísticas. Isso valida o próprio harness, parsing, metadata, allowlists, fail-closed, baseline/comparison e regressões de contratos sem chave externa.
 
 Nenhum teste offline deve fazer chamada de rede para provider de IA.
 
 ## Execução online
 
-A execução online é um pipeline separado do `pnpm check`. Ela deve reutilizar exatamente o mesmo `EvalDataset`, `EvalScorer` e formato de relatório da execução offline; não haverá uma segunda implementação de scoring em script JavaScript paralelo.
+A execução online é um pipeline separado do `pnpm check`. Ela deve reutilizar exatamente o mesmo `EvalDataset`, `EvalScorer`, `EvalReport` e `EvalBaseline` da execução offline; não haverá uma segunda implementação de scoring/comparison em script JavaScript paralelo.
 
 Antes de habilitar a primeira execução paga, o runner online precisa definir explicitamente:
 
@@ -76,8 +94,8 @@ Antes de habilitar a primeira execução paga, o runner online precisa definir e
 - provider/model e prompt versions;
 - credencial server-only;
 - budget máximo de casos/tokens/custo;
-- destino/retention do relatório;
-- comparação contra baseline versionado;
+- destino/retention do relatório e baseline;
+- baseline versionado aprovado para comparação;
 - comportamento de falha do job.
 
 Essa ativação deve acontecer junto da primeira feature real que possua dataset e prompt executáveis. A foundation #41 não deve fazer uma chamada artificial apenas para provar conectividade.
@@ -97,8 +115,9 @@ Quando uma falha real for encontrada:
 3. escolher scorer determinístico quando possível ou rubric humana quando necessário;
 4. versionar o dataset se a mudança alterar seu contrato/baseline;
 5. registrar prompt/model/schema metadata do resultado comparado;
-6. impedir release se a regressão for `critical`.
+6. revisar/atualizar o baseline somente quando a mudança esperada for intencional;
+7. impedir release se a regressão for `critical`.
 
 ## Estado desta foundation
 
-O núcleo tipado e a execução offline com fake provider pertencem à #41. Runner online/baseline pago só deve ser ligado quando houver uma feature candidata real, para evitar custo e integração artificial sem valor pedagógico.
+O núcleo tipado, a execução offline com fake provider e o contrato de baseline/comparação pertencem à #41. Runner online e baseline real/pago só devem ser ligados quando houver uma feature candidata real, para evitar custo e integração artificial sem valor pedagógico.
