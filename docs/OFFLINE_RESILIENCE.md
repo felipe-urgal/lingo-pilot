@@ -70,6 +70,40 @@ Os tamanhos explícitos atendem o contrato esperado pelos browsers Chromium sem 
 
 Falha ao registrar o worker não bloqueia a aplicação online.
 
+## Checklist browser-first antes de Ready
+
+Executar em um ambiente HTTPS real ou localhost compatível com service worker. Registrar browser/versão e resultado na #42 ou no PR.
+
+### Manifest e instalação
+
+- abrir DevTools → Application → Manifest e confirmar nome, `start_url`, `display: standalone` e ícones 192/512 sem erro;
+- confirmar que `/sw.mjs` está registrado com scope `/` e ativo;
+- instalar o app quando o browser oferecer a opção e confirmar que abre em modo standalone na rota esperada;
+- validar pelo menos um viewport mobile e um desktop.
+
+### Offline e reconnect
+
+- com uma sessão autenticada carregada, ativar modo offline e navegar/recarregar uma rota que exija rede;
+- confirmar que o browser recebe somente o fallback público `/offline`, sem HTML previamente autenticado;
+- restaurar a rede e usar a ação de reconexão do fallback;
+- confirmar retorno ao fluxo online sem duplicar submit, Attempt ou ReviewEvent.
+
+### Cache e logout
+
+- antes do logout, inspecionar Cache Storage e confirmar que só existem shell público e assets `/_next/static/` esperados;
+- confirmar ausência de responses de `/app`, `/api`, login/signup ou payloads do aluno;
+- executar logout online com sucesso;
+- confirmar que caches de sessão/estáticos do namespace LingoPilot são removidos, mas o shell público continua disponível;
+- entrar com outro usuário e confirmar que nenhum conteúdo do usuário anterior aparece offline.
+
+### Update do worker
+
+- após uma mudança de versão de cache/worker, recarregar e confirmar ativação da versão nova;
+- confirmar remoção das versões antigas do namespace LingoPilot;
+- repetir um ciclo online → offline → online para garantir que o update não deixou cache órfão.
+
+Qualquer divergência observada aqui deve virar teste automatizado no nível mais baixo que consiga reproduzir a propriedade, sem transformar E2E em novo GitHub Action obrigatório.
+
 ## Testes
 
 `tests/pwa-service-worker-policy.test.mjs` protege invariantes que não podem regredir silenciosamente:
