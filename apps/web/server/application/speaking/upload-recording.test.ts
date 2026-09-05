@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { PrivateSpeakingStorage, SpeakingRecordingMetadata } from "./recording-contract";
+import type {
+  PrivateSpeakingStorage,
+  SpeakingRecordingMetadata,
+} from "./recording-contract";
 import {
   uploadSpeakingRecording,
   type SpeakingRecordingReceipt,
@@ -92,11 +95,10 @@ describe("speaking recording upload orchestration", () => {
     const { storage, puts } = createStorage();
     const bytes = new Uint8Array(4);
 
-    await uploadSpeakingRecording({ userId: "user-1", metadata, bytes }, {
-      ownership: ownedAttempt,
-      ledger,
-      storage,
-    });
+    await uploadSpeakingRecording(
+      { userId: "user-1", metadata, bytes },
+      { ownership: ownedAttempt, ledger, storage },
+    );
 
     const conflict = await uploadSpeakingRecording(
       {
@@ -118,7 +120,11 @@ describe("speaking recording upload orchestration", () => {
     const result = await uploadSpeakingRecording(
       { userId: "user-1", metadata, bytes: new Uint8Array(4) },
       {
-        ownership: { async belongsToUser() { return false; } },
+        ownership: {
+          async belongsToUser() {
+            return false;
+          },
+        },
         ledger,
         storage,
       },
@@ -139,5 +145,31 @@ describe("speaking recording upload orchestration", () => {
 
     expect(result).toMatchObject({ ok: false, code: "byte_length_mismatch" });
     expect(puts).toHaveLength(0);
+  });
+
+  it("deletes a stored object and releases the reservation when commit fails", async () => {
+    const ledger = new FakeLedger();
+    ledger.complete = async () => {
+      throw new Error("database unavailable");
+    };
+    const release = (ledger.release = async () => undefined);
+    const releaseSpy = vi.fn(release);
+    ledger.release = releaseSpy;
+    const { storage, deletes } = createStorage();
+
+    await expect(
+      uploadSpeakingRecording(
+        { userId: "user-1", metadata, bytes: new Uint8Array(4) },
+        { ownership: ownedAttempt, ledger, storage },
+      ),
+    ).rejects.toThrow("database unavailable");
+
+    expect(deletes).toEqual([
+      "private:speaking/user-1/attempt-123/asset-server-1",
+    ]);
+    expect(releaseSpy).toHaveBeenCalledWith({
+      userId: "user-1",
+      operationKey: metadata.operationKey,
+    });
   });
 });
