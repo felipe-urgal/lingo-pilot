@@ -1,0 +1,48 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.033.present-simple-third-person",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.06.present-simple",
+  "title": { "pt-BR": "Simple present — he/she/it" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.033.use-third-person",
+      "description": { "pt-BR": "Formar afirmações simples no presente com he, she e it usando a marca básica de terceira pessoa." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.032.present-simple-plural-subjects"],
+  "introducesConceptIds": ["concept.a0.grammar.present-simple-third-person"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.lexicon.essential-verbs"
+  ],
+  "vocabularyIds": ["vocab.work", "vocab.live", "vocab.eat", "vocab.drink"],
+  "blocks": [
+    {
+      "id": "block.a0.033.third-person.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Com he, she e it, muitos verbos recebem -s na afirmativa do simple present." }
+    },
+    {
+      "id": "block.a0.033.third-person.rule",
+      "type": "rule",
+      "text": { "pt-BR": "He/She/It + verbo com -s, neste primeiro contraste: work → works, live → lives, eat → eats, drink → drinks." }
+    },
+    {
+      "id": "block.a0.033.third-person.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "She works. He lives. It works." }
+    },
+    {
+      "id": "block.a0.033.third-person.common-error",
+      "type": "common-error",
+      "text": { "pt-BR": "Evite She work na afirmativa. Para este padrão, use She works." }
+    }
+  ],
+  "activityIds": ["activity.a0.033.use-third-person"]
+}

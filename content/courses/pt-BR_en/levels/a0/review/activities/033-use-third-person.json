@@ -1,0 +1,22 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.033.use-third-person",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.033.present-simple-third-person",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Ela trabalha." },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["she works", "she works."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.present-simple-third-person",
+    "concept.a0.lexicon.essential-verbs"
+  ],
+  "objectiveIds": ["objective.a0.033.use-third-person"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

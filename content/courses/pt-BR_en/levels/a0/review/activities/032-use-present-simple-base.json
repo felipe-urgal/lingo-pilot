@@ -1,0 +1,22 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.032.use-present-simple-base",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.032.present-simple-plural-subjects",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Nós trabalhamos." },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["we work", "we work."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.lexicon.essential-verbs"
+  ],
+  "objectiveIds": ["objective.a0.032.use-present-simple-base"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.grammar.present-simple-questions",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": { "pt-BR": "Simple present — perguntas" },
+  "description": { "pt-BR": "Formar perguntas sobre ações e fatos no simple present com do e does." },
+  "prerequisiteConceptIds": ["concept.a0.grammar.present-simple-negative"]
+}

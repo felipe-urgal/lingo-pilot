@@ -1,0 +1,22 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.036.use-frequency-adverb",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.036.frequency-adverbs",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Eu sempre estudo." },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["i always study", "i always study."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.frequency-adverbs",
+    "concept.a0.grammar.present-simple-base"
+  ],
+  "objectiveIds": ["objective.a0.036.use-frequency-adverbs"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

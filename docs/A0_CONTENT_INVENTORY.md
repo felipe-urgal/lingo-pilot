@@ -109,7 +109,8 @@ Proposta atual para revisão:
 - `phone` e `book` preservam a primeira aparição real: `vocab.phone` é introduzido na Lesson 012 e `vocab.book` na 017, mesmo sendo reutilizados pela Lesson 024;
 - a Unit 05 mantém a ponte explícita `024 → 025` e a sequência `025 → 030`; `there-is-are` depende do contraste singular/plural já estabelecido, `can-ability` reutiliza subject pronouns e `can-requests-permission` depende de `can-ability` por continuidade semântica;
 - preposições de lugar, cômodos e imperativos não recebem prerequisite conceitual artificial apenas por posição na trilha;
-- ao migrar Units 06–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 06 mantém a ponte explícita `030 → 031` e a sequência `031 → 036`; `essential-verbs` não recebe prerequisite artificial, `present-simple-base` reutiliza subject pronouns + léxico essencial, terceira pessoa depende da forma base, negativa depende do contraste base/terceira pessoa, perguntas dependem do contraste `do/does` já introduzido pela negativa e frequency adverbs dependem da forma base — não da posição da Lesson 035;
+- ao migrar a Unit 07, cada prerequisite deve continuar sendo revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
 ## Estado da migração em `review`
@@ -182,7 +183,21 @@ Materializada no PR #112 com:
 - preposições, padrões gramaticais e modal `can` mantidos em Concept/ContentBlock em vez de virarem VocabularyItems artificiais;
 - todos os documentos permanecem em `status: review` e fora do runtime publicado.
 
-As cinco Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **30/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+### Unit 06 — aulas 031–036
+
+Materializada neste recorte com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 10 VocabularyItems lexicais (`go`, `work`, `live`, `study`, `eat`, `drink`, `always`, `usually`, `sometimes`, `never`);
+- 6 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `030 → 031` e sequência até 036;
+- Concept prerequisites seletivos: léxico essencial sem dependência artificial, forma base ligada a subject pronouns + léxico essencial, terceira pessoa ligada à forma base, negativa ao contraste base/terceira pessoa, perguntas ao contraste `do/does` e frequency adverbs à forma base;
+- `do`, `does`, `don't` e `doesn't` permanecem em Concept/ContentBlock, sem virar VocabularyItems artificiais;
+- exemplos de terceira pessoa usam neste recorte apenas formas regulares transparentes (`works`, `lives`, `eats`, `drinks`); `goes`/`studies` exigem decisão editorial explícita antes de serem ensinados;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+As seis Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **36/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
 
 ## Checklist de promoção para `published`
 
