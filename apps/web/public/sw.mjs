@@ -5,6 +5,7 @@ import {
   isLingoCacheName,
   shouldCacheResponse,
   shouldClearCachesAfterResponse,
+  shouldDeleteCacheAfterLogout,
 } from "./sw-policy.mjs";
 
 self.addEventListener("install", (event) => {
@@ -54,11 +55,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (shouldCacheResponse({
-    method: request.method,
-    pathname: url.pathname,
-    responseOk: true,
-  })) {
+  if (
+    shouldCacheResponse({
+      method: request.method,
+      pathname: url.pathname,
+      responseOk: true,
+    })
+  ) {
     event.respondWith(cacheFirstStaticAsset(request, url));
   }
 });
@@ -99,14 +102,16 @@ async function handleLogout(request, url) {
       status: response.status,
     })
   ) {
-    await clearLingoCaches();
+    await clearSessionCaches();
   }
   return response;
 }
 
-async function clearLingoCaches() {
+async function clearSessionCaches() {
   const names = await caches.keys();
   await Promise.all(
-    names.filter((name) => isLingoCacheName(name)).map((name) => caches.delete(name)),
+    names
+      .filter((name) => shouldDeleteCacheAfterLogout(name))
+      .map((name) => caches.delete(name)),
   );
 }
