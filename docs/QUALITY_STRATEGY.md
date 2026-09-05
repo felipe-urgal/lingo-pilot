@@ -196,8 +196,6 @@ A simplificação do CI de 2026-09-04 removeu deliberadamente formatação autom
 - `pnpm db:check` / `pnpm db:smoke`: mudanças de schema, migrations ou infraestrutura de banco;
 - `pnpm test:e2e`: fluxos browser-first críticos.
 
-Para tornar a evidência E2E reproduzível sem reintroduzir esse custo global, `.github/workflows/e2e.yml` oferece execução opt-in. Um PR pode solicitá-la com `[e2e]` no título ou com a label `run-e2e`; também existe `workflow_dispatch`. O job valida explicitamente o `head.sha` do PR e publica o contexto especializado `E2E / e2e`. Esse contexto não faz parte do ruleset obrigatório da `main` e só deve ser exigido pela revisão/DoD quando o risco do escopo justificar navegador real.
-
 Evals online, performance/a11y avançados e verificações operacionais seguem o mesmo princípio proporcional ao risco.
 
 Nenhum check obrigatório deve ser ignorado por conveniência; ao mesmo tempo, um diagnóstico especializado não deve voltar ao gate global sem decisão explícita.
