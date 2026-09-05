@@ -1,0 +1,48 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.030.can-requests-permission",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "Can — pedidos e permissão" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.030.make-can-request",
+      "description": { "pt-BR": "Fazer pedidos curtos e perguntar permissão com Can I...? e Can you...?." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.029.can-ability"],
+  "introducesConceptIds": ["concept.a0.grammar.can-requests-permission"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.can-ability",
+    "concept.a0.grammar.imperatives"
+  ],
+  "vocabularyIds": ["vocab.please"],
+  "blocks": [
+    {
+      "id": "block.a0.030.can-requests.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Mude a função de can: Can I...? pede permissão; Can you...? pede uma ação. Please torna o pedido mais cortês." }
+    },
+    {
+      "id": "block.a0.030.can-requests.rule",
+      "type": "rule",
+      "text": { "pt-BR": "Can I + verbo base...? / Can you + verbo base...?, please?" }
+    },
+    {
+      "id": "block.a0.030.can-requests.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "Can I open the book, please? Can you close the book, please?" }
+    },
+    {
+      "id": "block.a0.030.can-requests.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Observe se a intenção é dizer habilidade ou fazer um pedido; a forma com can é parecida, mas a função é diferente." }
+    }
+  ],
+  "activityIds": ["activity.a0.030.make-can-request"]
+}

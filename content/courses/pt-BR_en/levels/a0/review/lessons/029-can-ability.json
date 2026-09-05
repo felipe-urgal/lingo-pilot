@@ -1,0 +1,46 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.029.can-ability",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "Can — habilidade" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.029.state-ability",
+      "description": { "pt-BR": "Dizer habilidades simples com can ou can't seguido de verbo base." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.028.imperatives"],
+  "introducesConceptIds": ["concept.a0.grammar.can-ability"],
+  "reinforcesConceptIds": ["concept.a0.grammar.subject-pronouns"],
+  "vocabularyIds": ["vocab.swim", "vocab.cook", "vocab.drive"],
+  "blocks": [
+    {
+      "id": "block.a0.029.can-ability.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Use can + verbo base para habilidade e can't + verbo base para dizer que a habilidade não existe." }
+    },
+    {
+      "id": "block.a0.029.can-ability.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": { "en": "swim · cook · drive" }
+    },
+    {
+      "id": "block.a0.029.can-ability.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "I can swim. She can cook. He can't drive." }
+    },
+    {
+      "id": "block.a0.029.can-ability.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Depois de can/can't, mantenha o verbo na forma base: can swim, não can swims." }
+    }
+  ],
+  "activityIds": ["activity.a0.029.use-can-ability"]
+}
