@@ -1,0 +1,23 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.041.adjectives-opposites",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.07.everyday-survival",
+  "title": { "pt-BR": "Adjetivos e opostos" },
+  "estimatedMinutes": 10,
+  "objectives": [{"id":"objective.a0.041.use-basic-adjective","description":{"pt-BR":"Usar adjetivos básicos em pares de contraste para descrever pessoas ou objetos conhecidos."}}],
+  "prerequisiteLessonIds": ["lesson.a0.040.question-words"],
+  "introducesConceptIds": ["concept.a0.lexicon.basic-adjectives"],
+  "reinforcesConceptIds": ["concept.a0.grammar.be-affirmative","concept.a0.grammar.possessive-adjectives"],
+  "vocabularyIds": ["vocab.big","vocab.small","vocab.new","vocab.old","vocab.good","vocab.bad","vocab.book","vocab.bag"],
+  "blocks": [
+    {"id":"block.a0.041.adjectives.explanation","type":"explanation","text":{"pt-BR":"Adjetivos descrevem qualidades. Pratique pares de contraste para reduzir a carga de memória."}},
+    {"id":"block.a0.041.adjectives.vocabulary","type":"vocabulary","text":{"pt-BR":"big/small = grande/pequeno; new/old = novo/velho ou antigo; good/bad = bom/ruim."}},
+    {"id":"block.a0.041.adjectives.example","type":"example","language":"en","text":{"en":"My book is new. My bag is small."}},
+    {"id":"block.a0.041.adjectives.checkpoint","type":"checkpoint","text":{"pt-BR":"Use um único adjetivo por frase neste recorte e reaproveite estruturas com be já conhecidas."}}
+  ],
+  "activityIds": ["activity.a0.041.use-basic-adjective"]
+}

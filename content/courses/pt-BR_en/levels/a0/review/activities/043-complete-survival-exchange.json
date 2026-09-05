@@ -1,0 +1,43 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.043.complete-survival-exchange",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.043.survival-dialogues",
+  "type": "translation",
+  "prompt": {
+    "pt-BR": "Traduza: Olá. Posso beber água, por favor?"
+  },
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": [
+      "hello can i drink water please",
+      "hello can i drink water please?",
+      "hello can i drink water, please",
+      "hello can i drink water, please?",
+      "hello. can i drink water please",
+      "hello. can i drink water please?",
+      "hello. can i drink water, please",
+      "hello. can i drink water, please?",
+      "hi can i drink water please",
+      "hi can i drink water please?",
+      "hi can i drink water, please",
+      "hi can i drink water, please?",
+      "hi. can i drink water please",
+      "hi. can i drink water please?",
+      "hi. can i drink water, please",
+      "hi. can i drink water, please?"
+    ]
+  },
+  "conceptIds": [
+    "concept.a0.communication.survival-dialogues",
+    "concept.a0.communication.greetings",
+    "concept.a0.grammar.can-requests-permission",
+    "concept.a0.lexicon.food-and-drinks"
+  ],
+  "objectiveIds": ["objective.a0.043.complete-survival-exchange"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 2
+}

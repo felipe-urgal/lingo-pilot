@@ -110,7 +110,8 @@ Proposta atual para revisão:
 - a Unit 05 mantém a ponte explícita `024 → 025` e a sequência `025 → 030`; `there-is-are` depende do contraste singular/plural já estabelecido, `can-ability` reutiliza subject pronouns e `can-requests-permission` depende de `can-ability` por continuidade semântica;
 - preposições de lugar, cômodos e imperativos não recebem prerequisite conceitual artificial apenas por posição na trilha;
 - a Unit 06 mantém a ponte explícita `030 → 031` e a sequência `031 → 036`; `essential-verbs` não recebe prerequisite artificial, `present-simple-base` reutiliza subject pronouns + léxico essencial, terceira pessoa depende da forma base, negativa depende do contraste base/terceira pessoa, perguntas dependem do contraste `do/does` já introduzido pela negativa e frequency adverbs dependem da forma base — não da posição da Lesson 035;
-- ao migrar a Unit 07, cada prerequisite deve continuar sendo revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 07 mantém a ponte explícita `036 → 037` e a sequência `037 → 043`; rotina integra simple present + horas + frequência, preferências dependem da forma base, question words reutilizam perguntas com `be` e simple present, descrição de pessoas depende de `be` + `have/has` + adjetivos e o diálogo final depende apenas de linguagem já introduzida;
+- a Lesson 043 é integração e não introduz VocabularyItem novo; qualquer linguagem adicional necessária deve virar decisão editorial explícita em vez de entrar escondida no checkpoint final;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
 ## Estado da migração em `review`
@@ -197,7 +198,25 @@ Materializada neste recorte com:
 - exemplos de terceira pessoa usam neste recorte apenas formas regulares transparentes (`works`, `lives`, `eats`, `drinks`); `goes`/`studies` exigem decisão editorial explícita antes de serem ensinados;
 - todos os documentos permanecem em `status: review` e fora do runtime publicado.
 
-As seis Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **36/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+### Unit 07 — aulas 037–043
+
+Materializada no draft PR #118 com:
+
+- 7 Lessons;
+- 7 Concepts;
+- 25 VocabularyItems novos, com reutilização explícita de léxico das Units anteriores;
+- 7 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `036 → 037` e sequência até 043;
+- rotina integrando forma base, horário e frequency adverb, com `at + horário` explicitado como regra;
+- preferências limitadas a `like/love/hate + substantivo` para não introduzir `-ing` implicitamente;
+- question words apoiadas nas estruturas de pergunta já estudadas;
+- descrição de pessoas reutilizando `be`, `have/has`, adjetivos e `black` da Unit 04;
+- Lesson 043 de integração sem VocabularyItem novo e Activity aceitando `hello`/`hi`, variantes já ensinadas;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+As sete Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Com #117 + #118, **43/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+
+Isso fecha a cobertura técnica do inventário, mas não o DoD editorial da #28: ainda são obrigatórias revisão humana ponta a ponta, validação de naturalidade, `pnpm content:validate` no PR final, smoke no Lesson Player e promoção explícita de revision/status apenas do conteúdo aprovado.
 
 ## Checklist de promoção para `published`
 

@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.rice",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "rice",
+  "language": "en",
+  "partOfSpeech": "noun",
+  "translations": { "pt-BR": "arroz" },
+  "introducedInLessonId": "lesson.a0.038.food-and-drinks"
+}

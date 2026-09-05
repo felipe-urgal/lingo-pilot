@@ -1,0 +1,71 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.037.daily-routine",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.07.everyday-survival",
+  "title": { "pt-BR": "Rotina diária" },
+  "estimatedMinutes": 11,
+  "objectives": [
+    {
+      "id": "objective.a0.037.describe-daily-routine",
+      "description": {
+        "pt-BR": "Combinar presente simples, horários e frequência para descrever uma ação da rotina."
+      }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.036.frequency-adverbs"],
+  "introducesConceptIds": ["concept.a0.communication.daily-routine"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.time.clock-time",
+    "concept.a0.grammar.frequency-adverbs"
+  ],
+  "vocabularyIds": [
+    "vocab.wake-up",
+    "vocab.start",
+    "vocab.finish",
+    "vocab.study"
+  ],
+  "blocks": [
+    {
+      "id": "block.a0.037.daily-routine.explanation",
+      "type": "explanation",
+      "text": {
+        "pt-BR": "Use os verbos já conhecidos com horários e advérbios de frequência para montar uma rotina curta. Wake up, start e finish acrescentam ações comuns do dia."
+      }
+    },
+    {
+      "id": "block.a0.037.daily-routine.vocabulary",
+      "type": "vocabulary",
+      "text": {
+        "pt-BR": "wake up = acordar; start = começar; finish = terminar."
+      }
+    },
+    {
+      "id": "block.a0.037.daily-routine.rule",
+      "type": "rule",
+      "text": {
+        "pt-BR": "Para ligar uma ação a um horário neste recorte, use at + horário: at seven, at eight."
+      }
+    },
+    {
+      "id": "block.a0.037.daily-routine.example",
+      "type": "example",
+      "language": "en",
+      "text": {
+        "en": "I wake up at seven. I usually study at eight."
+      }
+    },
+    {
+      "id": "block.a0.037.daily-routine.checkpoint",
+      "type": "checkpoint",
+      "text": {
+        "pt-BR": "Mantenha a frase curta: sujeito + frequência quando necessária + verbo + at + horário."
+      }
+    }
+  ],
+  "activityIds": ["activity.a0.037.describe-daily-routine"]
+}

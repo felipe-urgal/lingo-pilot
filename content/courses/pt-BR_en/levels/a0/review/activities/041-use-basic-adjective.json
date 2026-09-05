@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.041.use-basic-adjective",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.041.adjectives-opposites",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza: Meu livro é novo." },
+  "evaluation": { "type": "deterministic", "acceptedAnswers": ["my book is new","my book is new."] },
+  "conceptIds": ["concept.a0.lexicon.basic-adjectives","concept.a0.grammar.be-affirmative","concept.a0.grammar.possessive-adjectives"],
+  "objectiveIds": ["objective.a0.041.use-basic-adjective"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

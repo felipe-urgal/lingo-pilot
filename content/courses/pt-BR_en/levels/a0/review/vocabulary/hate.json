@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.hate",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "hate",
+  "language": "en",
+  "partOfSpeech": "verb",
+  "translations": { "pt-BR": "detestar" },
+  "introducedInLessonId": "lesson.a0.039.like-love-hate"
+}

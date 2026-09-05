@@ -1,0 +1,19 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.communication.daily-routine",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": {
+    "pt-BR": "Rotina diária"
+  },
+  "description": {
+    "pt-BR": "Combinar presente simples, horários e frequência para descrever uma rotina curta."
+  },
+  "prerequisiteConceptIds": [
+    "concept.a0.grammar.present-simple-base",
+    "concept.a0.time.clock-time",
+    "concept.a0.grammar.frequency-adverbs"
+  ]
+}
