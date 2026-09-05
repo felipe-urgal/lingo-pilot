@@ -107,7 +107,9 @@ Proposta atual para revisão:
 - a Unit 04 mantém a ponte explícita `018 → 019` e a sequência `019 → 024`; `demonstratives` depende do contraste singular/plural, enquanto `possessive-adjectives` e `have-has` dependem de subject pronouns;
 - família, cores e objetos são Concepts lexicais sem prerequisite conceitual artificial; as Lessons continuam lineares para manter a trilha editorial;
 - `phone` e `book` preservam a primeira aparição real: `vocab.phone` é introduzido na Lesson 012 e `vocab.book` na 017, mesmo sendo reutilizados pela Lesson 024;
-- ao migrar Units 05–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
+- a Unit 05 mantém a ponte explícita `024 → 025` e a sequência `025 → 030`; `there-is-are` depende do contraste singular/plural já estabelecido, `can-ability` reutiliza subject pronouns e `can-requests-permission` depende de `can-ability` por continuidade semântica;
+- preposições de lugar, cômodos e imperativos não recebem prerequisite conceitual artificial apenas por posição na trilha;
+- ao migrar Units 06–07, cada prerequisite deve ser revisado por necessidade pedagógica, não copiado mecanicamente apenas pela posição;
 - o bootstrap de produto não é tratado como prerequisite pedagógico.
 
 ## Estado da migração em `review`
@@ -167,7 +169,20 @@ Materializada neste recorte com:
 - `phone`, `key`, `bag` e `book` são reutilizados em combinações com artigos e cores na Lesson 024;
 - revision metadata preservada em todos os documentos.
 
-As quatro Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **24/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
+### Unit 05 — aulas 025–030
+
+Materializada no PR #112 com:
+
+- 6 Lessons;
+- 6 Concepts;
+- 11 VocabularyItems lexicais (`kitchen`, `bedroom`, `bathroom`, `open`, `close`, `sit`, `come`, `swim`, `cook`, `drive`, `please`);
+- 6 Activities determinísticas ligadas diretamente aos objetivos;
+- ponte explícita `024 → 025` e sequência até 030;
+- `there-is-are` ligado ao contraste singular/plural, `can-ability` reutilizando subject pronouns e `can-requests-permission` ligado ao Concept de habilidade;
+- preposições, padrões gramaticais e modal `can` mantidos em Concept/ContentBlock em vez de virarem VocabularyItems artificiais;
+- todos os documentos permanecem em `status: review` e fora do runtime publicado.
+
+As cinco Units **não** entram em `level.a0.unitIds` e **não** são importadas por `apps/web/server/content/runtime.ts`. Até aqui, **30/43 aulas A0** estão materializadas em schema `review`; nenhuma foi promovida para `published`.
 
 ## Checklist de promoção para `published`
 

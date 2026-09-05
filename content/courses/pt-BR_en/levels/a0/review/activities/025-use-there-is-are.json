@@ -1,0 +1,16 @@
+{
+  "kind": "activity",
+  "id": "activity.a0.025.use-there-is-are",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "lessonId": "lesson.a0.025.there-is-are",
+  "type": "translation",
+  "prompt": { "pt-BR": "Traduza para o inglês: Há dois livros." },
+  "evaluation": { "type": "deterministic", "acceptedAnswers": ["there are two books", "there are two books."] },
+  "conceptIds": ["concept.a0.grammar.there-is-are", "concept.a0.grammar.regular-plurals"],
+  "objectiveIds": ["objective.a0.025.state-existence"],
+  "modality": "writing",
+  "supportLevel": 1,
+  "difficulty": 1
+}

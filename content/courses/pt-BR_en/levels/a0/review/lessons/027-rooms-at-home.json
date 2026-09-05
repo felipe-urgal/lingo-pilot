@@ -1,0 +1,49 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.027.rooms-at-home",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "Casa: cômodos" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.027.name-rooms-at-home",
+      "description": { "pt-BR": "Nomear kitchen, bedroom e bathroom e reconhecê-los em descrições simples de casa." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.026.place-prepositions"],
+  "introducesConceptIds": ["concept.a0.lexicon.rooms-at-home"],
+  "reinforcesConceptIds": [
+    "concept.a0.grammar.there-is-are",
+    "concept.a0.grammar.place-prepositions"
+  ],
+  "vocabularyIds": ["vocab.kitchen", "vocab.bedroom", "vocab.bathroom"],
+  "blocks": [
+    {
+      "id": "block.a0.027.rooms.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Aprenda três cômodos de alta frequência e reutilize as estruturas de existência e localização." }
+    },
+    {
+      "id": "block.a0.027.rooms.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": { "en": "kitchen · bedroom · bathroom" }
+    },
+    {
+      "id": "block.a0.027.rooms.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "There is a kitchen. The bathroom is next to the bedroom." }
+    },
+    {
+      "id": "block.a0.027.rooms.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Primeiro reconheça o cômodo; depois acrescente localização somente quando ela ajudar a mensagem." }
+    }
+  ],
+  "activityIds": ["activity.a0.027.name-room"]
+}
