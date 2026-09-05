@@ -13,6 +13,7 @@ const wrapperPath = fileURLToPath(
 
 const runtimeKeys = [
   "APP_TIMEZONE",
+  "DATABASE_URL",
   "LINGO_PROFILE",
   "LINGO_TEST_MODE",
   "NEXT_PUBLIC_APP_URL",
@@ -77,6 +78,7 @@ test("runtime wrapper propagates repository-root .env.local values to its child 
         "NEXT_PUBLIC_APP_URL=http://127.0.0.1:5400",
         "APP_TIMEZONE=America/Sao_Paulo",
         "LINGO_TEST_MODE=false",
+        "DATABASE_URL=postgresql://lingo_pilot:lingo_pilot_local@127.0.0.1:5435/lingo_pilot_dev",
         "",
       ].join("\n"),
       "utf8",
