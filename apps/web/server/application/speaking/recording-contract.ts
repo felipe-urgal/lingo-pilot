@@ -44,7 +44,9 @@ export type PrivateSpeakingObject = Readonly<{
 }>;
 
 export interface PrivateSpeakingStorage {
-  putPrivateObject(input: PrivateSpeakingObject): Promise<Readonly<{ assetRef: string }>>;
+  putPrivateObject(
+    input: PrivateSpeakingObject,
+  ): Promise<Readonly<{ assetRef: string }>>;
   deletePrivateObject(assetRef: string): Promise<void>;
 }
 
@@ -60,7 +62,11 @@ export function validateSpeakingRecordingMetadata(
   if (!isOpaqueId(input.activityId)) {
     return invalid("invalid_activity_id", "Activity id is invalid");
   }
-  if (!speakingRecordingPolicy.allowedMimeTypes.includes(input.mimeType as never)) {
+  if (
+    !speakingRecordingPolicy.allowedMimeTypes.some(
+      (allowedMimeType) => allowedMimeType === input.mimeType,
+    )
+  ) {
     return invalid("unsupported_mime_type", "Recording MIME type is not allowed");
   }
   if (!Number.isInteger(input.byteLength) || input.byteLength <= 0) {
