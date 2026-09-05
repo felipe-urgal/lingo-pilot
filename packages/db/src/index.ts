@@ -33,6 +33,13 @@ export {
 export { PostgresLearnerJourneyRepository } from "./repositories/postgres-learner-journey-repository.ts";
 export { PostgresPracticeRepository } from "./repositories/postgres-practice-repository.ts";
 export {
+  PostgresSpeakingRepository,
+  type ReserveSpeakingAttemptInput,
+  type ReserveSpeakingAttemptResult,
+  type SpeakingAttemptRecord,
+  type SpeakingAttemptStatus,
+} from "./repositories/postgres-speaking-repository.ts";
+export {
   activityAttempts,
   activityProgress,
   conceptEvidence,
@@ -50,5 +57,6 @@ export {
   ownershipFixtures,
   users,
 } from "./schema.ts";
+export { speakingAttempts } from "./speaking-schema.ts";
 
 export const packageBoundary = "db" as const;
