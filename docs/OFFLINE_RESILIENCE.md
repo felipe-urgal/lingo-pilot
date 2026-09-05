@@ -64,7 +64,9 @@ Assets estáticos usam cache-first somente porque seus caminhos do Next são ver
 
 ## Installability
 
-`app/manifest.ts` define nome, `start_url`, display standalone, idioma e ícone. O service worker é registrado apenas quando `navigator.serviceWorker` existe e o contexto é seguro.
+`app/manifest.ts` define nome, `start_url`, display standalone, idioma e o ícone SVG escalável com alvos explícitos `192x192` e `512x512`. O service worker é registrado apenas quando `navigator.serviceWorker` existe e o contexto é seguro.
+
+Os tamanhos explícitos atendem o contrato esperado pelos browsers Chromium sem introduzir assets duplicados neste recorte. A validação em browser real continua obrigatória antes de declarar a #42 concluída; se algum browser alvo exigir fallback raster, ele deve ser adicionado a partir dessa evidência, não por suposição.
 
 Falha ao registrar o worker não bloqueia a aplicação online.
 
