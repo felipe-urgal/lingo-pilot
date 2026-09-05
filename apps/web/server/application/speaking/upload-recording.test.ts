@@ -147,6 +147,29 @@ describe("speaking recording upload orchestration", () => {
     expect(puts).toHaveLength(0);
   });
 
+  it("releases the reservation if server-controlled key generation fails", async () => {
+    const ledger = new FakeLedger();
+    const releaseSpy = vi.spyOn(ledger, "release");
+    const { storage, puts } = createStorage();
+
+    await expect(
+      uploadSpeakingRecording(
+        {
+          userId: "user/invalid",
+          metadata,
+          bytes: new Uint8Array(4),
+        },
+        { ownership: ownedAttempt, ledger, storage },
+      ),
+    ).rejects.toThrow("userId is invalid");
+
+    expect(puts).toHaveLength(0);
+    expect(releaseSpy).toHaveBeenCalledWith({
+      userId: "user/invalid",
+      operationKey: metadata.operationKey,
+    });
+  });
+
   it("deletes a stored object and releases the reservation when commit fails", async () => {
     const ledger = new FakeLedger();
     ledger.complete = async () => {
