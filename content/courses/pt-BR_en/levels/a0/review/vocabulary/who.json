@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.who",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "who",
+  "language": "en",
+  "partOfSpeech": "question word",
+  "translations": { "pt-BR": "quem" },
+  "introducedInLessonId": "lesson.a0.040.question-words"
+}

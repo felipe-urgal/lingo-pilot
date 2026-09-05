@@ -1,0 +1,20 @@
+{
+  "kind": "unit",
+  "id": "unit.a0.07.everyday-survival",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "title": {
+    "pt-BR": "Sobrevivência no dia a dia"
+  },
+  "lessonIds": [
+    "lesson.a0.037.daily-routine",
+    "lesson.a0.038.food-and-drinks",
+    "lesson.a0.039.like-love-hate",
+    "lesson.a0.040.question-words",
+    "lesson.a0.041.adjectives-opposites",
+    "lesson.a0.042.describe-people",
+    "lesson.a0.043.survival-dialogues"
+  ]
+}

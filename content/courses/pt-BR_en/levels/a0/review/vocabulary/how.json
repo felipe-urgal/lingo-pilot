@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.how",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "how",
+  "language": "en",
+  "partOfSpeech": "question word",
+  "translations": { "pt-BR": "como" },
+  "introducedInLessonId": "lesson.a0.040.question-words"
+}

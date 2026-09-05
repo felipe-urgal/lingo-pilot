@@ -1,0 +1,23 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.039.like-love-hate",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.07.everyday-survival",
+  "title": { "pt-BR": "Like / love / hate" },
+  "estimatedMinutes": 10,
+  "objectives": [{"id":"objective.a0.039.express-basic-preference","description":{"pt-BR":"Expressar preferências simples com like, love e hate usando nomes conhecidos."}}],
+  "prerequisiteLessonIds": ["lesson.a0.038.food-and-drinks"],
+  "introducesConceptIds": ["concept.a0.grammar.preference-verbs"],
+  "reinforcesConceptIds": ["concept.a0.grammar.present-simple-base","concept.a0.lexicon.food-and-drinks"],
+  "vocabularyIds": ["vocab.like","vocab.love","vocab.hate","vocab.coffee","vocab.rice"],
+  "blocks": [
+    {"id":"block.a0.039.preferences.explanation","type":"explanation","text":{"pt-BR":"Use like, love e hate antes de um nome para expressar preferência básica. Neste recorte, não introduzimos construções com verbo em -ing."}},
+    {"id":"block.a0.039.preferences.rule","type":"rule","text":{"pt-BR":"I/you/we/they + like/love/hate + nome."}},
+    {"id":"block.a0.039.preferences.example","type":"example","language":"en","text":{"en":"I like coffee. We love rice. They hate coffee."}},
+    {"id":"block.a0.039.preferences.checkpoint","type":"checkpoint","text":{"pt-BR":"Pratique primeiro com substantivos já conhecidos para não misturar preferência com uma nova estrutura verbal."}}
+  ],
+  "activityIds": ["activity.a0.039.express-basic-preference"]
+}

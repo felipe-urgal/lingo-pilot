@@ -1,0 +1,19 @@
+{
+  "kind": "concept",
+  "id": "concept.a0.communication.survival-dialogues",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "title": {
+    "pt-BR": "Mini diálogos de sobrevivência"
+  },
+  "description": {
+    "pt-BR": "Combinar cumprimentos, pedidos e necessidades já estudados em trocas curtas."
+  },
+  "prerequisiteConceptIds": [
+    "concept.a0.communication.greetings",
+    "concept.a0.grammar.can-requests-permission",
+    "concept.a0.lexicon.food-and-drinks"
+  ]
+}

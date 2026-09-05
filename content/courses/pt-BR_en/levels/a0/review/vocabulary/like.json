@@ -1,0 +1,13 @@
+{
+  "kind": "vocabulary",
+  "id": "vocab.like",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "courseId": "course.en.ptbr.v1",
+  "lemma": "like",
+  "language": "en",
+  "partOfSpeech": "verb",
+  "translations": { "pt-BR": "gostar de" },
+  "introducedInLessonId": "lesson.a0.039.like-love-hate"
+}
