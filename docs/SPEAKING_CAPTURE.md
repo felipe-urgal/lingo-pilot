@@ -13,7 +13,7 @@ Este documento registra a foundation da issue #33. Ela cobre captura no browser 
 - gerar object key somente com IDs controlados/validados pelo servidor;
 - revalidar ownership do Attempt no contexto autenticado antes do upload;
 - reservar `operationKey` atomicamente para idempotência e rejeitar conflito de payload;
-- compensar upload parcial quando a persistência do receipt falha;
+- compensar qualquer falha após a reserva, removendo objeto gravado quando existir e liberando a operação para retry;
 - definir ports pequenos de storage/ownership/ledger para adapters futuros.
 
 Estes recortes **não** persistem áudio em Production e não escolhem bucket/provider/database adapter.
@@ -75,15 +75,16 @@ Os três segmentos precisam ser IDs opacos válidos; `/`, `..`, espaços iniciai
 4. reserva `(userId, operationKey)` por `SpeakingUploadLedger`;
 5. uma operação já concluída com a mesma metadata retorna o mesmo receipt como replay idempotente, sem novo `put`;
 6. reutilizar a `operationKey` com metadata diferente falha como conflito;
-7. a reserva fornece `assetId` server-side, usado para derivar a object key;
+7. a reserva fornece `assetId` server-side, usado para derivar a object key dentro da região compensável da operação;
 8. somente depois disso `PrivateSpeakingStorage.putPrivateObject` recebe bytes + MIME validado;
-9. se o objeto for gravado mas `ledger.complete` falhar, a aplicação tenta `deletePrivateObject` e libera a reserva antes de propagar a falha.
+9. qualquer exceção após a reserva libera `(userId, operationKey)` antes de propagar a falha;
+10. se um objeto já tiver sido gravado quando a falha ocorrer, a aplicação tenta `deletePrivateObject` antes de liberar a reserva.
 
 O port `SpeakingUploadLedger.reserve` possui uma exigência não negociável para o adapter real: a reserva precisa ser **atômica e única por `(userId, operationKey)`**. Um `find` seguido de `insert` sem constraint transacional reabre corrida de duplicate upload e não satisfaz o contrato.
 
 `in_progress` é um estado explícito para concorrência. O caller pode responder como conflito/retry recuperável; ele não deve iniciar um segundo upload em paralelo para a mesma operação.
 
-A compensação após falha de commit é best effort. Se o delete do storage também falhar, o futuro job de retention/cleanup precisa localizar e remover o objeto órfão de modo observável e sem logar conteúdo.
+A compensação após falha é best effort. Se o delete do storage também falhar, o futuro job de retention/cleanup precisa localizar e remover o objeto órfão de modo observável e sem logar conteúdo.
 
 ## Storage provider
 
@@ -141,7 +142,7 @@ Nunca logar áudio, transcript, Blob, signed URL, payload completo ou conteúdo 
 
 ### Falha parcial
 
-Se storage concluir e o ledger falhar, a aplicação tenta apagar o objeto imediatamente e libera a operação para retry. Falha dessa compensação deverá ser coberta pelo lifecycle/cleanup observável do adapter real.
+Depois que uma operação é reservada, qualquer exceção — inclusive falha ao derivar uma object key válida — passa pela liberação da reserva. Se storage já concluiu e uma etapa posterior falhar, a aplicação tenta apagar o objeto antes do release. Falha dessa compensação deverá ser coberta pelo lifecycle/cleanup observável do adapter real.
 
 ### Exclusão
 
@@ -169,6 +170,7 @@ Não fixamos um número de dias nesta foundation porque isso depende do provider
 - conflito quando a mesma operation key muda de metadata;
 - ownership negada antes de tocar storage;
 - divergência entre byte length declarado e payload real;
+- release da reserva quando a geração da object key falha antes de tocar storage;
 - compensating delete + release da reserva quando o commit do receipt falha.
 
 Esses testes verificam o contrato provider-neutral. Eles não substituem integração futura com constraint transacional, storage privado real e autenticação.
