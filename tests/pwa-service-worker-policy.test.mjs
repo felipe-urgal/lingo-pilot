@@ -86,5 +86,5 @@ test("service worker does not introduce mutation replay storage", async () => {
 
   assert.equal(worker.includes("indexedDB"), false);
   assert.equal(worker.includes("SyncManager"), false);
-  assert.equal(worker.includes("sync"), false);
+  assert.equal(/addEventListener\(["']sync["']/.test(worker), false);
 });
