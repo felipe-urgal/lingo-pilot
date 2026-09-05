@@ -1,14 +1,9 @@
-export const speakingRecordingPolicy = Object.freeze({
-  maxDurationMs: 60_000,
-  maxBytes: 5 * 1024 * 1024,
-  allowedMimeTypes: [
-    "audio/webm",
-    "audio/webm;codecs=opus",
-    "audio/ogg",
-    "audio/ogg;codecs=opus",
-    "audio/mp4",
-  ] as const,
-});
+import {
+  isAllowedSpeakingMimeType,
+  speakingRecordingPolicy,
+} from "../../../lib/speaking/recording-policy";
+
+export { speakingRecordingPolicy } from "../../../lib/speaking/recording-policy";
 
 export type SpeakingRecordingMetadata = Readonly<{
   operationKey: string;
@@ -62,11 +57,7 @@ export function validateSpeakingRecordingMetadata(
   if (!isOpaqueId(input.activityId)) {
     return invalid("invalid_activity_id", "Activity id is invalid");
   }
-  if (
-    !speakingRecordingPolicy.allowedMimeTypes.some(
-      (allowedMimeType) => allowedMimeType === input.mimeType,
-    )
-  ) {
+  if (!isAllowedSpeakingMimeType(input.mimeType)) {
     return invalid("unsupported_mime_type", "Recording MIME type is not allowed");
   }
   if (!Number.isInteger(input.byteLength) || input.byteLength <= 0) {
