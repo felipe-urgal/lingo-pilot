@@ -21,6 +21,8 @@ concurrency:
 
 env:
   CI: true
+  LINGO_PROFILE: e2e
+  LINGO_TEST_MODE: true
   NEXT_PUBLIC_APP_URL: http://127.0.0.1:5401
   APP_TIMEZONE: UTC
   DATABASE_URL: postgresql://lingo_pilot:lingo_pilot_ci@127.0.0.1:5435/lingo_pilot_runtime
