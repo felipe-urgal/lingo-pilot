@@ -85,16 +85,14 @@ function repository(
       }),
     ),
     listCleanupCandidates: vi.fn().mockResolvedValue([]),
-    markDeleted: vi
-      .fn()
-      .mockImplementation(async (attemptId, now) =>
-        attempt({
-          id: attemptId,
-          status: "deleted",
-          deletedAt: now,
-          updatedAt: now,
-        }),
-      ),
+    markDeleted: vi.fn().mockImplementation(async (attemptId, now) =>
+      attempt({
+        id: attemptId,
+        status: "deleted",
+        deletedAt: now,
+        updatedAt: now,
+      }),
+    ),
     ...overrides,
   };
 }
