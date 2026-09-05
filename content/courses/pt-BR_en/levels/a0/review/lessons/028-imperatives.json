@@ -1,0 +1,46 @@
+{
+  "kind": "lesson",
+  "id": "lesson.a0.028.imperatives",
+  "schemaVersion": 1,
+  "revision": 1,
+  "status": "review",
+  "levelId": "level.a0",
+  "unitId": "unit.a0.05.places-and-ability",
+  "title": { "pt-BR": "Imperativos" },
+  "estimatedMinutes": 10,
+  "objectives": [
+    {
+      "id": "objective.a0.028.use-short-imperatives",
+      "description": { "pt-BR": "Entender e produzir comandos curtos com verbos concretos na forma base." }
+    }
+  ],
+  "prerequisiteLessonIds": ["lesson.a0.027.rooms-at-home"],
+  "introducesConceptIds": ["concept.a0.grammar.imperatives"],
+  "reinforcesConceptIds": ["concept.a0.lexicon.everyday-objects"],
+  "vocabularyIds": ["vocab.open", "vocab.close", "vocab.sit", "vocab.come"],
+  "blocks": [
+    {
+      "id": "block.a0.028.imperatives.explanation",
+      "type": "explanation",
+      "text": { "pt-BR": "Em instruções curtas, use o verbo na forma base e deixe o sujeito implícito." }
+    },
+    {
+      "id": "block.a0.028.imperatives.vocabulary",
+      "type": "vocabulary",
+      "language": "en",
+      "text": { "en": "open · close · sit · come" }
+    },
+    {
+      "id": "block.a0.028.imperatives.example",
+      "type": "example",
+      "language": "en",
+      "text": { "en": "Open the book. Close the book. Sit. Come." }
+    },
+    {
+      "id": "block.a0.028.imperatives.checkpoint",
+      "type": "checkpoint",
+      "text": { "pt-BR": "Não acrescente I/you antes do verbo quando a intenção for um comando direto." }
+    }
+  ],
+  "activityIds": ["activity.a0.028.use-imperative"]
+}
