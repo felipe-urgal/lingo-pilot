@@ -7,8 +7,14 @@
   "lessonId": "lesson.a0.028.imperatives",
   "type": "translation",
   "prompt": { "pt-BR": "Traduza como comando: Abra o livro." },
-  "evaluation": { "type": "deterministic", "acceptedAnswers": ["open the book", "open the book."] },
-  "conceptIds": ["concept.a0.grammar.imperatives", "concept.a0.lexicon.everyday-objects"],
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["open the book", "open the book."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.imperatives",
+    "concept.a0.lexicon.everyday-objects"
+  ],
   "objectiveIds": ["objective.a0.028.use-short-imperatives"],
   "modality": "writing",
   "supportLevel": 1,

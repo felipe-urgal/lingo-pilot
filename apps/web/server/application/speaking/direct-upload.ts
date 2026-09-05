@@ -8,10 +8,7 @@ export const speakingUploadWindowMs = 10 * 60 * 1000;
 export const speakingRawAudioRetentionMs = 24 * 60 * 60 * 1000;
 
 export type DirectSpeakingAttemptStatus =
-  | "reserved"
-  | "uploaded"
-  | "discarded"
-  | "deleted";
+  "reserved" | "uploaded" | "discarded" | "deleted";
 
 export type DirectSpeakingAttempt = Readonly<{
   id: string;
@@ -38,28 +35,32 @@ export type DirectSpeakingAttempt = Readonly<{
 }>;
 
 export interface DirectSpeakingRepository {
-  ownsLessonSessionItem(input: Readonly<{
-    userId: string;
-    enrollmentId: string;
-    sessionItemId: string;
-    lessonId: string;
-  }>): Promise<boolean>;
-  reserveAttempt(input: Readonly<{
-    id: string;
-    enrollmentId: string;
-    sessionItemId: string;
-    activityId: string;
-    contentSchemaVersion: number;
-    contentRevision: number;
-    operationKey: string;
-    assetId: string;
-    objectKey: string;
-    mimeType: string;
-    byteLength: number;
-    durationMs: number;
-    uploadExpiresAt: Date;
-    now: Date;
-  }>): Promise<Readonly<{ inserted: boolean; attempt: DirectSpeakingAttempt }>>;
+  ownsLessonSessionItem(
+    input: Readonly<{
+      userId: string;
+      enrollmentId: string;
+      sessionItemId: string;
+      lessonId: string;
+    }>,
+  ): Promise<boolean>;
+  reserveAttempt(
+    input: Readonly<{
+      id: string;
+      enrollmentId: string;
+      sessionItemId: string;
+      activityId: string;
+      contentSchemaVersion: number;
+      contentRevision: number;
+      operationKey: string;
+      assetId: string;
+      objectKey: string;
+      mimeType: string;
+      byteLength: number;
+      durationMs: number;
+      uploadExpiresAt: Date;
+      now: Date;
+    }>,
+  ): Promise<Readonly<{ inserted: boolean; attempt: DirectSpeakingAttempt }>>;
   findOwnedAttempt(
     userId: string,
     attemptId: string,
@@ -70,13 +71,15 @@ export interface DirectSpeakingRepository {
     uploadExpiresAt: Date,
     now: Date,
   ): Promise<DirectSpeakingAttempt | null>;
-  markUploaded(input: Readonly<{
-    attemptId: string;
-    etag: string;
-    uploadedAt: Date;
-    retainedUntil: Date;
-    now: Date;
-  }>): Promise<DirectSpeakingAttempt | null>;
+  markUploaded(
+    input: Readonly<{
+      attemptId: string;
+      etag: string;
+      uploadedAt: Date;
+      retainedUntil: Date;
+      now: Date;
+    }>,
+  ): Promise<DirectSpeakingAttempt | null>;
   discardOwnedAttempt(
     userId: string,
     attemptId: string,
@@ -134,10 +137,7 @@ export type ConfirmSpeakingUploadResult =
     }>
   | Readonly<{
       ok: false;
-      reason:
-        | "attempt_not_found"
-        | "object_mismatch"
-        | "attempt_closed";
+      reason: "attempt_not_found" | "object_mismatch" | "attempt_closed";
       objectKey?: string;
     }>;
 
@@ -168,7 +168,11 @@ export async function prepareSpeakingUpload(
     durationMs: input.durationMs,
   };
   const validation = validateSpeakingRecordingMetadata(metadata);
-  if (!validation.ok || input.contentSchemaVersion < 1 || input.contentRevision < 1) {
+  if (
+    !validation.ok ||
+    input.contentSchemaVersion < 1 ||
+    input.contentRevision < 1
+  ) {
     return { ok: false, reason: "invalid_recording" };
   }
 
@@ -218,7 +222,8 @@ export async function prepareSpeakingUpload(
   return {
     ok: true,
     duplicate: !reservation.inserted,
-    state: attempt.status === "uploaded" ? "already_uploaded" : "upload_required",
+    state:
+      attempt.status === "uploaded" ? "already_uploaded" : "upload_required",
     attempt,
   };
 }
@@ -252,14 +257,26 @@ export async function confirmSpeakingUpload(
     attempt.byteLength !== input.byteLength ||
     !input.etag.trim()
   ) {
-    return { ok: false, reason: "object_mismatch", objectKey: attempt.objectKey };
+    return {
+      ok: false,
+      reason: "object_mismatch",
+      objectKey: attempt.objectKey,
+    };
   }
   if (attempt.status === "discarded" || attempt.status === "deleted") {
-    return { ok: false, reason: "attempt_closed", objectKey: attempt.objectKey };
+    return {
+      ok: false,
+      reason: "attempt_closed",
+      objectKey: attempt.objectKey,
+    };
   }
   if (attempt.status === "uploaded") {
     if (attempt.etag !== input.etag) {
-      return { ok: false, reason: "object_mismatch", objectKey: attempt.objectKey };
+      return {
+        ok: false,
+        reason: "object_mismatch",
+        objectKey: attempt.objectKey,
+      };
     }
     return { ok: true, duplicate: true, attempt };
   }
@@ -277,10 +294,18 @@ export async function confirmSpeakingUpload(
   });
   if (!updated) return { ok: false, reason: "attempt_not_found" };
   if (updated.status === "discarded" || updated.status === "deleted") {
-    return { ok: false, reason: "attempt_closed", objectKey: updated.objectKey };
+    return {
+      ok: false,
+      reason: "attempt_closed",
+      objectKey: updated.objectKey,
+    };
   }
   if (updated.status !== "uploaded" || updated.etag !== input.etag) {
-    return { ok: false, reason: "object_mismatch", objectKey: updated.objectKey };
+    return {
+      ok: false,
+      reason: "object_mismatch",
+      objectKey: updated.objectKey,
+    };
   }
   return { ok: true, duplicate: false, attempt: updated };
 }
@@ -292,11 +317,13 @@ export async function discardSpeakingUpload(
     now(): Date;
   }>,
   input: Readonly<{ userId: string; attemptId: string }>,
-): Promise<Readonly<{
-  found: boolean;
-  deleted: boolean;
-  cleanupPending: boolean;
-}>> {
+): Promise<
+  Readonly<{
+    found: boolean;
+    deleted: boolean;
+    cleanupPending: boolean;
+  }>
+> {
   const now = dependencies.now();
   const attempt = await dependencies.repository.discardOwnedAttempt(
     input.userId,
@@ -324,23 +351,31 @@ export async function cleanupSpeakingUploads(
     now(): Date;
   }>,
   limit = 50,
-): Promise<Readonly<{
-  selected: number;
-  deleted: number;
-  failed: number;
-}>> {
+): Promise<
+  Readonly<{
+    selected: number;
+    deleted: number;
+    failed: number;
+  }>
+> {
   if (!Number.isInteger(limit) || limit < 1 || limit > 250) {
     throw new Error("Speaking cleanup limit must be between 1 and 250");
   }
   const now = dependencies.now();
-  const candidates = await dependencies.repository.listCleanupCandidates(now, limit);
+  const candidates = await dependencies.repository.listCleanupCandidates(
+    now,
+    limit,
+  );
   let deleted = 0;
   let failed = 0;
 
   for (const candidate of candidates) {
     try {
       await dependencies.storage.deletePrivateObject(candidate.objectKey);
-      await dependencies.repository.markDeleted(candidate.id, dependencies.now());
+      await dependencies.repository.markDeleted(
+        candidate.id,
+        dependencies.now(),
+      );
       deleted += 1;
     } catch {
       failed += 1;

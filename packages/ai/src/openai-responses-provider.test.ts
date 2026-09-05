@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  OpenAIResponsesProvider,
-  type PromptDefinition,
-} from "./index.js";
+import { OpenAIResponsesProvider, type PromptDefinition } from "./index.js";
 
 const prompt: PromptDefinition = {
   id: "timeout-test",
@@ -13,11 +10,17 @@ const prompt: PromptDefinition = {
 describe("OpenAIResponsesProvider timeout", () => {
   it("aborts an overdue request and returns a categorized timeout error", async () => {
     const fetchStub = vi.fn(
-      async (_input: string | URL | Request, init?: RequestInit): Promise<Response> =>
+      async (
+        _input: string | URL | Request,
+        init?: RequestInit,
+      ): Promise<Response> =>
         new Promise((_resolve, reject) => {
           init?.signal?.addEventListener(
             "abort",
-            () => reject(new DOMException("The operation was aborted", "AbortError")),
+            () =>
+              reject(
+                new DOMException("The operation was aborted", "AbortError"),
+              ),
             { once: true },
           );
         }),

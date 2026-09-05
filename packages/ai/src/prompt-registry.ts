@@ -53,6 +53,9 @@ export class PromptRegistry {
   }
 
   list(): readonly PromptRef[] {
-    return [...this.#prompts.values()].map(({ id, version }) => ({ id, version }));
+    return [...this.#prompts.values()].map(({ id, version }) => ({
+      id,
+      version,
+    }));
   }
 }

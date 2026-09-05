@@ -6,8 +6,8 @@ export default function OfflinePage() {
         <h1 id="offline-title">Você está offline</h1>
         <p className="description">
           O conteúdo privado e os envios de estudo não são armazenados no
-          navegador para replay automático. Reconecte-se para continuar com
-          seus dados atualizados.
+          navegador para replay automático. Reconecte-se para continuar com seus
+          dados atualizados.
         </p>
         <p>
           <a className="text-link" href="/app/today">

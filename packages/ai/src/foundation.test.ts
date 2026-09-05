@@ -42,9 +42,9 @@ const evaluationOutput = defineStructuredOutput({
 describe("AI provider foundation", () => {
   it("registers prompts by stable id:version and rejects duplicates", () => {
     const registry = new PromptRegistry([prompt]);
-    expect(registry.resolve({ id: "writing-evaluator", version: "v1" })).toEqual(
-      prompt,
-    );
+    expect(
+      registry.resolve({ id: "writing-evaluator", version: "v1" }),
+    ).toEqual(prompt);
     expect(() => registry.register(prompt)).toThrow(/already registered/);
     expect(() =>
       registry.resolve({ id: "writing-evaluator", version: "v2" }),
@@ -57,15 +57,28 @@ describe("AI provider foundation", () => {
       structuredResponses: [{ acceptable: true }, { acceptable: "yes" }],
     });
 
-    await expect(provider.generateText({ prompt, input: "hello" })).resolves.toMatchObject({
+    await expect(
+      provider.generateText({ prompt, input: "hello" }),
+    ).resolves.toMatchObject({
       value: "ok",
-      metadata: { provider: "fake", prompt: { id: prompt.id, version: prompt.version } },
+      metadata: {
+        provider: "fake",
+        prompt: { id: prompt.id, version: prompt.version },
+      },
     });
     await expect(
-      provider.generateStructured({ prompt, input: "first", output: evaluationOutput }),
+      provider.generateStructured({
+        prompt,
+        input: "first",
+        output: evaluationOutput,
+      }),
     ).resolves.toMatchObject({ value: { acceptable: true } });
     await expect(
-      provider.generateStructured({ prompt, input: "second", output: evaluationOutput }),
+      provider.generateStructured({
+        prompt,
+        input: "second",
+        output: evaluationOutput,
+      }),
     ).rejects.toMatchObject({ code: "invalid_output", retryable: false });
   });
 
@@ -95,26 +108,26 @@ describe("AI provider foundation", () => {
 
   it("sends Responses API structured output with store=false and validates locally", async () => {
     const requestBodies: unknown[] = [];
-    const fetchStub = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
-      requestBodies.push(JSON.parse(String(init?.body)));
-      return new Response(
-        JSON.stringify({
-          id: "resp_test",
-          status: "completed",
-          model: "test-model-2026-01-01",
-          output: [
-            {
-              type: "message",
-              content: [
-                { type: "output_text", text: "{\"acceptable\":true}" },
-              ],
-            },
-          ],
-          usage: { input_tokens: 10, output_tokens: 4, total_tokens: 14 },
-        }),
-        { status: 200, headers: { "x-request-id": "req_test" } },
-      );
-    });
+    const fetchStub = vi.fn(
+      async (_input: string | URL | Request, init?: RequestInit) => {
+        requestBodies.push(JSON.parse(String(init?.body)));
+        return new Response(
+          JSON.stringify({
+            id: "resp_test",
+            status: "completed",
+            model: "test-model-2026-01-01",
+            output: [
+              {
+                type: "message",
+                content: [{ type: "output_text", text: '{"acceptable":true}' }],
+              },
+            ],
+            usage: { input_tokens: 10, output_tokens: 4, total_tokens: 14 },
+          }),
+          { status: 200, headers: { "x-request-id": "req_test" } },
+        );
+      },
+    );
 
     const provider = new OpenAIResponsesProvider({
       apiKey: "secret-test-key",
@@ -164,14 +177,19 @@ describe("AI provider foundation", () => {
           JSON.stringify({
             model: "test-model",
             output: [
-              { type: "message", content: [{ type: "output_text", text: "ok" }] },
+              {
+                type: "message",
+                content: [{ type: "output_text", text: "ok" }],
+              },
             ],
           }),
           { status: 200 },
         ),
       );
     const metrics: AiMetricRecord[] = [];
-    const telemetry: AiTelemetry = { recordMetric: (record) => metrics.push(record) };
+    const telemetry: AiTelemetry = {
+      recordMetric: (record) => metrics.push(record),
+    };
     const sleep = vi.fn(async () => Promise.resolve());
 
     const provider = new OpenAIResponsesProvider({
@@ -204,9 +222,9 @@ describe("AI provider foundation", () => {
   });
 
   it("does not retry non-transient 4xx or invalid output", async () => {
-    const badRequestFetch = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response("{}", { status: 400 }),
-    );
+    const badRequestFetch = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response("{}", { status: 400 }));
     const provider = new OpenAIResponsesProvider({
       apiKey: "test-key",
       model: "test-model",
@@ -215,7 +233,9 @@ describe("AI provider foundation", () => {
       sleep: vi.fn(async () => Promise.resolve()),
     });
 
-    await expect(provider.generateText({ prompt, input: "x" })).rejects.toMatchObject({
+    await expect(
+      provider.generateText({ prompt, input: "x" }),
+    ).rejects.toMatchObject({
       code: "invalid_request",
       retryable: false,
     });
@@ -225,7 +245,10 @@ describe("AI provider foundation", () => {
       new Response(
         JSON.stringify({
           output: [
-            { type: "message", content: [{ type: "output_text", text: "not-json" }] },
+            {
+              type: "message",
+              content: [{ type: "output_text", text: "not-json" }],
+            },
           ],
         }),
         { status: 200 },
@@ -239,7 +262,11 @@ describe("AI provider foundation", () => {
       sleep: vi.fn(async () => Promise.resolve()),
     });
     await expect(
-      invalidProvider.generateStructured({ prompt, input: "x", output: evaluationOutput }),
+      invalidProvider.generateStructured({
+        prompt,
+        input: "x",
+        output: evaluationOutput,
+      }),
     ).rejects.toBeInstanceOf(LanguageModelProviderError);
     expect(invalidOutputFetch).toHaveBeenCalledTimes(1);
   });

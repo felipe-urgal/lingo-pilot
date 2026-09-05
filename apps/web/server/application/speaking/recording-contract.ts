@@ -58,7 +58,10 @@ export function validateSpeakingRecordingMetadata(
     return invalid("invalid_activity_id", "Activity id is invalid");
   }
   if (!isAllowedSpeakingMimeType(input.mimeType)) {
-    return invalid("unsupported_mime_type", "Recording MIME type is not allowed");
+    return invalid(
+      "unsupported_mime_type",
+      "Recording MIME type is not allowed",
+    );
   }
   if (!Number.isInteger(input.byteLength) || input.byteLength <= 0) {
     return invalid("invalid_byte_length", "Recording byte length is invalid");
@@ -76,11 +79,13 @@ export function validateSpeakingRecordingMetadata(
   return { ok: true, value: input };
 }
 
-export function createPrivateSpeakingObjectKey(input: Readonly<{
-  userId: string;
-  attemptId: string;
-  assetId: string;
-}>): string {
+export function createPrivateSpeakingObjectKey(
+  input: Readonly<{
+    userId: string;
+    attemptId: string;
+    assetId: string;
+  }>,
+): string {
   for (const [name, value] of Object.entries(input)) {
     if (!isOpaqueId(value)) throw new Error(`${name} is invalid`);
   }

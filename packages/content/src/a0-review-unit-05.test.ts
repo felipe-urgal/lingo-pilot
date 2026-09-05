@@ -31,8 +31,22 @@ import vocabCook from "../../../content/courses/pt-BR_en/levels/a0/review/vocabu
 import vocabDrive from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/drive.json" with { type: "json" };
 import vocabPlease from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/please.json" with { type: "json" };
 
-const lessons = [lesson025, lesson026, lesson027, lesson028, lesson029, lesson030] as const;
-const activities = [activity025, activity026, activity027, activity028, activity029, activity030] as const;
+const lessons = [
+  lesson025,
+  lesson026,
+  lesson027,
+  lesson028,
+  lesson029,
+  lesson030,
+] as const;
+const activities = [
+  activity025,
+  activity026,
+  activity027,
+  activity028,
+  activity029,
+  activity030,
+] as const;
 const concepts = [
   conceptThereIsAre,
   conceptPlacePrepositions,
@@ -61,14 +75,18 @@ describe("A0 editorial review Unit 05", () => {
     expect(levelA0.unitIds).not.toContain(reviewUnit05.id);
     expect(reviewUnit05.lessonIds).toEqual(lessons.map((lesson) => lesson.id));
     expect(lessons.every((lesson) => lesson.status === "review")).toBe(true);
-    expect(activities.every((activity) => activity.status === "review")).toBe(true);
+    expect(activities.every((activity) => activity.status === "review")).toBe(
+      true,
+    );
     expect(concepts.every((concept) => concept.status === "review")).toBe(true);
     expect(vocabulary.every((item) => item.status === "review")).toBe(true);
   });
 
   it("links every objective to one deterministic activity", () => {
     for (const lesson of lessons) {
-      const lessonActivities = activities.filter((activity) => activity.lessonId === lesson.id);
+      const lessonActivities = activities.filter(
+        (activity) => activity.lessonId === lesson.id,
+      );
       expect(lessonActivities).toHaveLength(1);
       expect(
         lesson.objectives.every((objective) =>
@@ -134,7 +152,9 @@ describe("A0 editorial review Unit 05", () => {
     expect(lesson030.vocabularyIds).toEqual([vocabPlease.id]);
 
     for (const item of vocabulary) {
-      expect(lessons.map((lesson) => lesson.id)).toContain(item.introducedInLessonId);
+      expect(lessons.map((lesson) => lesson.id)).toContain(
+        item.introducedInLessonId,
+      );
     }
   });
 });

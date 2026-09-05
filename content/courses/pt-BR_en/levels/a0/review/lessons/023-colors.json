@@ -19,12 +19,7 @@
   "prerequisiteLessonIds": ["lesson.a0.022.have-has"],
   "introducesConceptIds": ["concept.a0.lexicon.colors"],
   "reinforcesConceptIds": [],
-  "vocabularyIds": [
-    "vocab.red",
-    "vocab.blue",
-    "vocab.black",
-    "vocab.white"
-  ],
+  "vocabularyIds": ["vocab.red", "vocab.blue", "vocab.black", "vocab.white"],
   "blocks": [
     {
       "id": "block.a0.023.colors.explanation",

@@ -7,8 +7,14 @@
   "lessonId": "lesson.a0.029.can-ability",
   "type": "translation",
   "prompt": { "pt-BR": "Traduza para o inglês: Eu posso nadar." },
-  "evaluation": { "type": "deterministic", "acceptedAnswers": ["i can swim", "i can swim."] },
-  "conceptIds": ["concept.a0.grammar.can-ability", "concept.a0.grammar.subject-pronouns"],
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["i can swim", "i can swim."]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.can-ability",
+    "concept.a0.grammar.subject-pronouns"
+  ],
   "objectiveIds": ["objective.a0.029.state-ability"],
   "modality": "writing",
   "supportLevel": 1,

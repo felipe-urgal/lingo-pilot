@@ -30,8 +30,22 @@ import vocabUsually from "../../../content/courses/pt-BR_en/levels/a0/review/voc
 import vocabSometimes from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/sometimes.json" with { type: "json" };
 import vocabNever from "../../../content/courses/pt-BR_en/levels/a0/review/vocabulary/never.json" with { type: "json" };
 
-const lessons = [lesson031, lesson032, lesson033, lesson034, lesson035, lesson036] as const;
-const activities = [activity031, activity032, activity033, activity034, activity035, activity036] as const;
+const lessons = [
+  lesson031,
+  lesson032,
+  lesson033,
+  lesson034,
+  lesson035,
+  lesson036,
+] as const;
+const activities = [
+  activity031,
+  activity032,
+  activity033,
+  activity034,
+  activity035,
+  activity036,
+] as const;
 const concepts = [
   conceptEssentialVerbs,
   conceptPresentSimpleBase,
@@ -59,14 +73,18 @@ describe("A0 editorial review Unit 06", () => {
     expect(levelA0.unitIds).not.toContain(reviewUnit06.id);
     expect(reviewUnit06.lessonIds).toEqual(lessons.map((lesson) => lesson.id));
     expect(lessons.every((lesson) => lesson.status === "review")).toBe(true);
-    expect(activities.every((activity) => activity.status === "review")).toBe(true);
+    expect(activities.every((activity) => activity.status === "review")).toBe(
+      true,
+    );
     expect(concepts.every((concept) => concept.status === "review")).toBe(true);
     expect(vocabulary.every((item) => item.status === "review")).toBe(true);
   });
 
   it("links every lesson objective to one deterministic activity", () => {
     for (const lesson of lessons) {
-      const lessonActivities = activities.filter((activity) => activity.lessonId === lesson.id);
+      const lessonActivities = activities.filter(
+        (activity) => activity.lessonId === lesson.id,
+      );
       expect(lessonActivities).toHaveLength(1);
       expect(
         lesson.objectives.every((objective) =>
@@ -117,12 +135,28 @@ describe("A0 editorial review Unit 06", () => {
   });
 
   it("tracks new lexical items at their first Unit 06 lesson", () => {
-    const coreVerbs = [vocabGo, vocabWork, vocabLive, vocabStudy, vocabEat, vocabDrink];
-    const frequencyWords = [vocabAlways, vocabUsually, vocabSometimes, vocabNever];
+    const coreVerbs = [
+      vocabGo,
+      vocabWork,
+      vocabLive,
+      vocabStudy,
+      vocabEat,
+      vocabDrink,
+    ];
+    const frequencyWords = [
+      vocabAlways,
+      vocabUsually,
+      vocabSometimes,
+      vocabNever,
+    ];
 
-    expect(coreVerbs.every((item) => item.introducedInLessonId === lesson031.id)).toBe(true);
     expect(
-      frequencyWords.every((item) => item.introducedInLessonId === lesson036.id),
+      coreVerbs.every((item) => item.introducedInLessonId === lesson031.id),
+    ).toBe(true);
+    expect(
+      frequencyWords.every(
+        (item) => item.introducedInLessonId === lesson036.id,
+      ),
     ).toBe(true);
     expect(lesson031.vocabularyIds).toEqual(coreVerbs.map((item) => item.id));
     expect(lesson036.vocabularyIds).toEqual([

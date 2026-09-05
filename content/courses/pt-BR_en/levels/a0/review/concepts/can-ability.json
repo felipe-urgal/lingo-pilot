@@ -6,6 +6,8 @@
   "status": "review",
   "courseId": "course.en.ptbr.v1",
   "title": { "pt-BR": "Can para habilidade" },
-  "description": { "pt-BR": "Expressar habilidade e ausência de habilidade com can e can't mais verbo base." },
+  "description": {
+    "pt-BR": "Expressar habilidade e ausência de habilidade com can e can't mais verbo base."
+  },
   "prerequisiteConceptIds": ["concept.a0.grammar.subject-pronouns"]
 }

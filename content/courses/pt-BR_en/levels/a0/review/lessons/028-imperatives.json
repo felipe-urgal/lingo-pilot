@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.028.use-short-imperatives",
-      "description": { "pt-BR": "Entender e produzir comandos curtos com verbos concretos na forma base." }
+      "description": {
+        "pt-BR": "Entender e produzir comandos curtos com verbos concretos na forma base."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.027.rooms-at-home"],
@@ -22,7 +24,9 @@
     {
       "id": "block.a0.028.imperatives.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Em instruções curtas, use o verbo na forma base e deixe o sujeito implícito." }
+      "text": {
+        "pt-BR": "Em instruções curtas, use o verbo na forma base e deixe o sujeito implícito."
+      }
     },
     {
       "id": "block.a0.028.imperatives.vocabulary",
@@ -39,7 +43,9 @@
     {
       "id": "block.a0.028.imperatives.checkpoint",
       "type": "checkpoint",
-      "text": { "pt-BR": "Não acrescente I/you antes do verbo quando a intenção for um comando direto." }
+      "text": {
+        "pt-BR": "Não acrescente I/you antes do verbo quando a intenção for um comando direto."
+      }
     }
   ],
   "activityIds": ["activity.a0.028.use-imperative"]

@@ -7,8 +7,14 @@
   "lessonId": "lesson.a0.040.question-words",
   "type": "fill-blank",
   "prompt": { "pt-BR": "Complete: ___ do you live?" },
-  "evaluation": { "type": "deterministic", "acceptedAnswers": ["where","Where"] },
-  "conceptIds": ["concept.a0.grammar.question-words","concept.a0.grammar.present-simple-questions"],
+  "evaluation": {
+    "type": "deterministic",
+    "acceptedAnswers": ["where", "Where"]
+  },
+  "conceptIds": [
+    "concept.a0.grammar.question-words",
+    "concept.a0.grammar.present-simple-questions"
+  ],
   "objectiveIds": ["objective.a0.040.choose-question-word"],
   "modality": "reading",
   "supportLevel": 1,

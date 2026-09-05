@@ -64,9 +64,11 @@ function repository(
       }),
     })),
     findOwnedAttempt: vi.fn().mockResolvedValue(attempt()),
-    refreshUploadWindow: vi.fn().mockImplementation(async (_userId, _attemptId, expires, now) =>
-      attempt({ uploadExpiresAt: expires, updatedAt: now }),
-    ),
+    refreshUploadWindow: vi
+      .fn()
+      .mockImplementation(async (_userId, _attemptId, expires, now) =>
+        attempt({ uploadExpiresAt: expires, updatedAt: now }),
+      ),
     markUploaded: vi.fn().mockImplementation(async (input) =>
       attempt({
         status: "uploaded",
@@ -83,9 +85,16 @@ function repository(
       }),
     ),
     listCleanupCandidates: vi.fn().mockResolvedValue([]),
-    markDeleted: vi.fn().mockImplementation(async (attemptId, now) =>
-      attempt({ id: attemptId, status: "deleted", deletedAt: now, updatedAt: now }),
-    ),
+    markDeleted: vi
+      .fn()
+      .mockImplementation(async (attemptId, now) =>
+        attempt({
+          id: attemptId,
+          status: "deleted",
+          deletedAt: now,
+          updatedAt: now,
+        }),
+      ),
     ...overrides,
   };
 }
@@ -150,7 +159,9 @@ describe("direct speaking upload lifecycle", () => {
   it("replays the same operation but rejects changed metadata", async () => {
     const existing = attempt();
     const baseRepository = repository({
-      reserveAttempt: vi.fn().mockResolvedValue({ inserted: false, attempt: existing }),
+      reserveAttempt: vi
+        .fn()
+        .mockResolvedValue({ inserted: false, attempt: existing }),
     });
     const replay = await prepareSpeakingUpload(
       {
@@ -196,7 +207,9 @@ describe("direct speaking upload lifecycle", () => {
     expect(repo.markUploaded).toHaveBeenCalledWith(
       expect.objectContaining({
         attemptId: "attempt-1",
-        retainedUntil: new Date(uploadedAt.getTime() + speakingRawAudioRetentionMs),
+        retainedUntil: new Date(
+          uploadedAt.getTime() + speakingRawAudioRetentionMs,
+        ),
       }),
     );
 
@@ -220,7 +233,9 @@ describe("direct speaking upload lifecycle", () => {
 
   it("keeps discard retryable when object deletion fails", async () => {
     const storage = {
-      deletePrivateObject: vi.fn().mockRejectedValue(new Error("provider unavailable")),
+      deletePrivateObject: vi
+        .fn()
+        .mockRejectedValue(new Error("provider unavailable")),
     };
     const result = await discardSpeakingUpload(
       {
@@ -231,7 +246,11 @@ describe("direct speaking upload lifecycle", () => {
       { userId: "user-1", attemptId: "attempt-1" },
     );
 
-    expect(result).toEqual({ found: true, deleted: false, cleanupPending: true });
+    expect(result).toEqual({
+      found: true,
+      deleted: false,
+      cleanupPending: true,
+    });
   });
 
   it("cleans expired/discarded attempts independently and reports failures", async () => {

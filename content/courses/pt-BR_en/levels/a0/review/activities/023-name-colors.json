@@ -11,10 +11,7 @@
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": [
-      "red, blue, black, white",
-      "red,blue,black,white"
-    ]
+    "acceptedAnswers": ["red, blue, black, white", "red,blue,black,white"]
   },
   "conceptIds": ["concept.a0.lexicon.colors"],
   "objectiveIds": ["objective.a0.023.name-colors"],

@@ -62,9 +62,7 @@ export type EvalScorer<TInput, TOutput> = Readonly<{
   ) => EvalScorerResult | Promise<EvalScorerResult>;
 }>;
 
-export type EvalThresholds = Readonly<
-  Partial<Record<EvalDimension, number>>
->;
+export type EvalThresholds = Readonly<Partial<Record<EvalDimension, number>>>;
 
 export type EvalCheckReport = Readonly<{
   scorerId: string;
@@ -196,8 +194,10 @@ function summarizeDimensions(
 
 function validateDataset<TInput>(dataset: EvalDataset<TInput>): void {
   if (!dataset.id.trim()) throw new Error("Eval dataset id is required");
-  if (!dataset.version.trim()) throw new Error("Eval dataset version is required");
-  if (!dataset.feature.trim()) throw new Error("Eval dataset feature is required");
+  if (!dataset.version.trim())
+    throw new Error("Eval dataset version is required");
+  if (!dataset.feature.trim())
+    throw new Error("Eval dataset feature is required");
   if (dataset.cases.length === 0) {
     throw new Error("Eval dataset must contain at least one case");
   }

@@ -11,10 +11,7 @@
   },
   "evaluation": {
     "type": "deterministic",
-    "acceptedAnswers": [
-      "Monday, Wednesday, Sunday",
-      "Monday,Wednesday,Sunday"
-    ]
+    "acceptedAnswers": ["Monday, Wednesday, Sunday", "Monday,Wednesday,Sunday"]
   },
   "conceptIds": ["concept.a0.calendar.days-of-week"],
   "objectiveIds": ["objective.a0.013.name-days-of-week"],

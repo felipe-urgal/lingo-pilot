@@ -23,10 +23,7 @@ describe("speaking recording contract", () => {
   });
 
   it.each([
-    [
-      "unsupported_mime_type",
-      { ...validMetadata, mimeType: "audio/wav" },
-    ],
+    ["unsupported_mime_type", { ...validMetadata, mimeType: "audio/wav" }],
     [
       "recording_too_large",
       {

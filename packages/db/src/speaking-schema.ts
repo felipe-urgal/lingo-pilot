@@ -81,7 +81,10 @@ export const speakingAttempts = pgTable(
       table.uploadExpiresAt,
       table.updatedAt,
     ),
-    check("speaking_attempts_id_not_blank", sql`length(btrim(${table.id})) > 0`),
+    check(
+      "speaking_attempts_id_not_blank",
+      sql`length(btrim(${table.id})) > 0`,
+    ),
     check(
       "speaking_attempts_activity_id_not_blank",
       sql`length(btrim(${table.activityId})) > 0`,

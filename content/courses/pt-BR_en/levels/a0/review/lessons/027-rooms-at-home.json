@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.027.name-rooms-at-home",
-      "description": { "pt-BR": "Nomear kitchen, bedroom e bathroom e reconhecê-los em descrições simples de casa." }
+      "description": {
+        "pt-BR": "Nomear kitchen, bedroom e bathroom e reconhecê-los em descrições simples de casa."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.026.place-prepositions"],
@@ -25,7 +27,9 @@
     {
       "id": "block.a0.027.rooms.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Aprenda três cômodos de alta frequência e reutilize as estruturas de existência e localização." }
+      "text": {
+        "pt-BR": "Aprenda três cômodos de alta frequência e reutilize as estruturas de existência e localização."
+      }
     },
     {
       "id": "block.a0.027.rooms.vocabulary",
@@ -37,12 +41,16 @@
       "id": "block.a0.027.rooms.example",
       "type": "example",
       "language": "en",
-      "text": { "en": "There is a kitchen. The bathroom is next to the bedroom." }
+      "text": {
+        "en": "There is a kitchen. The bathroom is next to the bedroom."
+      }
     },
     {
       "id": "block.a0.027.rooms.checkpoint",
       "type": "checkpoint",
-      "text": { "pt-BR": "Primeiro reconheça o cômodo; depois acrescente localização somente quando ela ajudar a mensagem." }
+      "text": {
+        "pt-BR": "Primeiro reconheça o cômodo; depois acrescente localização somente quando ela ajudar a mensagem."
+      }
     }
   ],
   "activityIds": ["activity.a0.027.name-room"]

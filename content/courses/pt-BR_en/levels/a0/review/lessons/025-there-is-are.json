@@ -11,7 +11,9 @@
   "objectives": [
     {
       "id": "objective.a0.025.state-existence",
-      "description": { "pt-BR": "Dizer que um ou mais elementos existem usando there is e there are." }
+      "description": {
+        "pt-BR": "Dizer que um ou mais elementos existem usando there is e there are."
+      }
     }
   ],
   "prerequisiteLessonIds": ["lesson.a0.024.everyday-objects"],
@@ -25,7 +27,9 @@
     {
       "id": "block.a0.025.there-is-are.explanation",
       "type": "explanation",
-      "text": { "pt-BR": "Use there is para uma coisa e there are para mais de uma. Nesta Lesson, foque primeiro na escolha singular/plural." }
+      "text": {
+        "pt-BR": "Use there is para uma coisa e there are para mais de uma. Nesta Lesson, foque primeiro na escolha singular/plural."
+      }
     },
     {
       "id": "block.a0.025.there-is-are.rule",
@@ -41,7 +45,9 @@
     {
       "id": "block.a0.025.there-is-are.checkpoint",
       "type": "checkpoint",
-      "text": { "pt-BR": "Antes de escolher is ou are, identifique se o elemento é singular ou plural." }
+      "text": {
+        "pt-BR": "Antes de escolher is ou are, identifique se o elemento é singular ou plural."
+      }
     }
   ],
   "activityIds": ["activity.a0.025.use-there-is-are"]

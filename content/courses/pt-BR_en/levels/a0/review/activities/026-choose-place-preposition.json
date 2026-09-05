@@ -6,9 +6,14 @@
   "status": "review",
   "lessonId": "lesson.a0.026.place-prepositions",
   "type": "fill-blank",
-  "prompt": { "pt-BR": "Complete em inglês: The key is ___ the bag. (dentro da bolsa)" },
+  "prompt": {
+    "pt-BR": "Complete em inglês: The key is ___ the bag. (dentro da bolsa)"
+  },
   "evaluation": { "type": "deterministic", "acceptedAnswers": ["in"] },
-  "conceptIds": ["concept.a0.grammar.place-prepositions", "concept.a0.lexicon.everyday-objects"],
+  "conceptIds": [
+    "concept.a0.grammar.place-prepositions",
+    "concept.a0.lexicon.everyday-objects"
+  ],
   "objectiveIds": ["objective.a0.026.locate-objects"],
   "modality": "writing",
   "supportLevel": 1,
