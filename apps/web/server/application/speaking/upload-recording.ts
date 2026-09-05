@@ -36,7 +36,9 @@ export interface SpeakingUploadLedger {
     metadata: SpeakingRecordingMetadata;
   }>): Promise<SpeakingUploadReservation>;
   complete(receipt: SpeakingRecordingReceipt): Promise<void>;
-  release(input: Readonly<{ userId: string; operationKey: string }>): Promise<void>;
+  release(
+    input: Readonly<{ userId: string; operationKey: string }>,
+  ): Promise<void>;
 }
 
 export interface SpeakingAttemptOwnership {
@@ -96,7 +98,10 @@ export async function uploadSpeakingRecording(
     activityId: validation.value.activityId,
   });
   if (!owned) {
-    return fail("attempt_not_owned", "Speaking attempt does not belong to the authenticated user");
+    return fail(
+      "attempt_not_owned",
+      "Speaking attempt does not belong to the authenticated user",
+    );
   }
 
   const reservation = await dependencies.ledger.reserve({
@@ -105,7 +110,10 @@ export async function uploadSpeakingRecording(
   });
 
   if (reservation.kind === "in_progress") {
-    return fail("upload_in_progress", "An upload with this operation key is already in progress");
+    return fail(
+      "upload_in_progress",
+      "An upload with this operation key is already in progress",
+    );
   }
 
   if (reservation.kind === "completed") {
@@ -123,6 +131,7 @@ export async function uploadSpeakingRecording(
     attemptId: validation.value.attemptId,
     assetId: reservation.assetId,
   });
+  let storedAssetRef: string | undefined;
 
   try {
     const stored = await dependencies.storage.putPrivateObject({
@@ -130,6 +139,7 @@ export async function uploadSpeakingRecording(
       contentType: validation.value.mimeType,
       bytes: input.bytes,
     });
+    storedAssetRef = stored.assetRef;
 
     const receipt: SpeakingRecordingReceipt = {
       userId: input.userId,
@@ -147,8 +157,16 @@ export async function uploadSpeakingRecording(
     await dependencies.ledger.complete(receipt);
     return { ok: true, replayed: false, receipt };
   } catch (error) {
+    if (storedAssetRef) {
+      await dependencies.storage
+        .deletePrivateObject(storedAssetRef)
+        .catch(() => undefined);
+    }
     await dependencies.ledger
-      .release({ userId: input.userId, operationKey: validation.value.operationKey })
+      .release({
+        userId: input.userId,
+        operationKey: validation.value.operationKey,
+      })
       .catch(() => undefined);
     throw error;
   }
