@@ -121,16 +121,6 @@ pnpm test:e2e
 
 O Playwright usa `pnpm dev:e2e` internamente e a porta reservada `127.0.0.1:5401`. `dev:e2e` é parte do contrato E2E e deve permanecer.
 
-O workflow `.github/workflows/e2e.yml` permite executar a mesma validação no GitHub Actions sem transformar E2E em custo fixo de todo PR. Ele é **opt-in** e roda quando:
-
-- o workflow é disparado manualmente por `workflow_dispatch`;
-- o título do PR contém `[e2e]`; ou
-- o PR possui a label `run-e2e`.
-
-Em PRs, o workflow faz checkout explícito do `head.sha`, sobe PostgreSQL efêmero, instala Chromium e executa `pnpm test:e2e`. Um push novo invalida a evidência anterior e dispara nova execução quando o PR continua opt-in.
-
-O contexto `E2E / e2e` é evidência especializada por risco e **não** substitui nem amplia o ruleset obrigatório da `main`, que continua exigindo somente `CI / quality`.
-
 ### Coverage
 
 Quando a análise de cobertura ajudar a investigar lacunas:
