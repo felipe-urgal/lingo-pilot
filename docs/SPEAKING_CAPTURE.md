@@ -1,22 +1,25 @@
-# Speaking capture — foundation segura
+# Speaking capture — secure lifecycle
 
-Este documento registra a foundation da issue #33. Ela cobre captura no browser e a orquestração server-side para storage privado sem escolher silenciosamente um fornecedor de storage.
+Este documento registra o estado da issue #33 após os recortes de captura, orquestração provider-neutral e persistência do lifecycle de mídia.
 
-## Objetivo dos recortes atuais
+## Estado atual
 
-- detectar suporte a microfone/`MediaRecorder` no browser;
-- pedir permissão apenas quando o aluno inicia a gravação;
-- permitir parar, cancelar, descartar e gravar novamente;
-- manter fallback explícito quando gravação não está disponível;
-- compartilhar limites de duração/tamanho/MIME entre browser e servidor;
-- validar metadata novamente no servidor e conferir o tamanho real do payload;
-- gerar object key somente com IDs controlados/validados pelo servidor;
-- revalidar ownership do Attempt no contexto autenticado antes do upload;
-- reservar `operationKey` atomicamente para idempotência e rejeitar conflito de payload;
-- compensar qualquer falha após a reserva, removendo objeto gravado quando existir e liberando a operação para retry;
-- definir ports pequenos de storage/ownership/ledger para adapters futuros.
+Já estão implementados e protegidos por testes:
 
-Estes recortes **não** persistem áudio em Production e não escolhem bucket/provider/database adapter.
+- capability detection e captura com `MediaRecorder` no browser;
+- UX de permissão, start/stop/cancel/re-record e fallback sem microfone;
+- limites compartilhados de duração/tamanho/MIME;
+- validação server-side e object key derivada apenas de IDs controlados;
+- contrato provider-neutral de upload idempotente;
+- persistência PostgreSQL de `SpeakingAttempt` separada de `ActivityAttempt`;
+- ownership server-side até o usuário autenticado;
+- reserva atômica por `(enrollmentId, operationKey)`;
+- lifecycle `reserved → uploaded → discarded/deleted`;
+- deadline de upload e retenção máxima de 24 horas para áudio bruto confirmado;
+- seleção testável de candidates para cleanup;
+- delete/re-record modelados sem criar score, `correct` ou mastery artificial.
+
+A decisão de provider foi aprovada: **Vercel Private Blob**. O adapter SDK/endpoint de upload direto ainda não faz parte deste slice de persistência e deve ser integrado antes de expor upload remoto em Production.
 
 ## Contrato de captura
 
@@ -43,9 +46,9 @@ Estados explícitos:
 
 Todas as tracks do `MediaStream` são encerradas ao parar, cancelar, falhar ou desmontar o componente. Preview local usa object URL temporária e é revogada ao substituir/descartar a gravação.
 
-A UI não deve impedir o aluno de continuar a atividade quando o microfone for indisponível. A alternativa pedagógica concreta depende do tipo de Activity que integrar o recorder e não é inventada nesta foundation.
+A UI não deve impedir o aluno de continuar a atividade quando o microfone for indisponível. A alternativa pedagógica concreta depende do tipo de Activity que integrar o recorder.
 
-## Fronteira server-side
+## Fronteira server-side provider-neutral
 
 `apps/web/server/application/speaking/recording-contract.ts` valida:
 
@@ -63,130 +66,153 @@ A object key é construída como:
 speaking/{userId}/{attemptId}/{assetId}
 ```
 
-Os três segmentos precisam ser IDs opacos válidos; `/`, `..`, espaços iniciais e valores excessivamente longos são rejeitados. O adapter de storage recebe essa key já derivada pelo servidor.
+Os três segmentos precisam ser IDs opacos válidos; `/`, `..`, espaços iniciais e valores excessivamente longos são rejeitados.
 
-### Orquestração de upload
+`apps/web/server/application/speaking/upload-recording.ts` protege a orquestração em que os bytes passam pelo port provider-neutral. Ele continua útil para adapters server-side e para os invariantes de ownership, idempotência e compensação já testados.
 
-`apps/web/server/application/speaking/upload-recording.ts` fecha as invariantes que independem do fornecedor:
+## Persistência do lifecycle
 
-1. revalida metadata com o contrato server-side;
-2. compara `metadata.byteLength` com `Uint8Array.byteLength`, portanto o tamanho declarado pelo cliente não é autoridade;
-3. consulta `SpeakingAttemptOwnership` usando `userId` autenticado + Attempt/Activity antes de reservar ou gravar qualquer objeto;
-4. reserva `(userId, operationKey)` por `SpeakingUploadLedger`;
-5. uma operação já concluída com a mesma metadata retorna o mesmo receipt como replay idempotente, sem novo `put`;
-6. reutilizar a `operationKey` com metadata diferente falha como conflito;
-7. a reserva fornece `assetId` server-side, usado para derivar a object key dentro da região compensável da operação;
-8. somente depois disso `PrivateSpeakingStorage.putPrivateObject` recebe bytes + MIME validado;
-9. qualquer exceção após a reserva libera `(userId, operationKey)` antes de propagar a falha;
-10. se um objeto já tiver sido gravado quando a falha ocorrer, a aplicação tenta `deletePrivateObject` antes de liberar a reserva.
+O slice atual adiciona `speaking_attempts` e `PostgresSpeakingRepository`.
 
-O port `SpeakingUploadLedger.reserve` possui uma exigência não negociável para o adapter real: a reserva precisa ser **atômica e única por `(userId, operationKey)`**. Um `find` seguido de `insert` sem constraint transacional reabre corrida de duplicate upload e não satisfaz o contrato.
+A entidade é deliberadamente separada de `activity_attempts`: uma gravação capturada ou armazenada ainda **não é evidência de acerto**. Até #34/#39 produzirem avaliação confiável, speaking não escreve `correct`, score, `ConceptEvidence`, `MasteryState` ou SRS.
 
-`in_progress` é um estado explícito para concorrência. O caller pode responder como conflito/retry recuperável; ele não deve iniciar um segundo upload em paralelo para a mesma operação.
+### Campos operacionais principais
 
-A compensação após falha é best effort. Se o delete do storage também falhar, o futuro job de retention/cleanup precisa localizar e remover o objeto órfão de modo observável e sem logar conteúdo.
+- enrollment/session item/activity e revision de conteúdo;
+- `operationKey` idempotente;
+- `assetId` e `objectKey` server-controlled;
+- MIME, byte length e duração validados;
+- status do lifecycle;
+- ETag após confirmação do provider;
+- deadline da capability de upload;
+- `uploadedAt` e `retainedUntil`;
+- timestamps de discard/delete.
 
-## Storage provider
+A constraint `speaking_attempts_enrollment_operation_unique` é a fronteira transacional que impede duas gravações persistidas para a mesma operação do mesmo enrollment.
 
-A foundation define `PrivateSpeakingStorage` com duas operações:
+### Ownership
 
-- `putPrivateObject`;
-- `deletePrivateObject`.
+`ownsLessonSessionItem()` não confia em IDs isolados recebidos pelo client. A autorização percorre:
 
-Não existe adapter real neste PR. Antes de escolher provider/bucket é necessário decidir explicitamente:
+```text
+SessionItem → StudySession → Enrollment → LanguageProfile → User
+```
 
-- custo e lock-in;
-- região/localização de dados;
-- criptografia e controles de acesso;
-- suporte a URL temporária/signed upload se adotado;
-- lifecycle/retention automático;
-- observabilidade de cleanup;
-- comportamento de exclusão de conta;
-- subprocessador/LGPD aplicável.
+O endpoint futuro deve obter `userId` da sessão autenticada e usar essa checagem antes de emitir qualquer capability de upload.
 
-Um fake/in-memory pode existir somente em testes; ele não deve ser composition root de Production.
+## Lifecycle direto
 
-## Threat model do recorte
+`apps/web/server/application/speaking/direct-upload.ts` modela o fluxo recomendado para o Vercel Blob sem fazer o browser enviar até 5 MiB através da Function:
 
-### Qual dado entra?
+1. validar ownership e metadata;
+2. reservar atomicamente a operação no PostgreSQL;
+3. gerar `attemptId`, `assetId` e object key no servidor;
+4. fornecer a object key ao adapter que emitirá uma capability curta de PUT privado;
+5. browser envia os bytes diretamente ao provider;
+6. adapter server-side consulta metadata real do objeto (`head`) e só então chama a confirmação;
+7. confirmação grava ETag/upload time e `retainedUntil`;
+8. re-record/discard marca o Attempt e tenta remover o objeto;
+9. falha de delete permanece elegível para cleanup posterior.
 
-Áudio bruto capturado localmente e metadata técnica mínima. Gravação de voz é conteúdo potencialmente sensível.
+**Importante:** MIME, byte length, ETag e timestamp usados em `confirmSpeakingUpload()` devem vir da leitura confiável do provider, nunca de JSON fornecido pelo browser.
 
-### Quem pode acessar?
+## Provider e acesso
 
-O contrato de aplicação exige resolver ownership do Attempt para o usuário autenticado antes de qualquer upload. O adapter real de `SpeakingAttemptOwnership` deve consultar o estado server-side; IDs recebidos do cliente nunca são prova de autorização.
+Decisão aprovada para V1:
 
-### Onde é persistido?
+- provider: **Vercel Private Blob**;
+- store privado por default;
+- upload direto browser → Blob mediante capability curta e escopada emitida após autenticação/ownership;
+- object key sem filename do usuário;
+- `allowOverwrite: false`;
+- MIME/tamanho restringidos também na capability do provider;
+- credencial de storage permanece exclusivamente server-side;
+- preferir OIDC quando disponível no runtime Vercel; token estático é fallback operacional e nunca pode chegar ao client;
+- leitura futura, quando necessária para transcrição/avaliação, deve ser server-side/autorizada ou por URL temporária explicitamente escopada.
 
-A foundation ainda não configura storage remoto. O port descreve a operação privada que o adapter futuro deverá executar; testes usam fake controlado.
+O adapter `@vercel/blob`, a rota autenticada que emite a capability e a confirmação via `head` são o próximo slice da #33. Eles não são simulados neste PR.
 
-### Quem externo recebe?
+## Retenção V1
 
-Ninguém em Production neste recorte, porque nenhum adapter/provider de storage foi escolhido ou ligado ao composition root.
+A decisão aprovada é: **áudio bruto confirmado pode existir por no máximo 24 horas no lifecycle de aplicação**.
 
-### Request repetida
+Ao confirmar um upload:
 
-`operationKey` passa por uma reserva atômica no ledger. Replay da mesma operação/metadata devolve o receipt já concluído; metadata diferente com a mesma key é conflito. O adapter persistente precisa materializar essa unicidade no banco.
+```text
+retainedUntil = uploadedAt + 24h
+```
 
-### Um usuário pode apontar ID de outro?
+O banco já persiste esse deadline e o repositório lista como cleanup candidate:
 
-Não deve conseguir atravessar a fronteira de aplicação: ownership é verificada antes de reserva/upload. O endpoint futuro ainda precisa derivar `userId` da sessão autenticada, nunca do body.
+- reservation cujo upload window expirou;
+- gravação marcada como descartada/re-record;
+- gravação `uploaded` cujo `retainedUntil <= now`.
 
-### Upload/conteúdo executável
+O job executa delete idempotente e só marca `deleted` depois do adapter informar sucesso. Falha de provider não é escondida: o item continua candidate e pode ser reprocessado.
 
-Somente MIME de áudio allowlisted será aceito. Filename do cliente é ignorado e conteúdo nunca deve ser servido como HTML executável.
+Enquanto o adapter/scheduler real não estiver ativado, `retainedUntil` é **deadline persistido**, não prova de exclusão física. A #33 só pode ser encerrada quando a remoção no Vercel Blob estiver ligada e observável.
+
+## Threat model
+
+### Dado
+
+Áudio bruto de voz e metadata técnica mínima. O áudio é temporário e potencialmente sensível.
+
+### Autorização
+
+IDs do client não provam ownership. Toda emissão de upload/read/delete precisa derivar usuário da sessão e consultar ownership server-side.
+
+### Path traversal / filename
+
+Filename enviado pelo client não existe no contrato. Object key usa IDs opacos validados e server-controlled.
+
+### Upload repetido
+
+A unicidade no PostgreSQL impede duplicação pela mesma operation key. Replay com metadata diferente é conflito; replay compatível reutiliza o Attempt existente.
+
+### Progresso pedagógico
+
+Upload/captura não alteram progresso. Isso evita transformar sucesso operacional do storage em sinal falso de aprendizagem.
 
 ### Logs
 
-Nunca logar áudio, transcript, Blob, signed URL, payload completo ou conteúdo do aluno. Logs podem registrar IDs técnicos, tamanho/duração categorizados e error code seguro.
+Nunca logar áudio, transcript, Blob, token/capability, signed URL, URL privada permanente ou payload completo. Logs podem registrar IDs técnicos e error codes seguros.
 
-### Falha parcial
+### Falha parcial e delete
 
-Depois que uma operação é reservada, qualquer exceção — inclusive falha ao derivar uma object key válida — passa pela liberação da reserva. Se storage já concluiu e uma etapa posterior falhar, a aplicação tenta apagar o objeto antes do release. Falha dessa compensação deverá ser coberta pelo lifecycle/cleanup observável do adapter real.
+Discard/delete são idempotentes. Se o provider falhar, o registro continua selecionável para cleanup e não é marcado como removido prematuramente.
 
-### Exclusão
+## Testes
 
-Nenhum objeto remoto de Production existe ainda. O adapter real precisa suportar delete e integrar a política de retenção/account deletion antes de Production.
+A suíte cobre os dois níveis do contrato:
 
-## Retenção proposta para V1
+### Orquestração provider-neutral
 
-Mantemos a direção já definida em `SECURITY_PRIVACY.md`: áudio bruto é temporário por default.
+- upload único e replay sem segundo `put`;
+- conflito de operation key com metadata diferente;
+- ownership negada antes do storage;
+- byte length declarado divergente do payload;
+- release/compensação após falhas.
 
-Antes de speaking chegar a Production, a decisão final precisa definir um TTL concreto. A hipótese de implementação é:
+### Persistência/lifecycle direto
 
-1. guardar somente pelo período necessário para transcrição/feedback e retry operacional;
-2. apagar o bruto automaticamente após esse período;
-3. reter transcript/feedback separadamente apenas se houver finalidade pedagógica explícita;
-4. permitir propagação de delete por Attempt/conta;
-5. monitorar cleanup falho sem incluir conteúdo em logs.
+- ownership pelo relacionamento até `User`;
+- concorrência de duas reservas com uma única vencedora;
+- isolamento de Attempt de outro usuário;
+- persistência do ETag e deadline de 24h;
+- candidate de cleanup somente quando devido/descartado;
+- delete remove o item da fila de cleanup;
+- unit tests de prepare/replay/conflict/confirm/discard/cleanup.
 
-Não fixamos um número de dias nesta foundation porque isso depende do provider/lifecycle e da necessidade real do pipeline de avaliação.
+## O que ainda falta para encerrar a #33
 
-## Testes do recorte de upload
+Depois deste slice, não há mais decisão de provider/retention em aberto. Permanecem gates de integração:
 
-`upload-recording.test.ts` protege pelo menos:
+- adapter real de Vercel Private Blob para capability PUT privada, `head` e delete;
+- endpoint autenticado/same-origin que derive `userId` da sessão;
+- integração do upload/retry/re-record ao `SpeakingRecorder`/Activity;
+- scheduler/job real executando o cleanup e expondo observabilidade sem conteúdo sensível;
+- browser E2E do fluxo integrado, incluindo permissão negada, retry e re-record;
+- confirmação de configuração do store privado no ambiente de deploy.
 
-- upload único + replay idempotente sem segundo `put`;
-- conflito quando a mesma operation key muda de metadata;
-- ownership negada antes de tocar storage;
-- divergência entre byte length declarado e payload real;
-- release da reserva quando a geração da object key falha antes de tocar storage;
-- compensating delete + release da reserva quando o commit do receipt falha.
-
-Esses testes verificam o contrato provider-neutral. Eles não substituem integração futura com constraint transacional, storage privado real e autenticação.
-
-## Critérios ainda pendentes da #33
-
-Estes recortes não tornam a issue Done. Permanecem necessários, entre outros:
-
-- escolha explícita e documentada do provider/storage privado;
-- adapters reais de `SpeakingAttemptOwnership`, `SpeakingUploadLedger` e `PrivateSpeakingStorage`;
-- endpoint/upload flow autenticado que derive `userId` da sessão;
-- persistência de metadata/asset ref ligada ao SpeakingAttempt;
-- retention/lifecycle efetivos e cleanup observável com TTL decidido;
-- integração com Activity/Today/Review;
-- avaliação de speaking separada da captura;
-- testes de constraint/concorrência/retry e browser E2E do fluxo integrado;
-- atualização do modelo de dados somente quando o use case real exigir persistência.
-
-A próxima branch deve partir dessas pendências, não contornar a decisão de provider com storage improvisado.
+Avaliação linguística/pronúncia continua fora da #33 e pertence à #34/#39.
